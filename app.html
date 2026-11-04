@@ -2274,7 +2274,7 @@ function seedDemo(centre){
   const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const day=o=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+o);return iso(d)};
   const D={};
-  D.config={main:{sites:['Coral Garden','Shark Point','Turtle Reef','Manta Ridge','House Reef','Wall Street'],agents:['Seaview Hotel','Palm Resort','Backpackers Inn','Island Travel Desk'],brand:{name:centre||'Blue Reef Divers',logo:demoLogo(centre||'Blue Reef Divers')}}};
+  D.config={main:{sites:['Coral Garden','Shark Point','Turtle Reef','Manta Ridge','House Reef','Wall Street'],agents:['Seaview Hotel','Palm Resort','Backpackers Inn','Island Travel Desk'],brand:{}}};
   const ST=[['s1','Maya Collins','GB,ES,FR','Instructor',0],['s2','Tomás Ribeiro','PT,ES,GB','Instructor',0],['s3','Lena Fischer','DE,GB','Instructor',32],['s4','Kadek Wirawan','ID,GB','Divemaster',0],['s5','Sam Taylor','GB','Divemaster',0]];
   D.staff={};ST.forEach(x=>D.staff[x[0]]={nom:x[1],pays:x[2],role:x[3],commission:x[4],actif:true});
   const T=(typeof DEFAULT_TARIFS!=='undefined'?DEFAULT_TARIFS:[]).map(t=>Object.assign({},t,{note:''}));
