@@ -1415,16 +1415,17 @@ function payLockRender(){
 const POOL_M=[['equal','Equal parts'],['days','By days worked'],['acts','By activities done']];
 function poolCfg(){const c=(S.config&&S.config.pool)||{};return{on:c.on===true,method:POOL_M.some(x=>x[0]===c.method)?c.method:'equal',pct:Math.min(100,Math.max(0,c.pct!=null&&c.pct!==''?+c.pct:30))}}
 function poolCalc(m){
-  const c=poolCfg(),out=Object.assign({gross:0,dist:0,kept:0,rows:[]},c);if(!c.on)return out;
+  const c=poolCfg(),out=Object.assign({gross:0,dist:0,kept:0,rows:[],absentKey:perTag()},c);if(!c.on)return out;
   const baseOf=b=>Math.max(0,calc(b).net-feeOf(b));
+  const ab=(((S.config&&S.config.pool&&S.config.pool.absent)||{})[perTag()])||[];
   const frl=id=>{const x=S.staff[id];return !!(x&&x.payMode==='commission')};
   let g=sum(monthBookings(m).filter(b=>!frl(b.instructeurId)),baseOf);
   Object.values(S.declarations).filter(d=>inPer(d.date)&&d.status==='Approved'&&!frl(d.staffId)).forEach(d=>{g+=baseOf(declPseudo(d))});
   const P=Object.values(S.staff).filter(x=>GUIDES.includes(x.role)&&x.actif!==false&&x.payMode!=='commission').sort(byNom).map(s=>{
     const l=payLines(s.id,m).filter(x=>x.status==='Counted');
-    return{id:s.id,s:s,days:new Set(l.map(x=>x.date)).size,acts:sum(l,x=>x.qty)};
-  }).filter(r=>r.acts>0);
-  const w=r=>c.method==='days'?r.days:c.method==='acts'?r.acts:1,W_=sum(P,w);
+    return{id:s.id,s:s,days:new Set(l.map(x=>x.date)).size,acts:sum(l,x=>x.qty),present:!ab.includes(s.id)};
+  });
+  const w=r=>!r.present?0:c.method==='days'?r.days:c.method==='acts'?r.acts:1,W_=sum(P,w);
   out.gross=g;out.dist=Math.round(g*c.pct/100);out.kept=g-out.dist;
   out.rows=P.map(r=>Object.assign(r,{share:W_?w(r)/W_:0,amt:W_?Math.round(out.dist*w(r)/W_):0}));
   return out;
@@ -1437,8 +1438,8 @@ function poolCard(){
     '<label class="fld">Share of the pool paid to instructors (%)<input id="pl-p" type="number" min="0" max="100" step="0.5" value="'+esc(c.pct)+'"'+(canEdit?'':' disabled')+'></label></div>';
   if(canEdit)h+='<div class="actions"><button type="button" class="btn" data-act="savePool">Save</button></div>';
   if(c.on){
-    h+='<div class="kpis" style="margin:12px 0"><div class="kpi"><span>Pool (net revenue)</span><b>'+fmt(PC.gross)+'</b></div><div class="kpi"><span>Shared with instructors</span><b>'+fmt(PC.dist)+'</b></div><div class="kpi"><span>Kept by the centre</span><b>'+fmt(PC.kept)+'</b></div><div class="kpi"><span>Instructors in the pool</span><b>'+PC.rows.length+'</b></div></div>';
-    h+=PC.rows.length?'<div class="tablewrap"><table id="poolTable"><thead><tr><th>Instructor</th><th class="n">Days worked</th><th class="n">Activities</th><th class="n">Share</th><th class="n">Pool amount (IDR)</th></tr></thead><tbody>'+PC.rows.map(r=>'<tr><td><button type="button" class="btn ghost sm" data-act="staffMonth" data-id="'+esc(r.id)+'">'+flag(r.s.pays)+esc(r.s.nom)+'</button></td><td class="n">'+r.days+'</td><td class="n">'+r.acts+'</td><td class="n">'+(Math.round(r.share*1000)/10)+'%</td><td class="n"><strong>'+fmt(r.amt)+'</strong></td></tr>').join('')+'</tbody><tfoot><tr><td colspan="4"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(PC.rows,r=>r.amt))+'</strong></td></tr></tfoot></table></div><p class="hint">Only instructors with at least one confirmed or approved activity in the period take part. Days worked = different dates with an activity.</p>':emptyBox('Nobody in the pool yet','No confirmed activity with an instructor in this period.');
+    h+='<div class="kpis" style="margin:12px 0"><div class="kpi"><span>Pool (net revenue)</span><b>'+fmt(PC.gross)+'</b></div><div class="kpi"><span>Shared with instructors</span><b>'+fmt(PC.dist)+'</b></div><div class="kpi"><span>Kept by the centre</span><b>'+fmt(PC.kept)+'</b></div><div class="kpi"><span>Instructors in the pool</span><b>'+PC.rows.filter(r=>r.present).length+'</b></div></div>';
+    h+=PC.rows.length?'<div class="tablewrap"><table id="poolTable"><thead><tr><th>Instructor</th><th>Present</th><th class="n">Days worked</th><th class="n">Activities</th><th class="n">Share</th><th class="n">Pool amount (IDR)</th></tr></thead><tbody>'+PC.rows.map(r=>'<tr><td><button type="button" class="btn ghost sm" data-act="staffMonth" data-id="'+esc(r.id)+'">'+flag(r.s.pays)+esc(r.s.nom)+'</button></td><td><input type="checkbox" class="pl-pres" data-act="poolPresent" data-id="'+esc(r.id)+'"'+(r.present?' checked':'')+(canEdit?'':' disabled')+' aria-label="Present in this period"></td><td class="n">'+r.days+'</td><td class="n">'+r.acts+'</td><td class="n">'+(Math.round(r.share*1000)/10)+'%</td><td class="n"><strong>'+fmt(r.amt)+'</strong></td></tr>').join('')+'</tbody><tfoot><tr><td colspan="5"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(PC.rows,r=>r.amt))+'</strong></td></tr></tfoot></table></div><p class="hint">Every active instructor in the pool is listed and shares it. Untick Present for someone who did not work in this period (holiday, leave): they get no share and the others split it. Freelancers set to Commission only are not in the pool. Days worked = different dates with an activity.</p>':emptyBox('Nobody in the pool','Add active instructors in Team, or switch them from Commission only.');
   }
   return h;
 }
@@ -1450,7 +1451,7 @@ V.commission={
  fill(){
   payLockRender();
   if(!payOk())return;
-  const pc=$('#poolCard');if(pc&&!(document.activeElement&&pc.contains(document.activeElement)))pc.innerHTML=poolCard();
+  const pc=$('#poolCard');const ae=document.activeElement;if(pc&&!(ae&&pc.contains(ae)&&/^(SELECT|INPUT)$/.test(ae.tagName)&&ae.type!=='checkbox'))pc.innerHTML=poolCard();
   stmtFill();
   const m=PER.from,cm=cfg().commission,P=poolCfg();
   $('#comHint').textContent=P.on?'Pool system is ON: the amounts below show each instructor\'s pool share. The individual breakdown (courses at '+cm.coursePct+'% after fees, fun dives at '+fmt(cm.funPerDive)+' IDR) stays visible for reference.':'Courses: '+cm.coursePct+'% of the net amount after agency fees and costs (cash marine fees excluded). Fun dives: '+fmt(cm.funPerDive)+' IDR per dive. Only confirmed or completed bookings count. Tap an instructor to see exactly what they did in the selected period.';
@@ -1725,7 +1726,8 @@ const ACT={
   if(ok){ST.payUnlocked=true;closeModal();V[ST.view].fill()}else t.disabled=false;
  },
  payLock(){ST.payUnlocked=false;V[ST.view].fill()},
- savePool(t){if(!canEdit)return;const pool={on:$('#pl-on').value==='1',method:$('#pl-m').value,pct:Math.min(100,Math.max(0,+$('#pl-p').value||0))};W(()=>(S.config?db.doc('config/main').update({pool}):db.doc('config/main').set({pool})),'Commission system saved').then(ok=>{if(ok){if(S.config)S.config.pool=pool;V.commission.fill()}})},
+ poolPresent(t){if(!canEdit)return;const id=t.dataset.id,k=perTag(),pool=Object.assign({},(S.config&&S.config.pool)||{});const ab=Object.assign({},pool.absent||{});let l=(ab[k]||[]).filter(x=>x!==id);if(!t.checked)l.push(id);if(l.length)ab[k]=l;else delete ab[k];pool.absent=ab;W(()=>(S.config?db.doc('config/main').update({pool}):db.doc('config/main').set({pool})),'Saved').then(ok=>{if(ok){if(S.config)S.config.pool=pool;V.commission.fill()}})},
+ savePool(t){if(!canEdit)return;const pool=Object.assign({},(S.config&&S.config.pool)||{},{on:$('#pl-on').value==='1',method:$('#pl-m').value,pct:Math.min(100,Math.max(0,+$('#pl-p').value||0))});W(()=>(S.config?db.doc('config/main').update({pool}):db.doc('config/main').set({pool})),'Commission system saved').then(ok=>{if(ok){if(S.config)S.config.pool=pool;V.commission.fill()}})},
  payPwChange(){
   if(!canEdit)return;MODAL={kind:'pw'};
   openModal('Change password','<div class="gf"><label class="fld full">New password<input id="pw1" type="password" autocomplete="new-password"></label><label class="fld full">Repeat it<input id="pw2" type="password" autocomplete="new-password"></label></div><div class="err" id="pw-err" role="alert"></div><div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="payPwSave">Save</button></div>');
