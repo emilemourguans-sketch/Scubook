@@ -516,7 +516,7 @@ V.home={
     return '<div class="row '+(x.k.paid>0?'rpart':'rdue')+'" style="padding-inline:8px"><button type="button" class="row-main" data-act="payBooking" data-id="'+esc(x.b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong></span><span class="r2">'+esc(x.b.tarifNom||'')+' · '+esc(fmtShort(x.b.date))+'</span></button><div class="r-side">'+payBadge(x.k)+'</div></div>';
   }).join('')+(due.length>8?'<p class="hint">+ '+(due.length-8)+' more in the Payments tab.</p>':''):emptyBox('Everything is paid','Balances still owed appear here.');
   const ci=Object.values(S.clients).filter(c=>c.checkinAt&&c.checkinAt>=addDays(t,-3)&&!(IDX.byClient[c.id]||[]).length).sort((a,b)=>a.checkinAt<b.checkinAt?1:-1);
-  $('#ciList').innerHTML=ci.length?ci.slice(0,10).map(c=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editClient" data-id="'+esc(c.id)+'"><span class="r1"><strong>'+esc(c.nom)+'</strong></span><span class="r2">'+esc(c.interest||'No activity chosen')+(c.plannedDate?' · '+esc(fmtShort(c.plannedDate))+(c.plannedSlot?' '+esc(c.plannedSlot.replace('Morning ','')):''):'')+'</span></button><div class="r-side">'+(canWrite?'<button type="button" class="btn sm" data-act="checkinBook" data-id="'+esc(c.id)+'">+ Booking</button>':'')+'</div></div>').join(''):emptyBox('No check-ins waiting','Customers who fill the form and have no booking yet appear here.');
+  $('#ciList').innerHTML=ci.length?ci.slice(0,10).map(c=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editClient" data-id="'+esc(c.id)+'"><span class="r1"><strong>'+esc(c.nom)+'</strong></span><span class="r2">'+esc(c.interest||'No activity chosen')+(c.plannedDate?' · '+esc(fmtShort(c.plannedDate))+(c.plannedSlot?' '+esc(c.plannedSlot.replace('Morning ','')):''):'')+'</span></button><div class="r-side">'+(canWrite?'<button type="button" class="btn sm" data-act="checkinBook" data-id="'+esc(c.id)+'">+ Booking</button>':'')+'</div></div>').join(''):emptyBox('No check-ins waiting','Customers who fill in the form and have no booking yet appear here.');
   let w='';
   for(let i=0;i<7;i++){
     const d=addDays(t,i),l=B.filter(b=>b.date===d),u=l.filter(b=>!b.instructeurId).length;
@@ -1282,7 +1282,7 @@ function openImport(){
   MODAL={kind:'imp',plan:null};
   openModal('Import check-ins',
    '<p class="sub">In Google Forms, open the form, go to <strong>Responses</strong>, click the three dots and choose <strong>Download responses (.csv)</strong>. Then choose that file below.</p>'+
-   '<div class="note">Customers already in the CRM (same email or phone) are completed, never overwritten. New customers are created.</div>'+
+   '<div class="note">Customers already in the CRM (same email or phone) have their missing details filled in, never overwritten. New customers are created.</div>'+
    '<label class="fld">CSV file<input type="file" id="imp-file" accept=".csv,text/csv,text/plain"></label>'+
    '<div id="imp-out"></div>'+
    '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="importRun" id="imp-go" disabled>Import</button></div>');
@@ -1484,7 +1484,7 @@ V.leave={
   $('#lvBanner').innerHTML=!st.length?'':away.length?'<div class="lv-banner off"><span class="dot"></span><span>'+esc(away.map(x=>x.nom).join(', '))+(away.length>1?' are':' is')+' away '+dl_+'</span></div>':'<div class="lv-banner ok"><span class="dot"></span><span>Everyone is here '+dl_+'</span></div>';
   let days=[];for(let d=PER.from,n=0;d<=PER.to&&n<62;d=addDays(d,1),n++)days.push(d);
   $('#lvHint').textContent=(canWrite?'Tap a square to mark a day as leave (tap again to undo). ':'')+'Showing '+perLabel()+(days.length>=62?' (first 62 days)':'')+'.';
-  if(!st.length){$('#lvGrid').innerHTML=emptyBox('No staff','Add team members in the Team page.');$('#lvSum').innerHTML='';return}
+  if(!st.length){$('#lvGrid').innerHTML=emptyBox('No staff','Add team members in the Team tab.');$('#lvSum').innerHTML='';return}
   const dn=['S','M','T','W','T','F','S'];
   const head='<tr><th class="nm"></th>'+days.map(d=>{const dt=parse(d);return '<th class="'+(d===t?'td':'')+'"><button type="button" class="lvh'+(d===sd?' sel':'')+'" data-act="leaveDay" data-d="'+d+'">'+dn[dt.getDay()]+'<br>'+dt.getDate()+'</button></th>'}).join('')+'</tr>';
   const all='<tr><td class="nm">Team</td>'+days.map(d=>{const n=st.filter(x=>isAway(x.id,d)).length;return '<td class="c all '+(n?'away':'here')+'" title="'+(n?n+' away':'Everyone here')+'">'+(n||'')+'</td>'}).join('')+'</tr>';
@@ -1558,7 +1558,7 @@ async function pushPayroll(btn){
 function stmtFill(){
   const el=$('#stmt');if(!el)return;
   const gl=Object.values(S.staff).filter(x=>GUIDES.includes(x.role)).sort(byNom);
-  if(!gl.length){el.innerHTML=emptyBox('No instructors','Add instructors in the Staff list.');return}
+  if(!gl.length){el.innerHTML=emptyBox('No instructors','Add instructors in the Team tab.');return}
   if(!ST.stmtId||!S.staff[ST.stmtId])ST.stmtId=gl[0].id;
   const m=PER.from,L=payLines(ST.stmtId,m),ok=L.filter(x=>x.status==='Counted'),co=ok.filter(x=>x.type==='Course'),fu=ok.filter(x=>x.type==='Fun dive');
   el.innerHTML='<div class="toolbar"><label class="fld" style="flex:1 1 200px">Instructor<select id="stmtSel">'+gl.map(x=>opt(x.id,x.nom,x.id===ST.stmtId)).join('')+'</select></label></div>'+
