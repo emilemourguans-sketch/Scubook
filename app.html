@@ -34,7 +34,7 @@
 .brand .wm{font-size:28px}.gate-card .wm{font-size:58px}
 .bLogo{display:none}
 .gate-card a{color:var(--on-navy);text-decoration:underline;font-weight:600}
-.gate-card .btn{background:var(--gbtn,#FF7A5C);color:var(--gbtn-on,#0A2540)}
+.gate-card .btn{background:var(--gbtn,var(--lime,#FF7A5C));color:var(--gbtn-on,var(--on-lime,#0A2540))}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
 body.noscroll{overflow:hidden}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--navy);z-index:80}
@@ -2333,13 +2333,24 @@ function demoGate(expired){
     f=document.createElement('form');f.id='ddLogin';f.style.cssText='display:grid;gap:10px;margin-top:14px;text-align:left;width:100%;max-width:340px';
     if(expired){f.innerHTML='<a class="btn" href="'+SITE+'#contact" style="text-align:center;text-decoration:none">Contact us</a>';document.querySelector('#gate .gate-card').appendChild(f);return}
     f.innerHTML=fld('dmNm','Your name','text','name','maxlength="60"')+fld('dmCt','Dive centre name','text','organization','maxlength="60"')+fld('dmEm','Email','email','email')+
+      '<label style="display:grid;gap:4px;font-weight:600">Your logo <span style="font-weight:400;opacity:.75">(optional, PNG or JPG)</span><input id="dmLg" type="file" accept="image/*" style="'+INP+'"></label>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label style="display:grid;gap:4px;font-weight:600">Header colour<input id="dmNv" type="color" value="#0A2540" style="height:44px;padding:2px;width:100%;border-radius:8px"></label><label style="display:grid;gap:4px;font-weight:600">Button colour<input id="dmAc" type="color" value="#FF7A5C" style="height:44px;padding:2px;width:100%;border-radius:8px"></label></div>'+
+      '<span style="font-size:.8rem;margin-top:-4px;opacity:.75">Your demo opens with your name, logo and colours.</span>'+
       '<label style="display:flex;gap:8px;align-items:flex-start;font-size:.85rem"><input id="dmOk" type="checkbox" required style="margin-top:3px"><span>I agree to be contacted about this product. No spam.</span></label>'+
       '<button class="btn" type="submit">Start my demo</button><span class="hint" style="font-size:.8rem">The demo lives in this browser for 24 hours.</span>';
     document.querySelector('#gate .gate-card').appendChild(f);
+    let dmLogo='';
+    const dmBrand=()=>{const nv=document.getElementById('dmNv').value,ac=document.getElementById('dmAc').value,nm=document.getElementById('dmCt').value.trim();
+      const b={};if(nm)b.name=nm;if(dmLogo)b.logo=dmLogo;if(nv.toLowerCase()!=='#0a2540')b.navy=nv;if(ac.toLowerCase()!=='#ff7a5c'){b.accent=ac;b.lime=ac}return b};
+    const dmPrev=()=>{try{applyBrand(dmBrand())}catch(x){}};
+    ['dmCt','dmNv','dmAc'].forEach(id=>document.getElementById(id).addEventListener('input',dmPrev));
+    document.getElementById('dmLg').addEventListener('change',async ev=>{const fl=ev.target.files[0];if(!fl){dmLogo='';dmPrev();return}
+      try{dmLogo=await logoFromFile(fl)}catch(x){dmLogo='';ev.target.value='';toast('Could not read that image.','bad')}dmPrev()});
     f.onsubmit=async e=>{e.preventDefault();
       const lead={name:document.getElementById('dmNm').value.trim(),centre:document.getElementById('dmCt').value.trim(),email:document.getElementById('dmEm').value.trim().toLowerCase()};
       postLead({kind:'demo',name:lead.name,centre:lead.centre,email:lead.email,lang:navigator.language||''});
-      DEMO_STATE={start:Date.now(),expires:Date.now()+24*3600e3,lead:lead,data:seedDemo(lead.centre)};LS.set(DEMO_KEY,JSON.stringify(DEMO_STATE));f.remove();resolve(true)};
+      const seed=seedDemo(lead.centre);seed.config.main.brand=dmBrand();
+      DEMO_STATE={start:Date.now(),expires:Date.now()+24*3600e3,lead:lead,data:seed};LS.set(DEMO_KEY,JSON.stringify(DEMO_STATE));f.remove();resolve(true)};
     setTimeout(()=>document.getElementById('dmNm').focus(),50);
   });
 }
