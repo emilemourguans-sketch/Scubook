@@ -314,18 +314,19 @@ home:'<path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/>',
 schedule:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
 customers:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 5.2a3.4 3.4 0 010 5.6M18 14.4c2 .7 3.5 2.4 3.5 5.6"/>',
 payments:'<rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10.5h19M6.5 15h4"/>',
+commission:'<circle cx="12" cy="12" r="8.5"/><path d="M12 6.5v11M14.7 9.2c-.5-.9-1.5-1.4-2.7-1.4-1.6 0-2.7.8-2.7 2s1 1.7 2.7 2.1 2.7.8 2.7 2-1.1 2-2.7 2c-1.3 0-2.3-.5-2.8-1.5"/>',
 team:'<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="2.5"/><path d="M7.5 17c.6-2 2.3-3 4.5-3s3.9 1 4.5 3"/>',
 gear:'<path d="M8 3h8l-1 4a4 4 0 012 3.5V21H7V10.5A4 4 0 019 7L8 3z"/><path d="M7 13h10"/>',
 comm:'<path d="M3 10v4h3l7 4V6L6 10H3z"/><path d="M16.5 9a4 4 0 010 6M19 6.5a8 8 0 010 11"/>',
 leave:'<path d="M3 20h18M5 20v-8a7 7 0 0114 0v8"/><path d="M12 5V3M8 20v-5h8v5"/>',
 prices:'<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.3"/>'
 };
-const NAV=[['home','Home'],['schedule','Schedule'],['customers','Customers'],['payments','Payments'],['prices','Prices'],['comm','Marketing'],['gear','Inventory'],['team','Team'],['leave','Leave']];
+const NAV=[['home','Home'],['schedule','Schedule'],['customers','Customers'],['payments','Payments'],['prices','Prices'],['comm','Marketing'],['gear','Inventory'],['team','Team'],['commission','Commission'],['leave','Leave']];
 
 const HOME_KEYS=[['kpis','Today\'s figures'],['today','On the schedule'],['due','To collect'],['ci','New check-ins to book'],['week','Next 7 days']];
 const SECS=NAV.map(n=>[n[0],n[1]]);
 let BASE_WRITE=true;
-const ACC_DEF={staff:{home:'edit',schedule:'edit',customers:'edit',payments:'edit',prices:'view',comm:'edit',gear:'edit',team:'edit',leave:'edit'},viewer:{},instructor:{home:'view',schedule:'view',customers:'view',payments:'none',prices:'none',comm:'none',gear:'view',team:'edit',leave:'edit'}};
+const ACC_DEF={staff:{home:'edit',schedule:'edit',customers:'edit',payments:'edit',prices:'view',comm:'edit',gear:'edit',team:'edit',commission:'view',leave:'edit'},viewer:{},instructor:{home:'view',schedule:'view',customers:'view',payments:'none',prices:'none',comm:'none',gear:'view',team:'edit',commission:'none',leave:'edit'}};
 SECS.forEach(k=>ACC_DEF.viewer[k[0]]='view');
 function accessCfg(){const c=(S.config&&S.config.access)||{},o={staff:{},viewer:{},instructor:{}};['staff','viewer','instructor'].forEach(r=>SECS.forEach(k=>{const v=c[r]&&c[r][k[0]];o[r][k[0]]=['edit','view','none'].includes(v)?v:ACC_DEF[r][k[0]]}));return o}
 function accessLevel(v){
@@ -645,7 +646,6 @@ V.team={
    '<section class="card"><h2>Staff</h2><div id="stList"></div></section>'+
    perBar()+
    '<section class="card"><h2>Declare my activities</h2><p class="hint">Instructors: at the end of the month, add the courses and fun dives you did. A manager approves them before they count.</p><div class="actions"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button></div></section>'+
-   '<div id="payLock"></div>'+
    '<section class="card"><h2>Bookings by agent or hotel</h2><div class="tablewrap" id="agTable"></div></section>';
   perBind(m,()=>V.team.fill());
   $('#stNew').hidden=!canEdit;
@@ -654,20 +654,14 @@ V.team={
   if(window.__role==='instructor'){
    const mine=Object.values(S.staff).find(x=>(x.email||'').toLowerCase()===window.__email),el=$('#myComm');if(!el)return;
    if(!mine){el.innerHTML='<h2>My commissions</h2><p class="hint">Your login is not linked to an instructor profile yet. Ask your manager to add your sign-in email ('+esc(window.__email||'')+') to your profile in Team.</p>';return}
-   const L=payLines(mine.id,PER.from),ok=L.filter(x=>x.status==='Counted'),tot=sum(ok,x=>x.comm);
-   el.innerHTML='<h2>'+esc(mine.nom)+' · '+esc(perLabel())+'</h2><div class="kpis" style="margin:8px 0"><div class="kpi"><span>Total commission</span><b>'+fmt(tot)+'</b></div><div class="kpi"><span>Courses done</span><b>'+sum(ok.filter(x=>x.type==='Course'),x=>x.qty)+'</b></div><div class="kpi"><span>Fun dives</span><b>'+sum(ok.filter(x=>x.type==='Fun dive'),x=>x.qty)+'</b></div></div>'+
+   const L=payLines(mine.id,PER.from),ok=L.filter(x=>x.status==='Counted'),PC=poolCalc(PER.from),PR=PC.on?PC.rows.find(x=>x.id===mine.id):null,tot=PC.on?(PR?PR.amt:0):sum(ok,x=>x.comm);
+   el.innerHTML='<h2>'+esc(mine.nom)+' · '+esc(perLabel())+'</h2><div class="kpis" style="margin:8px 0"><div class="kpi"><span>'+(PC.on?'Pool share':'Total commission')+'</span><b>'+fmt(tot)+'</b></div><div class="kpi"><span>Courses done</span><b>'+sum(ok.filter(x=>x.type==='Course'),x=>x.qty)+'</b></div><div class="kpi"><span>Fun dives</span><b>'+sum(ok.filter(x=>x.type==='Fun dive'),x=>x.qty)+'</b></div></div>'+
     (L.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Customer</th><th>Activity</th><th class="n">Price</th><th class="n">Fees</th><th class="n">Base</th><th class="n">Rate</th><th class="n">Commission</th><th>Status</th></tr></thead><tbody>'+L.map(x=>'<tr><td>'+esc(fmtShort(x.date))+'</td><td>'+esc(x.who)+'</td><td>'+esc(x.activity)+'</td><td class="n">'+(x.type==='Course'?fmt(x.gross):'')+'</td><td class="n">'+(x.type==='Course'?fmt(x.fees):'')+'</td><td class="n">'+(x.type==='Course'?fmt(x.base):x.qty+' dives')+'</td><td class="n">'+(x.type==='Course'?x.rate+'%':fmt(x.rate)+'/dive')+'</td><td class="n"><strong>'+fmt(x.comm)+'</strong></td><td>'+esc(x.status)+'</td></tr>').join('')+'</tbody></table></div>':'<p class="hint">Nothing for this period yet.</p>');
    return;
   }
   const st=Object.values(S.staff).sort(byNom);
   $('#stList').innerHTML=st.length?st.map(s=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" '+(canEdit?'data-act="staffEdit" data-id="'+esc(s.id)+'"':'')+'><span class="r1"><strong>'+flag(s.pays)+esc(s.nom)+'</strong>'+(s.actif===false?'<span class="pill st-cancelled">Inactive</span>':'')+'</span><span class="r2">'+esc(s.role||'')+(s.tel?' · '+esc(s.tel):'')+'</span></button><div class="r-side">'+(s.commission?esc(s.commission)+'% courses':'')+'</div></div>').join(''):emptyBox('No members yet','Add your instructors so you can assign customers to them.'+(canEdit?'':' Only a manager can do this.'));
   const m=PER.from,act=Object.values(S.bookings).filter(b=>inPer(b.date)&&(b.statut==='Confirmed'||b.statut==='Completed'));
-  payLockRender();
-  if(payOk()){stmtFill();
-  const cm=cfg().commission;
-  $('#comHint').textContent='Courses: '+cm.coursePct+'% of the net amount after agency fees and costs (cash marine fees excluded). Fun dives: '+fmt(cm.funPerDive)+' IDR per dive. Only confirmed or completed bookings count. Tap an instructor to see exactly what they did in the selected period.';
-  const rows=comRows(m);
-  $('#comTable').innerHTML=rows.length?'<table><thead><tr><th>Name</th><th class="n">Courses</th><th class="n">Course comm.</th><th class="n">Fun dives</th><th class="n">Fun dive comm.</th><th class="n">Total (IDR)</th></tr></thead><tbody>'+rows.map(r=>'<tr><td><button type="button" class="btn ghost sm" data-act="staffMonth" data-id="'+esc(r.s.id)+'">'+flag(r.s.pays)+esc(r.s.nom)+'</button></td><td class="n">'+r.nC+'</td><td class="n">'+fmt(r.cc)+'</td><td class="n">'+r.nF+'</td><td class="n">'+fmt(r.cf)+'</td><td class="n"><strong>'+fmt(r.cc+r.cf)+'</strong></td></tr>').join('')+'</tbody><tfoot><tr><td colspan="5"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(rows,r=>r.cc+r.cf))+'</strong></td></tr></tfoot></table>':emptyBox('No instructors','Add instructors in the list above.');}
   const ag={};act.forEach(b=>{if(b.agent){const a=ag[b.agent]=ag[b.agent]||{n:0,net:0};a.n++;a.net+=calc(b).net}});
   const ak=Object.keys(ag).sort((a,b)=>ag[b].n-ag[a].n);
   $('#agTable').innerHTML=ak.length?'<table><thead><tr><th>Agent / hotel</th><th class="n">Bookings</th><th class="n">Net amount (IDR)</th></tr></thead><tbody>'+ak.map(k=>'<tr><td>'+esc(k)+'</td><td class="n">'+ag[k].n+'</td><td class="n">'+fmt(ag[k].net)+'</td></tr>').join('')+'</tbody></table>':emptyBox('No agent bookings this month','Fill in the agent or hotel on the booking.');
@@ -962,7 +956,7 @@ function go(v){
   if(!V[v])v='home';
   if(accessLevel(v)==='none'){v=NAV.map(n=>n[0]).find(k=>accessLevel(k)!=='none')||'account'}
   if(ST.view==null||true){canWrite=BASE_WRITE&&accessLevel(v)==='edit';const nb=$('#newBtn');if(nb)nb.hidden=!canWrite;const bn=$('#banner');if(bn){bn.hidden=canWrite||!BASE_WRITE&&false;if(!canWrite)bn.textContent=BASE_WRITE?'View only: your manager has not given you edit access to this section.':'Read-only access: you can look at everything but not change anything.';bn.hidden=canWrite}}
-  if(v!=='team')ST.payUnlocked=false;
+  if(v!=='commission')ST.payUnlocked=false;
   ST.view=v;
   $$('#navIn .tab').forEach(b=>{if(b.dataset.v===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   V[v].shell($('#main'));V[v].fill();
@@ -1405,7 +1399,7 @@ async function savePay(){
 /* ---------- private pay area ---------- */
 const payOk=()=>!!ST.payUnlocked;
 async function pinHash(pw){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('dreamdivers-pay:'+pw));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
-const payBox=()=>'<section class="card"><div class="row" style="padding:0;border:0;justify-content:space-between;align-items:center"><h2 style="margin:0">Commissions</h2><span style="display:flex;gap:8px"><button type="button" class="btn ghost sm" data-act="payLock">🔒 Lock</button>'+(canEdit?'<button type="button" class="btn ghost sm" data-act="payPwChange">Change password</button>':'')+'</span></div><p class="hint" id="comHint"></p><div class="tablewrap" id="comTable"></div><div class="actions">'+exBtns('com',1)+'</div></section>'+
+const payBox=()=>'<section class="card" id="poolCard"></section><section class="card"><div class="row" style="padding:0;border:0;justify-content:space-between;align-items:center"><h2 style="margin:0">Commissions</h2><span style="display:flex;gap:8px"><button type="button" class="btn ghost sm" data-act="payLock">🔒 Lock</button>'+(canEdit?'<button type="button" class="btn ghost sm" data-act="payPwChange">Change password</button>':'')+'</span></div><p class="hint" id="comHint"></p><div class="tablewrap" id="comTable"></div><div class="actions">'+exBtns('com',1)+'</div></section>'+
  '<section class="card"><h2>Instructor statement</h2><p class="hint">Everything one instructor did in the selected period, ready to export for payroll.</p><div id="stmt"></div></section>';
 function payLockRender(){
   const el=$('#payLock');if(!el)return;
@@ -1416,6 +1410,53 @@ function payLockRender(){
    (canEdit?'<p class="hint">No password yet. Choose one: only people who know it will be able to see commissions and payroll.</p><div class="gf"><label class="fld">New password<input id="pw1" type="password" autocomplete="new-password"></label><label class="fld">Repeat it<input id="pw2" type="password" autocomplete="new-password"></label></div><div class="err" id="pw-err" role="alert"></div><div class="actions"><button type="button" class="btn" data-act="payPwSave">Set password</button></div>':'<p class="hint">Commissions and payroll are private. Ask a manager to set a password.</p>'))+'</section>';
   const i=$('#pw1');if(i)i.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const b=el.querySelector('.btn');if(b)b.click()}};
 }
+
+/* ---------- pool commission ---------- */
+const POOL_M=[['equal','Equal parts'],['days','By days worked'],['acts','By activities done']];
+function poolCfg(){const c=(S.config&&S.config.pool)||{};return{on:c.on===true,method:POOL_M.some(x=>x[0]===c.method)?c.method:'equal',pct:Math.min(100,Math.max(0,c.pct!=null&&c.pct!==''?+c.pct:30))}}
+function poolCalc(m){
+  const c=poolCfg(),out=Object.assign({gross:0,dist:0,kept:0,rows:[]},c);if(!c.on)return out;
+  const baseOf=b=>Math.max(0,calc(b).net-feeOf(b));
+  let g=sum(monthBookings(m),baseOf);
+  Object.values(S.declarations).filter(d=>inPer(d.date)&&d.status==='Approved').forEach(d=>{g+=baseOf(declPseudo(d))});
+  const P=Object.values(S.staff).filter(x=>GUIDES.includes(x.role)&&x.actif!==false).sort(byNom).map(s=>{
+    const l=payLines(s.id,m).filter(x=>x.status==='Counted');
+    return{id:s.id,s:s,days:new Set(l.map(x=>x.date)).size,acts:sum(l,x=>x.qty)};
+  }).filter(r=>r.acts>0);
+  const w=r=>c.method==='days'?r.days:c.method==='acts'?r.acts:1,W_=sum(P,w);
+  out.gross=g;out.dist=Math.round(g*c.pct/100);out.kept=g-out.dist;
+  out.rows=P.map(r=>Object.assign(r,{share:W_?w(r)/W_:0,amt:W_?Math.round(out.dist*w(r)/W_):0}));
+  return out;
+}
+function poolCard(){
+  const c=poolCfg(),PC=poolCalc(PER.from);
+  let h='<h2>Commission system</h2><p class="hint">Choose how instructors are paid. <strong>Individual</strong>: each instructor earns a % of their own courses and a fixed amount per fun dive. <strong>Pool</strong>: all dive revenue (courses and fun dives, after agency fees and costs) goes into one pool; a share of it is divided between the instructors who worked in the period.</p>';
+  h+='<div class="gf"><label class="fld">System<select id="pl-on"'+(canEdit?'':' disabled')+'><option value="0"'+(c.on?'':' selected')+'>Individual commissions</option><option value="1"'+(c.on?' selected':'')+'>Pool (shared)</option></select></label>'+
+    '<label class="fld">Split method<select id="pl-m"'+(canEdit?'':' disabled')+'>'+POOL_M.map(x=>opt(x[0],x[1],x[0]===c.method)).join('')+'</select></label>'+
+    '<label class="fld">Share of the pool paid to instructors (%)<input id="pl-p" type="number" min="0" max="100" step="0.5" value="'+esc(c.pct)+'"'+(canEdit?'':' disabled')+'></label></div>';
+  if(canEdit)h+='<div class="actions"><button type="button" class="btn" data-act="savePool">Save</button></div>';
+  if(c.on){
+    h+='<div class="kpis" style="margin:12px 0"><div class="kpi"><span>Pool (net revenue)</span><b>'+fmt(PC.gross)+'</b></div><div class="kpi"><span>Shared with instructors</span><b>'+fmt(PC.dist)+'</b></div><div class="kpi"><span>Kept by the centre</span><b>'+fmt(PC.kept)+'</b></div><div class="kpi"><span>Instructors in the pool</span><b>'+PC.rows.length+'</b></div></div>';
+    h+=PC.rows.length?'<div class="tablewrap"><table id="poolTable"><thead><tr><th>Instructor</th><th class="n">Days worked</th><th class="n">Activities</th><th class="n">Share</th><th class="n">Pool amount (IDR)</th></tr></thead><tbody>'+PC.rows.map(r=>'<tr><td><button type="button" class="btn ghost sm" data-act="staffMonth" data-id="'+esc(r.id)+'">'+flag(r.s.pays)+esc(r.s.nom)+'</button></td><td class="n">'+r.days+'</td><td class="n">'+r.acts+'</td><td class="n">'+(Math.round(r.share*1000)/10)+'%</td><td class="n"><strong>'+fmt(r.amt)+'</strong></td></tr>').join('')+'</tbody><tfoot><tr><td colspan="4"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(PC.rows,r=>r.amt))+'</strong></td></tr></tfoot></table></div><p class="hint">Only instructors with at least one confirmed or approved activity in the period take part. Days worked = different dates with an activity.</p>':emptyBox('Nobody in the pool yet','No confirmed activity with an instructor in this period.');
+  }
+  return h;
+}
+V.commission={
+ shell(m){
+  m.innerHTML='<div class="head"><div><h1>Commission</h1><p class="sub">Individual commissions or a shared pool, per month.</p></div></div>'+perBar()+'<div id="payLock"></div>';
+  perBind(m,()=>V.commission.fill());
+ },
+ fill(){
+  payLockRender();
+  if(!payOk())return;
+  const pc=$('#poolCard');if(pc&&!(document.activeElement&&pc.contains(document.activeElement)))pc.innerHTML=poolCard();
+  stmtFill();
+  const m=PER.from,cm=cfg().commission,P=poolCfg();
+  $('#comHint').textContent=P.on?'Pool system is ON: the amounts below show each instructor\'s pool share. The individual breakdown (courses at '+cm.coursePct+'% after fees, fun dives at '+fmt(cm.funPerDive)+' IDR) stays visible for reference.':'Courses: '+cm.coursePct+'% of the net amount after agency fees and costs (cash marine fees excluded). Fun dives: '+fmt(cm.funPerDive)+' IDR per dive. Only confirmed or completed bookings count. Tap an instructor to see exactly what they did in the selected period.';
+  const rows=comRows(m);
+  $('#comTable').innerHTML=rows.length?'<table><thead><tr><th>Name</th><th class="n">Courses</th><th class="n">Course comm.</th><th class="n">Fun dives</th><th class="n">Fun dive comm.</th><th class="n">'+(P.on?'Individual (ref.)':'Total (IDR)')+'</th>'+(P.on?'<th class="n">Pool share (IDR)</th>':'')+'</tr></thead><tbody>'+rows.map(r=>'<tr><td><button type="button" class="btn ghost sm" data-act="staffMonth" data-id="'+esc(r.s.id)+'">'+flag(r.s.pays)+esc(r.s.nom)+'</button></td><td class="n">'+r.nC+'</td><td class="n">'+fmt(r.cc)+'</td><td class="n">'+r.nF+'</td><td class="n">'+fmt(r.cf)+'</td><td class="n">'+(P.on?fmt(r.cc+r.cf):'<strong>'+fmt(r.cc+r.cf)+'</strong>')+'</td>'+(P.on?'<td class="n"><strong>'+fmt(r.pool)+'</strong></td>':'')+'</tr>').join('')+'</tbody><tfoot><tr><td colspan="'+(P.on?5:5)+'"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(rows,r=>r.cc+r.cf))+'</strong></td>'+(P.on?'<td class="n"><strong>'+fmt(sum(rows,r=>r.pool))+'</strong></td>':'')+'</tr></tfoot></table>':emptyBox('No instructors','Add instructors in Team.');
+ }
+};
 /* ---------- leave ---------- */
 const leaveStaff=()=>Object.values(S.staff).filter(x=>x.actif!==false).sort(byNom);
 const isAway=(sid,d)=>!!S.leaves[sid+'_'+d];
@@ -1471,20 +1512,23 @@ function payLines(staffId,m){
   return L.sort((a,b)=>(a.date||'')<(b.date||'')?-1:1);
 }
 function comRows(m){
+  const PCr=poolCalc(m);
   return Object.values(S.staff).filter(s=>GUIDES.includes(s.role)).sort(byNom).map(s=>{
     const l=payLines(s.id,m).filter(x=>x.status==='Counted'),co=l.filter(x=>x.type==='Course'),fu=l.filter(x=>x.type==='Fun dive');
-    return{s,nC:sum(co,x=>x.qty),cc:sum(co,x=>x.comm),nF:sum(fu,x=>x.qty),cf:sum(fu,x=>x.comm),pend:payLines(s.id,m).filter(x=>x.status!=='Counted').length};
+    const pr=PCr.rows.find(x=>x.id===s.id);
+    return{s,pool:pr?pr.amt:0,nC:sum(co,x=>x.qty),cc:sum(co,x=>x.comm),nF:sum(fu,x=>x.qty),cf:sum(fu,x=>x.comm),pend:payLines(s.id,m).filter(x=>x.status!=='Counted').length};
   });
 }
 const STMT_HEAD=['Date','Customer / note','Activity','Type','Quantity','Base after fees (IDR)','Rate','Commission (IDR)','Source','Status'];
 const stmtRow=x=>[x.date,x.who,x.activity,x.type,x.qty,x.base,x.type==='Course'?x.rate+'%':x.rate+' IDR/dive',x.comm,x.src,x.status];
 function stmtSheets(staffId,m){
   const s=S.staff[staffId],L=payLines(staffId,m),ok=L.filter(x=>x.status==='Counted'),co=ok.filter(x=>x.type==='Course'),fu=ok.filter(x=>x.type==='Fun dive');
-  const rows=[[BN()+' · Instructor statement'],['Instructor',s.nom],['Period',monthLabel()],[],STMT_HEAD].concat(L.map(stmtRow),[[],['Courses done',sum(co,x=>x.qty),'','','','','Course commission (IDR)',sum(co,x=>x.comm)],['Fun dives done',sum(fu,x=>x.qty),'','','','','Fun dive commission (IDR)',sum(fu,x=>x.comm)],['','','','','','','TOTAL TO PAY (IDR)',sum(ok,x=>x.comm)]]);
+  const PCx=poolCalc(m),PRx=PCx.on?PCx.rows.find(x=>x.id===staffId):null;
+  const rows=[[BN()+' · Instructor statement'],['Instructor',s.nom],['Period',monthLabel()],[],STMT_HEAD].concat(L.map(stmtRow),(PCx.on?[[],['','','','','','','POOL SHARE (IDR) · '+PCx.pct+'% of pool, '+PCx.method,PRx?PRx.amt:0]]:[]),[[],['Courses done',sum(co,x=>x.qty),'','','','','Course commission (IDR)',sum(co,x=>x.comm)],['Fun dives done',sum(fu,x=>x.qty),'','','','','Fun dive commission (IDR)',sum(fu,x=>x.comm)],['','','','','','','TOTAL TO PAY (IDR)',sum(ok,x=>x.comm)]]);
   return [{name:s.nom.slice(0,28),rows,widths:[12,28,36,10,10,14,16,18,24,18],headerRows:[0,4]}];
 }
 function allSheets(){const m=PER.from;
-  const R=comRows(m),sum_=[['Instructor','Courses done','Course commission (IDR)','Fun dives done','Fun dive commission (IDR)','Total to pay (IDR)','Waiting for approval']].concat(R.map(r=>[r.s.nom,r.nC,r.cc,r.nF,r.cf,r.cc+r.cf,r.pend]),[['TOTAL',sum(R,r=>r.nC),sum(R,r=>r.cc),sum(R,r=>r.nF),sum(R,r=>r.cf),sum(R,r=>r.cc+r.cf),sum(R,r=>r.pend)]]);
+  const R=comRows(m),PO=poolCfg().on,tot_=r=>PO?r.pool:r.cc+r.cf,sum_=[['Instructor','Courses done','Course commission (IDR)','Fun dives done','Fun dive commission (IDR)',PO?'Pool share = total to pay (IDR)':'Total to pay (IDR)','Waiting for approval']].concat(R.map(r=>[r.s.nom,r.nC,r.cc,r.nF,r.cf,tot_(r),r.pend]),[['TOTAL',sum(R,r=>r.nC),sum(R,r=>r.cc),sum(R,r=>r.nF),sum(R,r=>r.cf),sum(R,tot_),sum(R,r=>r.pend)]]);
   const det=[['Instructor'].concat(STMT_HEAD)];R.forEach(r=>payLines(r.s.id,m).forEach(x=>det.push([r.s.nom].concat(stmtRow(x)))));
   return {summary:sum_,details:det};
 }
@@ -1507,7 +1551,7 @@ function stmtFill(){
   if(!ST.stmtId||!S.staff[ST.stmtId])ST.stmtId=gl[0].id;
   const m=PER.from,L=payLines(ST.stmtId,m),ok=L.filter(x=>x.status==='Counted'),co=ok.filter(x=>x.type==='Course'),fu=ok.filter(x=>x.type==='Fun dive');
   el.innerHTML='<div class="toolbar"><label class="fld" style="flex:1 1 200px">Instructor<select id="stmtSel">'+gl.map(x=>opt(x.id,x.nom,x.id===ST.stmtId)).join('')+'</select></label></div>'+
-   '<div class="chips" style="margin:4px 0 10px"><span class="pill st-confirmed">'+pl(co.length?sum(co,x=>x.qty):0,'course')+' · '+fmt(sum(co,x=>x.comm))+' IDR</span><span class="pill st-completed">'+pl(sum(fu,x=>x.qty),'fun dive')+' · '+fmt(sum(fu,x=>x.comm))+' IDR</span><span class="pill st-pending"><b>Total '+fmt(sum(ok,x=>x.comm))+' IDR</b></span></div>'+
+   '<div class="chips" style="margin:4px 0 10px"><span class="pill st-confirmed">'+pl(co.length?sum(co,x=>x.qty):0,'course')+' · '+fmt(sum(co,x=>x.comm))+' IDR</span><span class="pill st-completed">'+pl(sum(fu,x=>x.qty),'fun dive')+' · '+fmt(sum(fu,x=>x.comm))+' IDR</span><span class="pill st-pending"><b>'+(poolCfg().on?'Individual (ref.) ':'Total ')+fmt(sum(ok,x=>x.comm))+' IDR</b></span>'+(poolCfg().on?'<span class="pill st-completed"><b>Pool share '+fmt(((poolCalc(m).rows.find(x=>x.id===ST.stmtId))||{amt:0}).amt)+' IDR</b></span>':'')+'</div>'+
    (L.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Activity</th><th class="n">Qty</th><th class="n">Commission</th><th></th></tr></thead><tbody>'+L.map(x=>'<tr><td>'+esc(fmtShort(x.date))+'</td><td>'+esc(x.activity)+'<div class="hint">'+esc(x.who)+(x.decl?' · declared':'')+'</div></td><td class="n">'+x.qty+(x.type==='Fun dive'?' dives':'')+'</td><td class="n">'+(x.status==='Counted'?fmt(x.comm):'<span class="hint">'+fmt(x.comm)+'</span>')+'</td><td>'+(x.status==='Counted'?(x.decl&&canEdit?'<button type="button" class="btn ghost sm" data-act="declDel" data-id="'+esc(x.id)+'">✕</button>':''):(canEdit?'<button type="button" class="btn sm" data-act="declOk" data-id="'+esc(x.id)+'">Approve</button> <button type="button" class="btn ghost sm" data-act="declNo" data-id="'+esc(x.id)+'">Reject</button>':'<span class="pill st-pending">Pending</span>'))+'</td></tr>').join('')+'</tbody></table></div>':emptyBox('Nothing this month','No confirmed bookings or declared activities for this instructor.'))+
    '<p class="hint">Pending activities were declared by the instructor and are not counted until a manager approves them.</p>'+
    '<div class="actions" style="flex-wrap:wrap"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button><button type="button" class="btn ghost" data-act="stmtXlsx">Excel (this instructor)</button><button type="button" class="btn ghost" data-act="payrollXlsx">Excel (everyone)</button><button type="button" class="btn ghost" data-act="payrollSheet">Google Sheet (everyone)</button></div>';
@@ -1666,7 +1710,7 @@ const ACT={
  async payUnlock(t){
   const pw=$('#pw1').value;if(!pw){$('#pw-err').textContent='Enter the password.';return}
   t.disabled=true;let h='';try{h=await pinHash(pw)}catch(e){$('#pw-err').textContent='This browser cannot check passwords.';t.disabled=false;return}
-  if(S.config&&S.config.payPin===h){ST.payUnlocked=true;V.team.fill()}else{$('#pw-err').textContent='Wrong password.';t.disabled=false;$('#pw1').select()}
+  if(S.config&&S.config.payPin===h){ST.payUnlocked=true;V[ST.view].fill()}else{$('#pw-err').textContent='Wrong password.';t.disabled=false;$('#pw1').select()}
  },
  async payPwSave(t){
   const a=$('#pw1').value,b=$('#pw2')?$('#pw2').value:a;
@@ -1674,9 +1718,10 @@ const ACT={
   if(a!==b){$('#pw-err').textContent='The two passwords do not match.';return}
   t.disabled=true;const h=await pinHash(a);
   const ok=await W(()=>db.doc('config/main').update({payPin:h}),'Password set');
-  if(ok){ST.payUnlocked=true;closeModal();V.team.fill()}else t.disabled=false;
+  if(ok){ST.payUnlocked=true;closeModal();V[ST.view].fill()}else t.disabled=false;
  },
- payLock(){ST.payUnlocked=false;V.team.fill()},
+ payLock(){ST.payUnlocked=false;V[ST.view].fill()},
+ savePool(t){if(!canEdit)return;const pool={on:$('#pl-on').value==='1',method:$('#pl-m').value,pct:Math.min(100,Math.max(0,+$('#pl-p').value||0))};W(()=>(S.config?db.doc('config/main').update({pool}):db.doc('config/main').set({pool})),'Commission system saved').then(ok=>{if(ok){if(S.config)S.config.pool=pool;V.commission.fill()}})},
  payPwChange(){
   if(!canEdit)return;MODAL={kind:'pw'};
   openModal('Change password','<div class="gf"><label class="fld full">New password<input id="pw1" type="password" autocomplete="new-password"></label><label class="fld full">Repeat it<input id="pw2" type="password" autocomplete="new-password"></label></div><div class="err" id="pw-err" role="alert"></div><div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="payPwSave">Save</button></div>');
@@ -1804,7 +1849,7 @@ const ACT={
   const d={sites:lines('cSites'),agents:lines('cAgents'),niveaux:lines('cNiv'),frais:{eco:Math.max(0,+$('#cEco').value||0),parcEtranger:Math.max(0,+$('#cPe').value||0),parcLocal:Math.max(0,+$('#cPl').value||0)},commission:{coursePct:Math.min(100,Math.max(0,+$('#cCp').value||0)),funPerDive:Math.max(0,+$('#cCf').value||0)}};
   d.lockPay=$('#cLock').checked;
   if(S.config&&S.config.payPin)d.payPin=S.config.payPin;
-  ['brand','home','access'].forEach(k=>{if(S.config&&S.config[k])d[k]=S.config[k]});
+  ['brand','home','access','pool'].forEach(k=>{if(S.config&&S.config[k])d[k]=S.config[k]});
   await W(()=>db.doc('config/main').set(d),'Settings saved');
  }
 };
