@@ -861,6 +861,7 @@ function openCommSrc(k){
 V.settings={
  shell(m){
   m.innerHTML='<div class="head"><div><h1>Settings</h1><p class="sub">Branding, home page, access and business rules. Managers only.</p></div></div>'+
+   '<section class="card" id="joinCard" hidden></section>'+
    '<section class="card" id="brandCard"><h2>Branding</h2><p class="hint">Your centre name, logo and colours. Applied to the whole app for everyone on your team.</p><div class="gf">'+
    '<label class="fld">Centre name<input id="bName" maxlength="60" placeholder="WadSea"></label>'+
    '<label class="fld">Header colour<input type="color" id="bNavy" value="#0C0D0E" style="height:44px;padding:2px"></label>'+
@@ -898,7 +899,7 @@ V.settings={
     $('#cLock').checked=c.lockPay;V.settings.cfgLoaded=true;
     const br=(S.config&&S.config.brand)||{};$('#bName').value=br.name||'';$('#bNavy').value=br.navy||'#0C0D0E';$('#bAcc').value=br.accent||'#2E799E';$('#bPrevImg').src=br.logo||LOGO0;V.settings.pendLogo=undefined;
   }
-  $$('#bName,#bNavy,#bAcc,#bFile').forEach(e=>e.disabled=!canEdit);$('#brandCard').hidden=!canEdit;
+  $$('#bName,#bNavy,#bAcc,#bFile').forEach(e=>e.disabled=!canEdit);$('#brandCard').hidden=!canEdit;joinRender();
   $$('#cCp,#cCf,#cEco,#cPe,#cPl,#cSites,#cAgents,#cNiv,#cLock').forEach(e=>e.disabled=!canEdit);
   $('#cSave').hidden=!canEdit;
   $('#cfgHint').textContent=canEdit?'Paid in cash by each diver and passed on to the authorities. Tracked separately from the dive price.':'Managers only.';
@@ -916,7 +917,6 @@ V.account={
   m.innerHTML='<div class="head"><div><h1>Account</h1><p class="sub">Your access to this workspace.</p></div></div>'+
    '<section class="card"><h2>Signed in</h2><div class="sum" id="acBox"></div><p class="hint" id="acHint">You are signed in through your Claude account. Sign out from Claude itself.</p><div class="actions" id="acOut" hidden><button type="button" class="btn ghost" data-act="acSignOut">Sign out</button></div></section>'+
    '<section class="card" id="ciCard" hidden><h2>Customer check-in link</h2><p class="hint">Share this link or QR with your customers. Their answers arrive in your company space only.</p><input id="ciLink" readonly style="width:100%;padding:10px;border:1px solid var(--line,#ccc);border-radius:8px" onclick="this.select()"></section>'+
-   '<section class="card" id="joinCard" hidden><h2>Access code for your team</h2><p class="hint">Give this code to your employees. They create their own account, enter the code, and land directly in <strong>your company space</strong> as Staff (you can change their role below). Nobody can see another company\'s data. Renew the code any time; people already inside stay.</p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="jcVal" readonly style="max-width:200px;padding:10px;border:1px solid var(--line,#ccc);border-radius:8px;font-weight:800;letter-spacing:.12em;text-align:center" onclick="this.select()"><button type="button" class="btn sm" data-act="jcCopy">Copy</button><button type="button" class="btn sm ghost" data-act="jcNew">Renew code</button></div></section>'+
    '<section class="card" id="platCard" hidden><h2>WadSea platform (you)</h2><p class="hint">All companies using WadSea. Only you can see this.</p><div class="tablewrap"><table><thead><tr><th>Company</th><th>Owner</th><th class="n">People</th><th>Code</th><th>Status</th></tr></thead><tbody id="platRows"></tbody></table></div></section>'+
    '<section class="card" id="teamAcc" hidden><h2>Team accounts</h2><p class="hint">Your employees create their own account on the sign-in page. They appear here as “Waiting”; choose a role to add them to <strong>your company only</strong>. Nobody outside your company can see your data.</p><form id="addPerson" style="display:grid;grid-template-columns:2fr 1.4fr 1fr auto;gap:8px;align-items:end;margin:12px 0"><label class="f" style="display:grid;gap:4px">Employee email<input id="apEmail" type="email" required autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Name<input id="apName" maxlength="60" autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Role<select id="apRole" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"><option value="staff">Staff</option><option value="viewer">Read-only</option><option value="manager">Manager</option></select></label><button class="btn" type="submit">Add</button></form><p class="hint">Add your employee by email. When they create their account with this same email, they land directly in your company space.</p><div id="accPending"></div><div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th></th></tr></thead><tbody id="accRows"></tbody></table></div></section>'+
    '<section class="card" id="acLevels"><h2>Access levels</h2><div class="tablewrap"><table><thead><tr><th>Level</th><th>Share setting in Claude</th><th>What they can do</th></tr></thead><tbody>'+
@@ -930,7 +930,7 @@ V.account={
   if(window.DD_STANDALONE){$('#acHint').textContent='You are signed in with your own account.';$('#acOut').hidden=false;$('#acWho').hidden=true;
     const lv=$('#acLevels');lv.querySelector('table').innerHTML='<thead><tr><th>Level</th><th>What they can do</th></tr></thead><tbody><tr><td><strong>Manager</strong></td><td class="wrapc">Everything, including prices, team, settings and accounts.</td></tr><tr><td><strong>Staff</strong></td><td class="wrapc">What the manager allows in Settings > Access by role (by default bookings, customers, payments, schedule).</td></tr><tr><td><strong>Read-only</strong></td><td class="wrapc">Can look but not change anything.</td></tr></tbody>'}
   if(window.DD_STANDALONE&&canEdit&&(window.DD_SHIM||window.claude).admin){$('#teamAcc').hidden=false;loadAccounts()}
-  if(window.DD_STANDALONE&&window.__cid&&!/[?&]demo/.test(location.search)){if(canEdit)loadJoinCode();loadPlatform()}
+  if(window.DD_STANDALONE&&window.__cid&&!/[?&]demo/.test(location.search)){loadPlatform()}
   if(window.DD_STANDALONE&&window.__cid){$('#ciCard').hidden=false;$('#ciLink').value=location.origin+location.pathname.replace(/app(\.html)?$/,'')+'checkin.html?c='+window.__cid}
  }
 };
@@ -1847,8 +1847,25 @@ async function loadAccounts(){
   $('#accPending').innerHTML=pend.length?'<div class="note warn" style="margin-bottom:10px"><strong>Waiting for a role ('+pend.length+')</strong>'+pend.map(x=>'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px"><span style="flex:1;min-width:160px">'+esc(x.name||'')+' <span class="hint">'+esc(x.email)+'</span></span>'+[['staff','Staff'],['viewer','Read-only'],['manager','Manager']].map(r=>'<button type="button" class="btn sm ghost" data-act="accAdd" data-email="'+esc(x.email)+'" data-name="'+esc(x.name||'')+'" data-role="'+r[0]+'">'+r[1]+'</button>').join('')+'</div>').join('')+'</div>':'<p class="hint">No one is waiting.</p>';
   $('#accRows').innerHTML=L.members.map(m=>{const self=m.email.toLowerCase()===me;return '<tr><td><strong>'+esc(m.name||m.email)+'</strong><br><span class="hint">'+esc(m.email)+'</span></td><td><select class="accRole" data-email="'+esc(m.email)+'" data-name="'+esc(m.name||'')+'"'+(self?' disabled title="You cannot change your own role"':'')+'>'+[['manager','Manager'],['staff','Staff'],['viewer','Read-only']].map(r=>'<option value="'+r[0]+'"'+(m.role===r[0]?' selected':'')+'>'+r[1]+'</option>').join('')+'</select></td><td>'+(self?'':'<button type="button" class="btn sm ghost" data-act="accRemove" data-email="'+esc(m.email)+'">Remove</button>')+'</td></tr>'}).join('');
 }
-async function loadJoinCode(){
-  try{const c=await window.__api('/rest/v1/rpc/my_join_code',{method:'POST',body:{}});if(c){$('#joinCard').hidden=false;$('#jcVal').value=c}}catch(e){}
+let JC_OK=false;
+const JC_IN='padding:10px;border:1px solid var(--line,#ccc);border-radius:8px;width:100%;max-width:320px';
+function joinRender(){
+  const el=document.getElementById('joinCard');if(!el)return;
+  if(!canEdit||!window.__cid||/[?&]demo/.test(location.search)){el.hidden=true;return}
+  const has0=!!(S.config&&S.config.payPin),mode=JC_OK?'open':(has0?'lock':'set');
+  if(!el.hidden&&el.dataset.mode===mode&&el.innerHTML)return;
+  el.hidden=false;el.dataset.mode=mode;
+  const head='<h2>🔒 Team access code</h2>';
+  if(JC_OK){
+    el.innerHTML=head+'<p class="hint">Give this code to your employees. They create their own account, choose “I am an employee”, enter the code, and land in <strong>your company space only</strong> as Staff. Renew it if it leaks: the old one stops working, people already inside stay.</p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="jcVal" readonly placeholder="Loading…" style="max-width:200px;padding:10px;border:1px solid var(--line,#ccc);border-radius:8px;font-weight:800;letter-spacing:.12em;text-align:center" onclick="this.select()"><button type="button" class="btn sm" data-act="jcCopy">Copy</button><button type="button" class="btn sm ghost" data-act="jcNew">Renew code</button><button type="button" class="btn sm ghost" data-act="jcLock">🔒 Lock</button></div>';
+    window.__api('/rest/v1/rpc/my_join_code',{method:'POST',body:{}}).then(c=>{const i=document.getElementById('jcVal');if(i)i.value=c||''}).catch(()=>{const i=document.getElementById('jcVal');if(i)i.placeholder='Could not load'});
+    return;
+  }
+  const has=!!(S.config&&S.config.payPin);
+  el.innerHTML=head+(has?
+   '<p class="hint">This area is private. Enter your security password to see the code that lets employees join your company. (It is the same password that protects commissions and payroll.)</p><div style="display:grid;gap:8px"><input id="jcPw" type="password" autocomplete="off" placeholder="Security password" style="'+JC_IN+'"><div class="err" id="jcErr2" role="alert"></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="jcUnlock">Unlock</button></div></div>':
+   '<p class="hint">No security password yet. Choose one: only people who know it can see this code, commissions and payroll.</p><div style="display:grid;gap:8px"><input id="jcPw" type="password" autocomplete="new-password" placeholder="New password (4+ characters)" style="'+JC_IN+'"><input id="jcPw2" type="password" autocomplete="new-password" placeholder="Repeat it" style="'+JC_IN+'"><div class="err" id="jcErr2" role="alert"></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="jcSetPw">Set password and unlock</button></div></div>');
+  const i=document.getElementById('jcPw');if(i)i.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const b=el.querySelector('.btn');if(b)b.click()}};
 }
 async function loadPlatform(){
   try{
@@ -1864,10 +1881,30 @@ document.addEventListener('change',async e=>{
   loadPlatform();
 });
 document.addEventListener('click',async e=>{
-  const b=e.target.closest&&e.target.closest('[data-act="jcCopy"],[data-act="jcNew"]');if(!b)return;
-  if(b.dataset.act==='jcCopy'){const v=$('#jcVal').value;try{await navigator.clipboard.writeText(v);toast('Code copied')}catch(x){$('#jcVal').select()}return}
-  if(!confirm('Renew the code? The old code will stop working. People already inside stay.'))return;
-  try{const c=await window.__api('/rest/v1/rpc/regenerate_join_code',{method:'POST',body:{}});$('#jcVal').value=c;toast('New code ready')}catch(x){toast('Could not renew the code.','bad')}
+  const b=e.target.closest&&e.target.closest('[data-act^="jc"]');if(!b)return;
+  const act=b.dataset.act,er=document.getElementById('jcErr2');
+  if(act==='jcLock'){JC_OK=false;joinRender();return}
+  if(act==='jcCopy'){const v=document.getElementById('jcVal').value;try{await navigator.clipboard.writeText(v);toast('Code copied')}catch(x){document.getElementById('jcVal').select()}return}
+  if(act==='jcNew'){
+    if(!confirm('Renew the code? The old code will stop working. People already inside stay.'))return;
+    try{const c=await window.__api('/rest/v1/rpc/regenerate_join_code',{method:'POST',body:{}});document.getElementById('jcVal').value=c;toast('New code ready')}catch(x){toast('Could not renew the code.','bad')}
+    return;
+  }
+  if(act==='jcUnlock'){
+    const pw=document.getElementById('jcPw').value;if(!pw){er.textContent='Enter the password.';return}
+    b.disabled=true;
+    try{const h=await pinHash(pw);if(S.config&&S.config.payPin===h){JC_OK=true;joinRender()}else{er.textContent='Wrong password.';b.disabled=false;document.getElementById('jcPw').select()}}
+    catch(x){er.textContent='This browser cannot check passwords.';b.disabled=false}
+    return;
+  }
+  if(act==='jcSetPw'){
+    const a=document.getElementById('jcPw').value,c=document.getElementById('jcPw2').value;
+    if(a.length<4){er.textContent='Use at least 4 characters.';return}
+    if(a!==c){er.textContent='The two passwords do not match.';return}
+    b.disabled=true;
+    try{const h=await pinHash(a);await (S.config?db.doc('config/main').update({payPin:h}):db.doc('config/main').set({payPin:h}));if(S.config)S.config.payPin=h;JC_OK=true;ST.payUnlocked=true;joinRender();toast('Password set')}
+    catch(x){er.textContent='Could not save the password. Try again.';b.disabled=false}
+  }
 });
 document.addEventListener('submit',async e=>{
   if(!e.target||e.target.id!=='addPerson')return;e.preventDefault();
