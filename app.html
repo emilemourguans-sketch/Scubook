@@ -1957,7 +1957,11 @@ function authScreen(mode,msg,notice){
     setTimeout(()=>{const x=f.querySelector('input');x&&x.focus()},50);
   });
 }
-let RECOVERY=null;
+let RECOVERY=null,HASHNOTE=null;
+try{const hp=new URLSearchParams(location.hash.slice(1));
+ if(hp.get('error_code')||hp.get('error')){HASHNOTE=/expired|invalid/i.test(hp.get('error_description')||hp.get('error_code')||'')?'This confirmation link was already used or has expired. Try signing in: your email may already be confirmed.':'Sign-in link problem. Please sign in again.';history.replaceState(null,'',location.pathname+location.search)}
+ else if(hp.get('type')==='signup'&&hp.get('access_token')){HASHNOTE='Email confirmed. You can now sign in.';history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+
 try{const h=new URLSearchParams(location.hash.slice(1));if(h.get('type')==='recovery'&&h.get('access_token')){RECOVERY=h.get('access_token');history.replaceState(null,'',location.pathname)}}catch(e){}
 async function authFlow(mode,notice,msg){
   for(;;){const r=await authScreen(mode,msg,notice);if(r.done)return;mode=r.mode;notice=r.notice;msg=null}
@@ -2002,7 +2006,7 @@ async function ensureSession(){
   }
   if(RECOVERY){await authFlow('newpw')}
   if(SESS&&SESS.refresh_token){if(Date.now()>SESS.exp-60000){await refresh()}}
-  if(!SESS)await authFlow(/[?&]signup/.test(location.search)?'signup':'login');
+  if(!SESS)await authFlow(/[?&]signup/.test(location.search)&&!HASHNOTE?'signup':'login',HASHNOTE);
   for(;;){
     try{
       const m=await api('/rest/v1/members?select=email,role,name,centre_id,centres(name,status,trial_ends)&email=ilike.'+encodeURIComponent((SESS.email||'').replace(/[%*_]/g,''))+'&limit=1');
