@@ -1814,7 +1814,7 @@ function applyBrand(br){
   if(hex(br.bg))L.push('--bg:'+br.bg);if(hex(br.ink))L.push('--ink:'+br.ink);if(hex(br.info))L.push('--info-bg:'+br.info);
   if(hex(dk.navy)){const o=onC(dk.navy);D.push('--navy:'+dk.navy,'--on-navy:'+o,'--navy-dim:rgba('+rgb(o).join(',')+',.72)')}
   if(hex(dk.accent)){D.push('--accent:'+dk.accent,'--on-accent:'+onC(dk.accent))}
-  if(L.length)css=':root{'+L.join(';')+'}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){'+D.join(';')+'}}:root[data-theme="dark"]{'+D.join(';')+'}:root[data-theme="light"]{'+L.join(';')+'}';
+  if(L.length)css='html:root{'+L.join(';')+'}@media (prefers-color-scheme:dark){html:root:not([data-theme="light"]){'+D.join(';')+'}}html:root[data-theme="dark"]{'+D.join(';')+'}html:root[data-theme="light"]{'+L.join(';')+'}';
   let st=document.getElementById('brandCss');if(!st){st=document.createElement('style');st.id='brandCss';document.head.appendChild(st)}
   st.textContent=css;
   const name=(br.name||'').trim()||'WadSea';
