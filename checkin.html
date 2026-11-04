@@ -67,6 +67,8 @@ fieldset{border-top:3px solid var(--accent)}
 <div class="two"><label class="f">BCD size<select name="bcd"><option value="">—</option><option>XXS</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label>
 <label class="f">Wetsuit size<select name="wetsuit"><option value="">—</option><option>XXS</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>XXXL</option></select></label></div>
 <label class="f">Fins size (EU shoe size)<input name="fins" inputmode="decimal"></label>
+<label class="f">Weight belt (kg of lead)<input name="plombs" inputmode="decimal" placeholder="e.g. 6"></label>
+<p class="hint">Not sure? Leave it empty and we will work it out with you at the dive shop.</p>
 </fieldset>
 <fieldset><legend>Last step</legend>
 <label class="f">How did you hear about us? (hotel, agent, friend, online…)<input name="heard"></label>
@@ -124,7 +126,7 @@ const f=document.getElementById('f'),err=document.getElementById('err'),go=docum
 f.addEventListener('submit',async e=>{
   e.preventDefault();err.textContent='';
   const fd=new FormData(f),d={};
-  ['first','last','email','phone','nat','lang','local','planned','time','level','certNo','emName','emPhone','bcd','wetsuit','fins','heard'].forEach(k=>d[k]=String(fd.get(k)||'').trim());
+  ['first','last','email','phone','nat','lang','local','planned','time','level','certNo','emName','emPhone','bcd','wetsuit','fins','plombs','heard'].forEach(k=>d[k]=String(fd.get(k)||'').trim());
   d.interest=[...f.querySelectorAll('.int:checked')].map(x=>x.value).join(', ');
   d.custom=((FC&&FC.custom)||[]).map(q=>({q:String(q.label),a:String(fd.get('x_'+q.id)||'').trim()})).filter(x=>x.a);
   const miss=[...f.elements].filter(el=>el.required&&!el.disabled&&el.type!=='checkbox'&&!String(el.value).trim());

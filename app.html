@@ -1886,7 +1886,7 @@ const ACT={
 };
 /* ---- customer check-in: QR code, poster, editable questions ---- */
 const CI_INTS=['Fun dive(s)','Discovery Scuba Dive (try dive)','Scuba Diver course','Open Water course','Advanced course','Refresher (Scuba Tune Up)','Specialty course (Nitrox, Deep, Wreck...)','Rescue / EFR course','Divemaster / pro course','Not sure yet, I need advice'];
-const CI_FIELDS=[['first','First name',1,1],['last','Last name',1,1],['email','Email',1,1],['phone','Phone / WhatsApp',0,1],['nat','Nationality',0,1],['lang','Preferred language',0,0],['local','Do you live in Indonesia?',0,1],['interest','Activities ("What would you like to do with us?")',0,0],['planned','Planned date (if you know)',0,0],['time','Preferred start time',0,0],['level','Certification level',0,1],['certNo','Certification number',0,0],['emName','Emergency contact name',0,1],['emPhone','Emergency contact phone',0,1],['bcd','BCD size',0,0],['wetsuit','Wetsuit size',0,0],['fins','Fins size (EU shoe size)',0,0],['heard','How did you hear about us?',0,0]];
+const CI_FIELDS=[['first','First name',1,1],['last','Last name',1,1],['email','Email',1,1],['phone','Phone / WhatsApp',0,1],['nat','Nationality',0,1],['lang','Preferred language',0,0],['local','Do you live in Indonesia?',0,1],['interest','Activities ("What would you like to do with us?")',0,0],['planned','Planned date (if you know)',0,0],['time','Preferred start time',0,0],['level','Certification level',0,1],['certNo','Certification number',0,0],['emName','Emergency contact name',0,1],['emPhone','Emergency contact phone',0,1],['bcd','BCD size',0,0],['wetsuit','Wetsuit size',0,0],['fins','Fins size (EU shoe size)',0,0],['plombs','Weight belt (kg of lead)',0,0],['heard','How did you hear about us?',0,0]];
 function qrMake(text){
   const bytes=Array.from(new TextEncoder().encode(text));
   const ECC=[0,10,16,26,18,24,16,18,22,22,26],NB=[0,1,1,1,2,2,4,4,4,5,5];
@@ -2539,8 +2539,8 @@ const DL={async save(o){
 }};
 
 /* ---- check-in form answers (replaces the Google Sheet of responses) ---- */
-const HEAD=['Timestamp','First name','Last name','Email','Phone / WhatsApp','Nationality','Preferred language','Do you live in Indonesia?','What would you like to do with us?','Planned date (if you know)','Preferred start time','Certification level','Certification number','Emergency contact name','Emergency contact phone','BCD size','Wetsuit size','Fins size (EU shoe size)','How did you hear about us?','Additional answers'];
-const KEYS=['ts','first','last','email','phone','nat','lang','local','interest','planned','time','level','certNo','emName','emPhone','bcd','wetsuit','fins','heard','custom'];
+const HEAD=['Timestamp','First name','Last name','Email','Phone / WhatsApp','Nationality','Preferred language','Do you live in Indonesia?','What would you like to do with us?','Planned date (if you know)','Preferred start time','Certification level','Certification number','Emergency contact name','Emergency contact phone','BCD size','Wetsuit size','Fins size (EU shoe size)','Weight belt (kg of lead)','How did you hear about us?','Additional answers'];
+const KEYS=['ts','first','last','email','phone','nat','lang','local','interest','planned','time','level','certNo','emName','emPhone','bcd','wetsuit','fins','plombs','heard','custom'];
 async function checkinRows(){
   if(DEMO)return[HEAD];
   let all=[],from=0;
