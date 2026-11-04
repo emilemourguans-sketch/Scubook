@@ -7,7 +7,7 @@
 /* Layout: navy header + tabs, single content column; tab bar at the bottom on phones, schedule grouped by instructor, private sign-in gate in front of everything */
 :root{
   --bg:#F3F5F6; --surface:#ffffff; --ink:#101820; --muted:#566f7e; --line:#d6e3e8; --soft:#e7f0f3;
-  --navy:#0C0D0E; --on-navy:#f1f8fa; --navy-dim:rgba(241,248,250,.72);
+  --navy:#FFFFFF; --on-navy:#0C0D0E; --navy-dim:rgba(12,13,14,.68);
   --accent:#2E799E; --on-accent:#ffffff; --lime:#44AFE4; --on-lime:#0C0D0E;
   --good:#1f7a3d; --good-bg:#e0f2e5; --warn:#8f5600; --warn-bg:#fcefd3; --bad:#b32d2d; --bad-bg:#fbe3e3; --info-bg:#DCEBF2;
   --f-display:'Fredoka',system-ui,sans-serif;
@@ -16,13 +16,13 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#08171f; --surface:#0f2431; --ink:#e5f0f4; --muted:#8da7b5; --line:#1d3a4b; --soft:#143040;
-  --navy:#050607; --on-navy:#f1f8fa; --navy-dim:rgba(241,248,250,.7);
+  --navy:#FFFFFF; --on-navy:#0C0D0E; --navy-dim:rgba(12,13,14,.68);
   --accent:#5BBDEB; --on-accent:#04212a; --lime:#44AFE4; --on-lime:#0C0D0E;
   --good:#6fd596; --good-bg:#12301e; --warn:#f0b45c; --warn-bg:#392a0d; --bad:#ff9090; --bad-bg:#3b1616; --info-bg:#0e3340;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#08171f; --surface:#0f2431; --ink:#e5f0f4; --muted:#8da7b5; --line:#1d3a4b; --soft:#143040;
-  --navy:#050607; --on-navy:#f1f8fa; --navy-dim:rgba(241,248,250,.7);
+  --navy:#FFFFFF; --on-navy:#0C0D0E; --navy-dim:rgba(12,13,14,.68);
   --accent:#5BBDEB; --on-accent:#04212a; --lime:#44AFE4; --on-lime:#0C0D0E;
   --good:#6fd596; --good-bg:#12301e; --warn:#f0b45c; --warn-bg:#392a0d; --bad:#ff9090; --bad-bg:#3b1616; --info-bg:#0e3340;
   color-scheme:dark}
@@ -1751,7 +1751,7 @@ const ACT={
   await W(()=>S.config?db.doc('config/main').update({access:ac}):db.doc('config/main').set({access:ac}),'Access saved');
  },
  async saveBrand(){
-  const b={name:$('#bName').value.trim(),navy:$('#bNavy').value,accent:$('#bAcc').value};
+  const b=Object.assign({},(S.config&&S.config.brand)||{},{name:$('#bName').value.trim(),navy:$('#bNavy').value,accent:$('#bAcc').value});
   const lg=V.settings.pendLogo;b.logo=lg===undefined?((S.config&&S.config.brand&&S.config.brand.logo)||''):lg;
   await W(()=>S.config?db.doc('config/main').update({brand:b}):db.doc('config/main').set({brand:b}),'Branding saved');
   V.settings.pendLogo=undefined;
@@ -1809,6 +1809,11 @@ function applyBrand(br){
   if(navy){const on=onC(navy),r=rgb(on);L.push('--navy:'+navy,'--on-navy:'+on,'--navy-dim:rgba('+r.join(',')+',.72)');
     const dn=mix(navy,[0,0,0],.5),on2=onC(dn),r2=rgb(on2);D.push('--navy:'+dn,'--on-navy:'+on2,'--navy-dim:rgba('+r2.join(',')+',.72)')}
   if(acc){L.push('--accent:'+acc,'--on-accent:'+onC(acc));const da=lum(acc)<0.5?mix(acc,[255,255,255],.35):acc;D.push('--accent:'+da,'--on-accent:'+onC(da))}
+  const lime=hex(br.lime),dk=br.dark||{};
+  if(lime){const ol=hex(br.onLime)||onC(lime);L.push('--lime:'+lime,'--on-lime:'+ol);const dl=hex(dk.lime)||lime;D.push('--lime:'+dl,'--on-lime:'+(hex(br.onLime)||onC(dl)))}
+  if(hex(br.bg))L.push('--bg:'+br.bg);if(hex(br.ink))L.push('--ink:'+br.ink);if(hex(br.info))L.push('--info-bg:'+br.info);
+  if(hex(dk.navy)){const o=onC(dk.navy);D.push('--navy:'+dk.navy,'--on-navy:'+o,'--navy-dim:rgba('+rgb(o).join(',')+',.72)')}
+  if(hex(dk.accent)){D.push('--accent:'+dk.accent,'--on-accent:'+onC(dk.accent))}
   if(L.length)css=':root{'+L.join(';')+'}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){'+D.join(';')+'}}:root[data-theme="dark"]{'+D.join(';')+'}:root[data-theme="light"]{'+L.join(';')+'}';
   let st=document.getElementById('brandCss');if(!st){st=document.createElement('style');st.id='brandCss';document.head.appendChild(st)}
   st.textContent=css;
@@ -2270,5 +2275,4 @@ const use=n=>{const c=window.DD_SHIM||window.claude;return(c&&c.use)?c.use(n).ca
 })();
 })();
 </script>
-
-<style id="lightmode">:root,:root[data-theme="dark"],:root[data-theme="light"]{--navy:#FFFFFF!important;--on-navy:#0C0D0E!important;--navy-dim:rgba(12,13,14,.68)!important;--aqua:#2E799E!important}</style></body></html>
+</body></html>
