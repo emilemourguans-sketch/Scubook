@@ -409,7 +409,7 @@ footer a{color:var(--on-navy)}
 <div id="gauge" aria-hidden="true"><i></i><span>Depth</span><b id="dm">0</b><span>m</span></div>
 
 <script>
-const SITE={url:'https://thslialgczmcspirxray.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoc2xpYWxnY3ptY3NwaXJ4cmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzAxNTgsImV4cCI6MjEwOTMwNjE1OH0.O6cGwxnrzA17VP3ggW3eA4BWbRXL1JVURsN-991Ig7M',email:'emile.mourguans@gmail.com'};
+const SITE={url:'https://thslialgczmcspirxray.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoc2xpYWxnY3ptY3NwaXJ4cmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzAxNTgsImV4cCI6MjEwOTMwNjE1OH0.O6cGwxnrzA17VP3ggW3eA4BWbRXL1JVURsN-991Ig7M',email:'contact@scubook.app'};
 const MSG={ok:'Thank you. We will reply within one working day.',err:'Sorry, that did not send. Please try again.',bad:'Please fill in your name, centre and a valid email, and tick the box.',sending:'Sending…'};
 document.documentElement.lang='en';
 document.title='Scubook · Software for dive centres';
@@ -426,7 +426,7 @@ addEventListener('scroll',gauge,{passive:true});addEventListener('resize',gauge)
     e.style.cssText='left:'+(Math.random()*100)+'%;width:'+s+'px;height:'+s+'px;animation-duration:'+(11+Math.random()*14)+'s;animation-delay:-'+(Math.random()*20)+'s';b.appendChild(e)}})();
 
 // contact
-if(SITE.email&&!/__CONTACT/.test(SITE.email)){document.getElementById('alt').hidden=false;document.getElementById('mail').textContent=SITE.email}
+if(SITE.email&&!/__CONTACT/.test(SITE.email)){document.getElementById('alt').hidden=false;var m=document.getElementById('mail');m.textContent=SITE.email;if(m.tagName==='A')m.href='mailto:'+SITE.email}
 const form=document.getElementById('lead'),msg=document.getElementById('fmsg');
 form.addEventListener('submit',async e=>{
   e.preventDefault();msg.className='';
