@@ -642,10 +642,9 @@ V.team={
     '<section class="card"><h2>Declare my activities</h2><p class="hint">Add the courses and fun dives you did that are not in the schedule. A manager approves them before they count.</p><div class="actions"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button></div></section>';
    perBind(m,()=>V.team.fill());return;
   }
-  m.innerHTML='<div class="head"><div><h1>Team</h1><p class="sub">Instructors, reception and monthly commissions.</p></div><button type="button" class="btn" data-act="staffNew" id="stNew">+ Member</button></div>'+
+  m.innerHTML='<div class="head"><div><h1>Team</h1><p class="sub">Instructors and reception. Commissions are in the Commission tab.</p></div><button type="button" class="btn" data-act="staffNew" id="stNew">+ Member</button></div>'+
    '<section class="card"><h2>Staff</h2><div id="stList"></div></section>'+
    perBar()+
-   '<section class="card"><h2>Declare my activities</h2><p class="hint">Instructors: at the end of the month, add the courses and fun dives you did. A manager approves them before they count.</p><div class="actions"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button></div></section>'+
    '<section class="card"><h2>Bookings by agent or hotel</h2><div class="tablewrap" id="agTable"></div></section>';
   perBind(m,()=>V.team.fill());
   $('#stNew').hidden=!canEdit;
@@ -1443,7 +1442,7 @@ function poolCard(){
 }
 V.commission={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Commission</h1><p class="sub">Individual commissions or a shared pool, per month.</p></div></div>'+perBar()+'<div id="payLock"></div>';
+  m.innerHTML='<div class="head"><div><h1>Commission</h1><p class="sub">Individual commissions or a shared pool, per month.</p></div></div>'+perBar()+'<section class="card"><h2>Activities</h2><p class="hint">Add the courses and fun dives an instructor did that are not in the schedule. A manager approves them before they count in the commission or the pool.</p><div class="actions"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button></div></section><div id="payLock"></div>';
   perBind(m,()=>V.commission.fill());
  },
  fill(){
