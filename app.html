@@ -1965,7 +1965,7 @@ function ciQRow(q){
 }
 function ciFill(){
   const card=$('#ciSet');if(!card)return;
-  const on=!!(window.DD_STANDALONE&&window.__cid&&canEdit&&!DEMO);
+  const on=!!(window.DD_STANDALONE&&window.__cid&&canEdit&&!/[?&]demo/.test(location.search));
   card.hidden=!on;if(!on||V.settings.ciLoaded||!(LOADED.config||!db))return;
   V.settings.ciLoaded=true;
   const f=(S.config&&S.config.checkinForm)||{},fl=f.fields||{};
