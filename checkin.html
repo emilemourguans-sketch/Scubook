@@ -20,11 +20,12 @@ main{max-width:620px;margin:0 auto;padding:16px}
 fieldset{border:1px solid var(--line);border-radius:14px;background:var(--surface);margin:0 0 14px;padding:14px 14px 6px}
 legend{font-weight:700;padding:0 6px}
 label.f{display:grid;gap:4px;margin-bottom:12px;font-weight:600;font-size:.95rem}
-input,select{font:inherit;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:100%}
+input,select,textarea{font:inherit;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:100%}
 .chk{display:flex;gap:10px;align-items:flex-start;margin:0 0 10px;font-weight:400}
 .chk input{width:20px;height:20px;margin-top:2px;flex:none}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:420px){.two{grid-template-columns:1fr}}
+textarea{min-height:84px;resize:vertical}
 button{font:inherit;font-weight:700;background:var(--gbtn,#FF7A5C);color:var(--gbtn-on,#0A2540);border:0;border-radius:12px;padding:14px;width:100%;cursor:pointer}
 button:disabled{opacity:.6}
 .hint{color:var(--muted);font-size:.85rem;font-weight:400}
@@ -76,6 +77,32 @@ button:disabled{opacity:.6}
 const INTS=['Fun dive(s)','Discovery Scuba Dive (try dive)','Scuba Diver course','Open Water course','Advanced course','Refresher (Scuba Tune Up)','Specialty course (Nitrox, Deep, Wreck...)','Rescue / EFR course','Divemaster / pro course','Not sure yet, I need advice'];
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const CID=new URLSearchParams(location.search).get('c')||'';
+let FC=null;
+function applyForm(fc){
+  FC=fc;const F=document.getElementById('f'),fl=fc.fields||{};
+  if(fc.intro){const p=document.createElement('p');p.className='hint';p.style.whiteSpace='pre-line';p.textContent=fc.intro;F.parentNode.insertBefore(p,F)}
+  if(Array.isArray(fc.ints)&&fc.ints.length)document.getElementById('ints').innerHTML=fc.ints.map(t=>'<label class="chk"><input type="checkbox" class="int" value="'+esc(String(t))+'"><span>'+esc(String(t))+'</span></label>').join('');
+  Object.keys(fl).forEach(k=>{const o=fl[k]||{};
+    if(k==='interest'){if(o.show===false)document.getElementById('ints').style.display='none';return}
+    const el=F.querySelector('[name="'+k+'"]');if(!el)return;const lab=el.closest('label.f');if(!lab)return;
+    if(o.show===false){lab.style.display='none';el.disabled=true;el.required=false;return}
+    if(typeof o.req==='boolean')el.required=o.req;
+    const t=lab.firstChild;if(t&&t.nodeType===3){const base=o.label||t.nodeValue.replace(/\s*\*\s*$/,'').trim();t.nodeValue=base+(el.required?' *':'')+'\n'}
+  });
+  if(fc.custom&&fc.custom.length){
+    const fs=document.createElement('fieldset'),lg=document.createElement('legend');lg.textContent='More questions';fs.appendChild(lg);
+    fc.custom.forEach(q=>{const lab=document.createElement('label');lab.className='f';lab.appendChild(document.createTextNode(String(q.label)+(q.req?' *':'')));
+      let el;
+      if(q.type==='long')el=document.createElement('textarea');
+      else if(q.type==='choice'||q.type==='yesno'){el=document.createElement('select');const o0=document.createElement('option');o0.value='';o0.textContent='—';el.appendChild(o0);(q.type==='yesno'?['Yes','No']:(q.opts||[])).forEach(v=>{const o=document.createElement('option');o.textContent=String(v);el.appendChild(o)})}
+      else{el=document.createElement('input')}
+      el.name='x_'+q.id;el.required=!!q.req;lab.appendChild(el);fs.appendChild(lab)});
+    const last=F.querySelector('[name=consent]').closest('fieldset');F.insertBefore(fs,last);
+  }
+  if(fc.consent){const sp=F.consent.parentNode.querySelector('span');if(sp)sp.textContent=fc.consent.replace(/\s*\*?\s*$/,'')+' *'}
+  F.querySelectorAll('fieldset').forEach(fs=>{const items=[...fs.querySelectorAll('label.f,.chk')];if(items.length&&items.every(n=>n.offsetParent===null))fs.style.display='none'});
+}
+
 (async function brand(){
   try{const c=window.DD_CONFIG;if(!c||/__SUPABASE/.test(c.url+c.key))return;
     const r=await fetch(c.url.replace(/\/+$/,'')+'/rest/v1/public_info?id=eq.'+encodeURIComponent(CID)+'&select=data',{headers:{apikey:c.key,Authorization:'Bearer '+c.key}});
@@ -84,6 +111,7 @@ const CID=new URLSearchParams(location.search).get('c')||'';
     if(/^#[0-9a-f]{6}$/i.test(b.accent||'')){document.documentElement.style.setProperty('--accent',b.accent);document.documentElement.style.setProperty('--gbtn',b.accent);document.documentElement.style.setProperty('--gbtn-on','#fff')}
     if(b.logo&&/^data:image\//.test(b.logo)){var lg=document.getElementById('lg');lg.src=b.logo;lg.style.display='inline';document.getElementById('wm').style.display='none'}
     if(b.legacy){var rs=document.documentElement.style;rs.setProperty('--bg','#F3F5F6');rs.setProperty('--line','#c9d9df');rs.setProperty('--muted','#566f7e');rs.setProperty('--ink','#101820');rs.setProperty('--gbtn','var(--accent)');rs.setProperty('--gbtn-on','#fff')}
+    if(b.form)applyForm(b.form);
     if(b.name){document.title=b.name+' · Check-in';document.getElementById('lg').alt=b.name}
     if(b.name&&b.name!=='Scubook'&&!b.logo){var w=document.getElementById('wm');w.className='wm plain';w.innerHTML='<i></i>';w.firstChild.textContent=b.name}
   }catch(e){}
@@ -95,7 +123,8 @@ f.addEventListener('submit',async e=>{
   const fd=new FormData(f),d={};
   ['first','last','email','phone','nat','lang','local','planned','time','level','certNo','emName','emPhone','bcd','wetsuit','fins','heard'].forEach(k=>d[k]=String(fd.get(k)||'').trim());
   d.interest=[...f.querySelectorAll('.int:checked')].map(x=>x.value).join(', ');
-  const miss=['first','last','email','phone','nat','local','level','emName','emPhone'].filter(k=>!d[k]);
+  d.custom=((FC&&FC.custom)||[]).map(q=>({q:String(q.label),a:String(fd.get('x_'+q.id)||'').trim()})).filter(x=>x.a);
+  const miss=[...f.elements].filter(el=>el.required&&!el.disabled&&el.type!=='checkbox'&&!String(el.value).trim());
   if(miss.length||!f.consent.checked){err.textContent='Please fill in all fields marked * and accept the consent box.';return}
   if(!/^\S+@\S+\.\S+$/.test(d.email)){err.textContent='Please enter a valid email address.';return}
   go.disabled=true;go.textContent='Sending…';
@@ -104,7 +133,7 @@ f.addEventListener('submit',async e=>{
     if(!/^[0-9a-f-]{36}$/i.test(CID))throw new Error('no centre');
     const r=await fetch(c.url.replace(/\/+$/,'')+'/rest/v1/checkins',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({centre_id:CID,data:d})});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    document.getElementById('m').innerHTML='<div class="done"><h1>You\'re all set!</h1><p>Thank you, '+esc(d.first)+'. See you at the dive shop.</p></div>';
+    document.getElementById('m').innerHTML='<div class="done"><h1>You\'re all set!</h1><p>'+esc(FC&&FC.thanks?FC.thanks.split('{name}').join(d.first):'Thank you, '+d.first+'. See you at the dive shop.')+'</p></div>';
     window.scrollTo(0,0);
   }catch(x){err.textContent='Sorry, it could not be sent. Please check your connection and try again.';go.disabled=false;go.textContent='Send my check-in'}
 });

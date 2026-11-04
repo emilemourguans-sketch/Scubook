@@ -888,6 +888,18 @@ V.settings={
    '<label class="fld">Logo (PNG or JPG)<input type="file" id="bFile" accept="image/*"></label>'+
    '<div class="fld full"><span class="hint">Preview</span><div id="bPrev" style="background:var(--navy);padding:12px;border-radius:10px;display:inline-block"><img id="bPrevImg" alt="" style="max-height:60px;max-width:240px;display:block"></div></div></div>'+
    '<div class="actions"><button type="button" class="btn" data-act="saveBrand" id="bSave">Save branding</button><button type="button" class="btn ghost" data-act="resetBrand" id="bReset">Back to default</button></div></section>'+
+   '<section class="card" id="ciSet" hidden><h2>Customer check-in</h2><p class="hint">Customers fill in this form on their phone before diving. Their answers arrive in Customers automatically. Colours and name come from Branding above.</p>'+
+   '<label class="fld full">Check-in link<span style="display:flex;gap:8px"><input id="ciLink2" readonly onclick="this.select()" style="flex:1;padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"><button type="button" class="btn ghost" data-act="ciCopy">Copy</button></span></label>'+
+   '<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin:12px 0"><div id="ciQrBox" style="background:#fff;padding:8px;border-radius:10px;border:1px solid var(--line,#ccc)"></div>'+
+   '<div style="display:grid;gap:8px;min-width:220px;flex:1"><button type="button" class="btn" data-act="ciQrPng">Download QR code (PNG)</button><button type="button" class="btn ghost" data-act="ciPosterPng">Download poster (PNG)</button><button type="button" class="btn ghost" data-act="ciPrint">Print poster</button>'+
+   '<div class="fld"><span class="hint">Logo on the form and poster</span><div style="background:var(--navy);padding:8px;border-radius:10px;display:inline-block"><img id="ciLogoPrev" alt="" style="max-height:48px;max-width:200px;display:block"></div><input type="file" id="ciLogoFile" accept="image/*" aria-label="Upload logo (PNG or JPG)"></div></div></div>'+
+   '<h3>Messages</h3><div class="gf"><label class="fld full">Introduction (shown above the form)<textarea id="ciIntro" rows="2" maxlength="400" placeholder="e.g. Welcome to our dive centre! Please fill this in before your first dive."></textarea></label>'+
+   '<label class="fld full">Thank-you message<textarea id="ciThanks" rows="2" maxlength="300" placeholder="Thank you, {name}. See you at the dive shop."></textarea></label>'+
+   '<label class="fld full">Consent sentence<input id="ciConsent" maxlength="300" placeholder="I agree that this dive centre stores these details to organise my dive."></label></div>'+
+   '<h3>Questions</h3><p class="hint">Untick “Show” to remove a question, tick “Required” to force an answer, or type your own wording.</p><div class="tablewrap"><table><thead><tr><th>Question</th><th>Show</th><th>Required</th><th>Your wording</th></tr></thead><tbody id="ciRows"></tbody></table></div>'+
+   '<label class="fld full" style="margin-top:10px">Activities list (one per line)<textarea id="ciInts" rows="6"></textarea></label>'+
+   '<h3>Your own questions</h3><p class="hint">Extra questions appear in a “More questions” section. Answers are saved on the customer’s record.</p><div id="ciCustom"></div><button type="button" class="btn ghost" data-act="ciAddQ">+ Add a question</button>'+
+   '<div class="actions"><button type="button" class="btn" data-act="ciSave">Save check-in form</button><button type="button" class="btn ghost" data-act="ciReset">Back to default</button></div></section>'+
    '<section class="card"><h2>Home page</h2><p class="hint">What your team sees first.</p><div class="gf">'+
    '<label class="fld">Page title<input id="hTitle" maxlength="40" placeholder="Today"></label>'+
    '<label class="fld">Welcome message<input id="hMsg" maxlength="140" placeholder="e.g. Briefing at 7:30 at the shop"></label></div>'+
@@ -909,7 +921,7 @@ V.settings={
    '<label class="fld full">Certification levels (one per line)<textarea id="cNiv" rows="6"></textarea></label></div>'+
    '<label class="fld check full"><input type="checkbox" id="cLock"><span>Protect payments: a collected payment cannot be deleted, and neither can a paid booking, unless the customer was refunded in full first. Deleting a fully refunded payment removes the payment and its refund together.</span></label>'+
    '<div class="actions"><button type="button" class="btn" data-act="saveCfg" id="cSave">Save settings</button></div></section>';
-  V.settings.cfgLoaded=false;V.settings.accLoaded=false;
+  V.settings.cfgLoaded=false;V.settings.accLoaded=false;V.settings.ciLoaded=false;
  },
  fill(){
   if(!V.settings.cfgLoaded&&(LOADED.config||!db)){
@@ -919,6 +931,7 @@ V.settings={
     $('#cLock').checked=c.lockPay;V.settings.cfgLoaded=true;
     const br=(S.config&&S.config.brand)||{};$('#bName').value=br.name||'';$('#bNavy').value=br.navy||'#0A2540';$('#bAcc').value=br.accent||'#0B7285';$('#bPrevImg').src=br.logo||LOGO0;V.settings.pendLogo=undefined;
   }
+  ciFill();
   $$('#bName,#bNavy,#bAcc,#bFile').forEach(e=>e.disabled=!canEdit);$('#brandCard').hidden=!canEdit;joinRender();{const ta=document.getElementById('teamAcc');if(ta){const ok=!!(window.DD_STANDALONE&&canEdit&&(window.DD_SHIM||window.claude).admin&&!/[?&]demo/.test(location.search));ta.hidden=!ok;if(ok&&!ta.dataset.loaded){ta.dataset.loaded='1';loadAccounts()}}}
   $$('#cCp,#cCf,#cEco,#cPe,#cPl,#cSites,#cAgents,#cNiv,#cLock').forEach(e=>e.disabled=!canEdit);
   $('#cSave').hidden=!canEdit;
@@ -1108,6 +1121,7 @@ function openClient(id,opts){
    '<label class="fld">Fins (shoe size)<input id="c-palmes" value="'+esc(vt.palmes||'')+'"></label>'+
    '<label class="fld">Weight belt (kg of lead)<input id="c-plombs" type="number" min="0" step="0.5" value="'+esc(vt.plombs||'')+'"></label>'+
    '</div>'+
+   (v.checkinAnswers?'<div class="fld full"><span class="hint">Check-in answers</span><div style="white-space:pre-wrap;padding:8px 10px;border:1px solid var(--line,#ccc);border-radius:8px">'+esc(String(v.checkinAnswers).split(' | ').join('\n'))+'</div></div>':'')+
    '<label class="fld">Notes<textarea id="c-notes">'+esc(v.notes||'')+'</textarea></label>'+
    (id?'<hr class="sep"><h3>Bookings</h3>'+(hist.length?hist.map(b=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(fmtShort(b.date))+'</strong>'+stPill(b.statut)+'</span><span class="r2">'+esc(b.tarifNom||'')+'</span></button><div class="r-side">'+(calc(b).due>0?'<span class="due">Due '+fmt(calc(b).due)+'</span>':'')+'</div></div>').join(''):'<p class="hint">No bookings for this customer.</p>'):'')+
    '<div class="err" id="c-err" role="alert"></div>'+
@@ -1153,6 +1167,7 @@ function parseCSV(text){
 const normH=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 function mapHeader(h){
   const n=normH(h);
+  if(n.includes('additionalanswers'))return 'custom';
   if(n.includes('timestamp')||n.includes('horodateur'))return 'ts';
   if(n.includes('wouldyoulike'))return 'interest';
   if(n.includes('planneddate'))return 'planned';
@@ -1188,7 +1203,7 @@ function rowToClient(r,map){
   return{nom:(g('first')+' '+g('last')).trim(),tel:g('phone'),email:g('email'),nationalite:g('nat'),langue:g('lang'),
     local:/^(yes|y|oui|ya|true|1)\b/i.test(g('local')),niveau:level,numCert:g('certNo'),urgenceNom:g('emName'),urgenceTel:g('emPhone'),
     tailles:{bcd:g('bcd').toUpperCase(),combi:g('wetsuit').toUpperCase(),palmes:g('fins'),plombs:g('plombs')},
-    heard:g('heard'),interest:g('interest'),plannedDate:g('planned')?parseTs(g('planned')):'',plannedSlot:/11/.test(g('time'))?'Morning 11:00':(/9/.test(g('time'))?'Morning 9:00':''),checkinAt:parseTs(g('ts'))};
+    heard:g('heard'),custom:g('custom'),interest:g('interest'),plannedDate:g('planned')?parseTs(g('planned')):'',plannedSlot:/11/.test(g('time'))?'Morning 11:00':(/9/.test(g('time'))?'Morning 9:00':''),checkinAt:parseTs(g('ts'))};
 }
 let LASTROWS=0;
 const nTok=n=>String(n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/[^a-z0-9]+/).filter(Boolean);
@@ -1198,6 +1213,7 @@ function fillEmpty(d,c){
   d.tailles=Object.assign({bcd:'',combi:'',palmes:'',plombs:''},d.tailles||{});
   ['bcd','combi','palmes','plombs'].forEach(k=>{if(!d.tailles[k]&&c.tailles[k])d.tailles[k]=c.tailles[k]});
   if(d.local===undefined)d.local=c.local;
+  if(c.custom&&(!d.checkinAt||c.checkinAt>=d.checkinAt))d.checkinAnswers=c.custom;
   if(c.interest&&(!d.checkinAt||c.checkinAt>=d.checkinAt)){d.interest=c.interest;d.plannedDate=c.plannedDate||'';d.plannedSlot=c.plannedSlot||''}
   if(!d.checkinAt||c.checkinAt>d.checkinAt)d.checkinAt=c.checkinAt;
 }
@@ -1864,10 +1880,152 @@ const ACT={
   const d={sites:lines('cSites'),agents:lines('cAgents'),niveaux:lines('cNiv'),frais:{eco:Math.max(0,+$('#cEco').value||0),parcEtranger:Math.max(0,+$('#cPe').value||0),parcLocal:Math.max(0,+$('#cPl').value||0)},commission:{coursePct:Math.min(100,Math.max(0,+$('#cCp').value||0)),funPerDive:Math.max(0,+$('#cCf').value||0)}};
   d.lockPay=$('#cLock').checked;
   if(S.config&&S.config.payPin)d.payPin=S.config.payPin;
-  ['brand','home','access','pool'].forEach(k=>{if(S.config&&S.config[k])d[k]=S.config[k]});
+  ['brand','home','access','pool','checkinForm'].forEach(k=>{if(S.config&&S.config[k])d[k]=S.config[k]});
   await W(()=>db.doc('config/main').set(d),'Settings saved');
  }
 };
+/* ---- customer check-in: QR code, poster, editable questions ---- */
+const CI_INTS=['Fun dive(s)','Discovery Scuba Dive (try dive)','Scuba Diver course','Open Water course','Advanced course','Refresher (Scuba Tune Up)','Specialty course (Nitrox, Deep, Wreck...)','Rescue / EFR course','Divemaster / pro course','Not sure yet, I need advice'];
+const CI_FIELDS=[['first','First name',1,1],['last','Last name',1,1],['email','Email',1,1],['phone','Phone / WhatsApp',0,1],['nat','Nationality',0,1],['lang','Preferred language',0,0],['local','Do you live in Indonesia?',0,1],['interest','Activities ("What would you like to do with us?")',0,0],['planned','Planned date (if you know)',0,0],['time','Preferred start time',0,0],['level','Certification level',0,1],['certNo','Certification number',0,0],['emName','Emergency contact name',0,1],['emPhone','Emergency contact phone',0,1],['bcd','BCD size',0,0],['wetsuit','Wetsuit size',0,0],['fins','Fins size (EU shoe size)',0,0],['heard','How did you hear about us?',0,0]];
+function qrMake(text){
+  const bytes=Array.from(new TextEncoder().encode(text));
+  const ECC=[0,10,16,26,18,24,16,18,22,22,26],NB=[0,1,1,1,2,2,4,4,4,5,5];
+  const raw=v=>{let r=(16*v+128)*v+64;if(v>=2){const a=Math.floor(v/7)+2;r-=(25*a-10)*a-55;if(v>=7)r-=36}return r};
+  let ver=1;
+  for(;ver<=10;ver++){const cap=(Math.floor(raw(ver)/8)-ECC[ver]*NB[ver])*8;if(4+(ver<10?8:16)+8*bytes.length<=cap)break}
+  if(ver>10)throw new Error('too long');
+  const size=ver*4+17,nCw=Math.floor(raw(ver)/8),dataCw=nCw-ECC[ver]*NB[ver];
+  const bits=[];const put=(v,n)=>{for(let i=n-1;i>=0;i--)bits.push((v>>>i)&1)};
+  put(4,4);put(bytes.length,ver<10?8:16);bytes.forEach(b=>put(b,8));
+  put(0,Math.min(4,dataCw*8-bits.length));while(bits.length%8)bits.push(0);
+  for(let p=0xEC;bits.length<dataCw*8;p^=0xEC^0x11)put(p,8);
+  const data=[];for(let i=0;i<bits.length;i+=8){let b=0;for(let j=0;j<8;j++)b=b<<1|bits[i+j];data.push(b)}
+  const mul=(x,y)=>{let z=0;for(let i=7;i>=0;i--){z=(z<<1)^((z>>>7)*0x11D);z^=((y>>>i)&1)*x}return z};
+  const deg=ECC[ver];let div=new Array(deg-1).fill(0).concat([1]),root=1;
+  for(let i=0;i<deg;i++){for(let j=0;j<div.length;j++){div[j]=mul(div[j],root);if(j+1<div.length)div[j]^=div[j+1]}root=mul(root,2)}
+  const rs=d=>{const r=new Array(deg).fill(0);d.forEach(b=>{const f=b^r.shift();r.push(0);div.forEach((c,i)=>r[i]^=mul(c,f))});return r};
+  const nb=NB[ver],nShort=nb-nCw%nb,sLen=Math.floor(nCw/nb),blocks=[];
+  for(let i=0,k=0;i<nb;i++){const dat=data.slice(k,k+sLen-deg+(i<nShort?0:1));k+=dat.length;const e=rs(dat);if(i<nShort)dat.push(0);blocks.push(dat.concat(e))}
+  const all=[];for(let i=0;i<blocks[0].length;i++)blocks.forEach((b,j)=>{if(i!==sLen-deg||j>=nShort)all.push(b[i])});
+  const m=[],fn=[];for(let y=0;y<size;y++){m.push(new Array(size).fill(false));fn.push(new Array(size).fill(false))}
+  const set=(x,y,v)=>{m[y][x]=!!v;fn[y][x]=true};
+  for(let i=0;i<size;i++){set(6,i,i%2===0);set(i,6,i%2===0)}
+  [[3,3],[size-4,3],[3,size-4]].forEach(([cx,cy])=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=Math.max(Math.abs(dx),Math.abs(dy)),x=cx+dx,y=cy+dy;if(x>=0&&x<size&&y>=0&&y<size)set(x,y,d!==2&&d!==4)}});
+  if(ver>1){const n=Math.floor(ver/7)+2,st=Math.ceil((ver*4+4)/(n*2-2))*2,pos=[6];for(let p=size-7;pos.length<n;p-=st)pos.splice(1,0,p);
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){if((i===0&&j===0)||(i===0&&j===n-1)||(i===n-1&&j===0))continue;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(pos[i]+dx,pos[j]+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1)}}
+  const fmt=mk=>{let r=mk;for(let i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);const b=((mk<<10)|r)^0x5412,g=i=>((b>>>i)&1)===1;
+    for(let i=0;i<=5;i++)set(8,i,g(i));set(8,7,g(6));set(8,8,g(7));set(7,8,g(8));for(let i=9;i<15;i++)set(14-i,8,g(i));
+    for(let i=0;i<8;i++)set(size-1-i,8,g(i));for(let i=8;i<15;i++)set(8,size-15+i,g(i));set(8,size-8,true)};
+  fmt(0);
+  if(ver>=7){let r=ver;for(let i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);const b=(ver<<12)|r;for(let i=0;i<18;i++){const v=((b>>>i)&1)===1,a=size-11+i%3,c=Math.floor(i/3);set(a,c,v);set(c,a,v)}}
+  let k=0;for(let right=size-1;right>=1;right-=2){if(right===6)right=5;for(let vert=0;vert<size;vert++)for(let j=0;j<2;j++){const x=right-j,up=((right+1)&2)===0,y=up?size-1-vert:vert;if(!fn[y][x]&&k<all.length*8){m[y][x]=((all[k>>>3]>>>(7-(k&7)))&1)===1;k++}}}
+  const mask=mk=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++){let inv;switch(mk){case 0:inv=(x+y)%2===0;break;case 1:inv=y%2===0;break;case 2:inv=x%3===0;break;case 3:inv=(x+y)%3===0;break;case 4:inv=(Math.floor(x/3)+Math.floor(y/2))%2===0;break;case 5:inv=x*y%2+x*y%3===0;break;case 6:inv=(x*y%2+x*y%3)%2===0;break;default:inv=((x+y)%2+x*y%3)%2===0}if(!fn[y][x]&&inv)m[y][x]=!m[y][x]}};
+  const pen=()=>{let p=0;const lines=[];for(let y=0;y<size;y++){lines.push(m[y].map(Number).join(''));}for(let x=0;x<size;x++){lines.push(m.map(r=>+r[x]).join(''))}
+    lines.forEach(s=>{const rr=s.match(/0{5,}|1{5,}/g);if(rr)rr.forEach(t=>p+=t.length-2);p+=40*((s.match(/(?=10111010000|00001011101)/g)||[]).length)});
+    for(let y=0;y<size-1;y++)for(let x=0;x<size-1;x++){const c=m[y][x];if(c===m[y][x+1]&&c===m[y+1][x]&&c===m[y+1][x+1])p+=3}
+    let d=0;m.forEach(r=>r.forEach(v=>d+=v));p+=Math.floor(Math.abs(d*20-size*size*10)/(size*size))*10;return p};
+  let best=0,bp=1e9;for(let mk=0;mk<8;mk++){mask(mk);fmt(mk);const p=pen();if(p<bp){bp=p;best=mk}mask(mk)}
+  mask(best);fmt(best);return m;
+}
+
+function qrCanvas(text,px){
+  const m=qrMake(text),n=m.length,q=4,sc=Math.max(1,Math.floor(px/(n+2*q))),W=(n+2*q)*sc,c=document.createElement('canvas');c.width=c.height=W;
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,W);x.fillStyle='#000';
+  for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(m[r][k])x.fillRect((k+q)*sc,(r+q)*sc,sc,sc);
+  return c;
+}
+function ciUrl(){return location.origin+location.pathname.replace(/app(\.html)?$/,'')+'checkin.html?c='+window.__cid}
+function ciDownload(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+const ciBlob=c=>new Promise(r=>c.toBlob(r,'image/png'));
+function ciLoadImg(src){return new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ko;i.src=src})}
+async function ciPoster(){
+  const br=(S.config&&S.config.brand)||{},navy=/^#[0-9a-f]{6}$/i.test(br.navy||'')?br.navy:'#0A2540',acc=/^#[0-9a-f]{6}$/i.test(br.accent||'')?br.accent:'#0B7285';
+  const lum=(0.2126*parseInt(navy.slice(1,3),16)+0.7152*parseInt(navy.slice(3,5),16)+0.0722*parseInt(navy.slice(5,7),16))/255,on=lum>0.6?'#10202b':'#ffffff';
+  const W=1240,H=1754,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,W,H);x.fillStyle=navy;x.fillRect(0,0,W,380);x.fillStyle=acc;x.fillRect(0,380,W,16);
+  x.textAlign='center';x.textBaseline='middle';
+  let drawn=false;
+  if(br.logo){try{const im=await ciLoadImg(br.logo),s=Math.min(820/im.width,240/im.height);x.drawImage(im,(W-im.width*s)/2,(380-im.height*s)/2,im.width*s,im.height*s);drawn=true}catch(e){}}
+  if(!drawn){x.fillStyle=on;x.font='700 110px Fredoka,Inter,system-ui,sans-serif';x.fillText(br.name||'Scubook',W/2,190,1000)}
+  x.fillStyle='#0A2540';x.font='700 112px Inter,system-ui,sans-serif';x.fillText('Scan to check in',W/2,540);
+  x.fillStyle='#5B6B7F';x.font='400 46px Inter,system-ui,sans-serif';x.fillText('Fill in your details before your dive.',W/2,625);
+  const qc=qrCanvas(ciUrl(),1000),qs=860;x.imageSmoothingEnabled=false;x.drawImage(qc,(W-qs)/2,700,qs,qs);
+  x.fillStyle='#5B6B7F';x.font='400 32px Inter,system-ui,sans-serif';x.fillText(ciUrl().replace(/^https?:\/\//,'').replace(/\?c=.*/,''),W/2,1640,1100);
+  return c;
+}
+const CI_TYPES=[['text','Short answer'],['long','Long answer'],['choice','Choice list'],['yesno','Yes / No']];
+function ciQRow(q){
+  q=q||{id:'q'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),label:'',type:'text',opts:[],req:false};
+  return '<div class="ciq" data-id="'+esc(q.id)+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0;padding:8px;border:1px solid var(--line,#ccc);border-radius:10px">'+
+   '<input class="cqL" maxlength="120" placeholder="Your question" value="'+esc(q.label)+'" style="flex:2 1 220px;padding:10px;border:1px solid var(--line,#ccc);border-radius:8px">'+
+   '<select class="cqT" style="flex:1 1 130px;padding:10px;border:1px solid var(--line,#ccc);border-radius:8px">'+CI_TYPES.map(t=>'<option value="'+t[0]+'"'+(t[0]===q.type?' selected':'')+'>'+t[1]+'</option>').join('')+'</select>'+
+   '<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" class="cqR"'+(q.req?' checked':'')+'> Required</label>'+
+   '<button type="button" class="btn ghost" data-act="ciDelQ" aria-label="Remove question">✕</button>'+
+   '<input class="cqO" placeholder="Choices, separated by commas" value="'+esc((q.opts||[]).join(', '))+'"'+(q.type==='choice'?'':' hidden')+' style="flex:1 1 100%;padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></div>';
+}
+function ciFill(){
+  const card=$('#ciSet');if(!card)return;
+  const on=!!(window.DD_STANDALONE&&window.__cid&&canEdit&&!DEMO);
+  card.hidden=!on;if(!on||V.settings.ciLoaded||!(LOADED.config||!db))return;
+  V.settings.ciLoaded=true;
+  const f=(S.config&&S.config.checkinForm)||{},fl=f.fields||{};
+  $('#ciLink2').value=ciUrl();
+  const qc=qrCanvas(ciUrl(),360);qc.style.cssText='width:180px;height:180px;display:block;image-rendering:pixelated';$('#ciQrBox').replaceChildren(qc);
+  $('#ciLogoPrev').src=((S.config&&S.config.brand&&S.config.brand.logo)||LOGO0);
+  $('#ciIntro').value=f.intro||'';$('#ciThanks').value=f.thanks||'';$('#ciConsent').value=f.consent||'';
+  $('#ciInts').value=(f.ints&&f.ints.length?f.ints:CI_INTS).join('\n');
+  $('#ciRows').innerHTML=CI_FIELDS.map(r=>{const k=r[0],o=fl[k]||{},show=o.show!==false,req=typeof o.req==='boolean'?o.req:!!r[3],lock=!!r[2];
+    return '<tr><td class="wrapc">'+esc(r[1])+'</td><td><input type="checkbox" class="ciShow" data-k="'+k+'"'+(show?' checked':'')+(lock?' disabled':'')+' aria-label="Show"></td><td><input type="checkbox" class="ciReq" data-k="'+k+'"'+(req?' checked':'')+(lock||k==='interest'?' disabled':'')+' aria-label="Required"></td><td><input class="ciLab" data-k="'+k+'" maxlength="120" value="'+esc(o.label||'')+'" placeholder="'+esc(r[1])+'"'+(k==='interest'?' disabled':'')+' style="width:100%;padding:8px;border:1px solid var(--line,#ccc);border-radius:8px"></td></tr>'}).join('');
+  $('#ciCustom').innerHTML=(f.custom||[]).map(ciQRow).join('');
+}
+Object.assign(ACT,{
+  async ciCopy(){const v=ciUrl();try{await navigator.clipboard.writeText(v)}catch(e){const i=$('#ciLink2');i.select();document.execCommand('copy')}toast('Link copied')},
+  async ciQrPng(){ciDownload(await ciBlob(qrCanvas(ciUrl(),1000)),'checkin-qr.png')},
+  async ciPosterPng(){ciDownload(await ciBlob(await ciPoster()),'checkin-poster.png')},
+  async ciPrint(){
+    const url=(await ciPoster()).toDataURL('image/png'),w=window.open('','_blank');
+    if(!w){toast('Allow pop-ups to print, or download the poster instead.','bad');return}
+    w.document.write('<!doctype html><title>Check-in poster</title><style>@page{margin:0}html,body{margin:0}img{width:100%;display:block}</style><img src="'+url+'">');
+    w.document.close();const img=w.document.querySelector('img');const go=()=>{w.focus();w.print()};if(img.complete)setTimeout(go,200);else img.onload=()=>setTimeout(go,200);
+  },
+  ciAddQ(){const d=document.createElement('div');d.innerHTML=ciQRow();$('#ciCustom').appendChild(d.firstChild);const l=$('#ciCustom').lastChild.querySelector('.cqL');if(l)l.focus()},
+  ciDelQ(t){const r=t.closest('.ciq');if(r)r.remove()},
+  async ciSave(){
+    const fields={};
+    $$('#ciRows tr').forEach(tr=>{const k=tr.querySelector('.ciShow').dataset.k,lock=tr.querySelector('.ciShow').disabled,o={};
+      if(!lock){o.show=tr.querySelector('.ciShow').checked;if(!tr.querySelector('.ciReq').disabled)o.req=tr.querySelector('.ciReq').checked}
+      const lab=tr.querySelector('.ciLab').value.trim();if(lab&&!tr.querySelector('.ciLab').disabled)o.label=lab;
+      if(Object.keys(o).length)fields[k]=o});
+    const custom=[];let bad='';
+    $$('#ciCustom .ciq').forEach(r=>{const label=r.querySelector('.cqL').value.trim(),type=r.querySelector('.cqT').value;if(!label)return;
+      const opts=type==='choice'?r.querySelector('.cqO').value.split(',').map(x=>x.trim()).filter(Boolean):[];
+      if(type==='choice'&&opts.length<2)bad='“'+label+'” needs at least two choices.';
+      custom.push({id:r.dataset.id,label,type,opts,req:r.querySelector('.cqR').checked})});
+    if(bad){toast(bad,'bad');return}
+    const ints=$('#ciInts').value.split('\n').map(x=>x.trim()).filter(Boolean);
+    const f={intro:$('#ciIntro').value.trim(),thanks:$('#ciThanks').value.trim(),consent:$('#ciConsent').value.trim(),fields,custom};
+    if(ints.length&&ints.join('\n')!==CI_INTS.join('\n'))f.ints=ints;
+    await W(()=>S.config?db.doc('config/main').update({checkinForm:f}):db.doc('config/main').set({checkinForm:f}),'Check-in form saved');
+  },
+  async ciReset(){
+    if(!S.config)return;
+    await W(()=>db.doc('config/main').update({checkinForm:null}),'Default check-in form restored');
+    V.settings.ciLoaded=false;ciFill();
+  }
+});
+document.addEventListener('change',async e=>{
+  if(e.target.classList&&e.target.classList.contains('cqT')){const o=e.target.closest('.ciq').querySelector('.cqO');o.hidden=e.target.value!=='choice';return}
+  if(e.target.id==='ciLogoFile'&&e.target.files[0]){
+    try{
+      const d=await logoFromFile(e.target.files[0]),o=(S.config&&S.config.brand)||{};
+      const b=Object.assign({},o,{name:o.name||'',navy:o.navy||'#0A2540',accent:o.accent||'#0B7285',logo:d});
+      const ok=await W(()=>S.config?db.doc('config/main').update({brand:b}):db.doc('config/main').set({brand:b}),'Logo saved');
+      if(ok!==false){$('#ciLogoPrev').src=d;const bp=$('#bPrevImg');if(bp)bp.src=d;V.settings.pendLogo=undefined}
+    }catch(x){toast('Could not read that image.','bad')}
+    e.target.value='';
+  }
+});
+
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]');
   if(t){const f=ACT[t.dataset.act];if(f)f(t,e);return}
@@ -2238,8 +2396,9 @@ async function write(fn,n,apply){
   finally{STATE.inflight--;STATE.seq++}
 }
 async function mirrorBrand(n,id,d){
-  if(DEMO||!CENTRE||n!=='config'||id!=='main'||!d||d.brand===undefined)return;
-  try{await api('/rest/v1/public_info?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{id:String(CENTRE),data:d.brand||{}}})}catch(e){}
+  if(DEMO||!CENTRE||n!=='config'||id!=='main'||!d||(d.brand===undefined&&d.checkinForm===undefined))return;
+  const cur=Object.assign({},colOf(n)[id]||{},d),pub=Object.assign({},cur.brand||{});if(cur.checkinForm)pub.form=cur.checkinForm;
+  try{await api('/rest/v1/public_info?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{id:String(CENTRE),data:pub}})}catch(e){}
 }
 function docRef(n,id){
   return{id:id,
@@ -2380,8 +2539,8 @@ const DL={async save(o){
 }};
 
 /* ---- check-in form answers (replaces the Google Sheet of responses) ---- */
-const HEAD=['Timestamp','First name','Last name','Email','Phone / WhatsApp','Nationality','Preferred language','Do you live in Indonesia?','What would you like to do with us?','Planned date (if you know)','Preferred start time','Certification level','Certification number','Emergency contact name','Emergency contact phone','BCD size','Wetsuit size','Fins size (EU shoe size)','How did you hear about us?'];
-const KEYS=['ts','first','last','email','phone','nat','lang','local','interest','planned','time','level','certNo','emName','emPhone','bcd','wetsuit','fins','heard'];
+const HEAD=['Timestamp','First name','Last name','Email','Phone / WhatsApp','Nationality','Preferred language','Do you live in Indonesia?','What would you like to do with us?','Planned date (if you know)','Preferred start time','Certification level','Certification number','Emergency contact name','Emergency contact phone','BCD size','Wetsuit size','Fins size (EU shoe size)','How did you hear about us?','Additional answers'];
+const KEYS=['ts','first','last','email','phone','nat','lang','local','interest','planned','time','level','certNo','emName','emPhone','bcd','wetsuit','fins','heard','custom'];
 async function checkinRows(){
   if(DEMO)return[HEAD];
   let all=[],from=0;
@@ -2390,7 +2549,7 @@ async function checkinRows(){
     all=all.concat(r||[]);if(!r||r.length<1000)break;from+=1000;
   }
   const rows=[HEAD];
-  all.forEach(x=>{const d=x.data||{};rows.push(KEYS.map(k=>k==='ts'?String(x.created_at||'').replace('T',' ').slice(0,19):(d[k]==null?'':String(d[k]))))});
+  all.forEach(x=>{const d=x.data||{};rows.push(KEYS.map(k=>k==='ts'?String(x.created_at||'').replace('T',' ').slice(0,19):k==='custom'?(Array.isArray(d.custom)?d.custom.filter(z=>z&&z.a).map(z=>z.q+': '+z.a).join(' | '):''):(d[k]==null?'':String(d[k]))))});
   return rows;
 }
 const MCP={async callTool(server,tool,args){
