@@ -1616,9 +1616,10 @@ function openStaff(id){
 function openTarif(id){
   const t=id?S.tarifs[id]:{categorie:'Courses'};
   MODAL={kind:'tf',id:id||null};
-  const cats=Array.from(new Set(tarifs().list.map(x=>x.categorie)));
+  const cats=Array.from(new Set(['Fun dives','Beginner courses','Advanced courses','Specialties'].concat(tarifs().list.map(x=>x.categorie).filter(Boolean))));
+  const cur=id?(t.categorie||cats[0]):cats[0];if(cats.indexOf(cur)<0)cats.push(cur);
   openModal(id?'Edit price':'New price',
-   '<div class="gf"><label class="fld">Category<input id="t-cat" list="dl-cat" value="'+esc(t.categorie||'')+'"><datalist id="dl-cat">'+cats.map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist></label>'+
+   '<div class="gf"><label class="fld">Category<select id="t-catsel">'+cats.map(x=>'<option value="'+esc(x)+'"'+(x===cur?' selected':'')+'>'+esc(x)+'</option>').join('')+'<option value="__new">+ New category…</option></select><input id="t-cat" value="'+esc(cur)+'" placeholder="Name of the new category" hidden style="margin-top:6px"></label>'+
    '<label class="fld">Price (IDR)<input id="t-prix" type="number" min="0" step="1000" value="'+esc(t.prix||'')+'"></label>'+
    '<label class="fld full">Name<input id="t-nom" value="'+esc(t.nom||'')+'"></label>'+
    '<label class="fld">Dives included<input id="t-pl" type="number" min="0" step="1" value="'+esc(t.plongees||0)+'"></label>'+
@@ -1873,6 +1874,7 @@ document.addEventListener('click',e=>{
   if(e.target.id==='modal')closeModal();
 });
 document.addEventListener('change',e=>{
+  if(e.target.id==='t-catsel'){const n=e.target.value==='__new',i=$('#t-cat');i.hidden=!n;i.value=n?'':e.target.value;if(n)i.focus();return}
   if(e.target.id==='ti-file'){onTarifFile(e.target.files&&e.target.files[0]);return}
   if(e.target.classList&&e.target.classList.contains('gq')){
     const g=S.gear[e.target.dataset.id];if(!g)return;const to=Math.max(0,+e.target.value||0),from=+g.qte||0;
