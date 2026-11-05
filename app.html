@@ -2238,11 +2238,27 @@ async function platformHome(){
      '<h1 style="margin:0 0 4px;font-size:1.5rem">Your companies</h1><p style="margin:0 0 16px;color:#9db3c6">Each company is a separate CRM. Open one to see it exactly as its manager does and act on it if needed. Every opening is logged. Only you can see this page.</p>'+
      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">'+tile('Companies',L.length)+tile('Active',cnt('active'))+tile('In trial',cnt('trial'))+tile('Suspended',cnt('suspended'))+tile('Customers',fmtI(sum('clients')))+tile('Bookings',fmtI(sum('bookings')))+tile('Collected (IDR)',fmtI(sum('collected')))+'</div>'+
      '<div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:820px"><thead><tr><th '+th+'>Company</th><th '+th+'>Owner</th><th '+th+'>Team</th><th '+th+'>Customers</th><th '+th+'>Bookings</th><th '+th+'>Collected</th><th '+th+'>Last activity</th><th '+th+'>Status</th><th '+th+'></th></tr></thead><tbody>'+
-     (L.map(c=>'<tr><td '+td+'><strong>'+esc(c.name)+'</strong></td><td '+td+'>'+esc(c.owner)+'</td><td '+td+'>'+c.members+'</td><td '+td+'>'+c.clients+'</td><td '+td+'>'+c.bookings+'</td><td '+td+'>'+fmtI(c.collected)+'</td><td '+td+'>'+esc(day(c.last_activity))+'<div style="color:#9db3c6;font-size:.8rem">opened by you: '+esc(day(c.last_opened))+'</div></td><td '+td+'><select data-st="'+esc(c.id)+'" style="background:#06182b;color:#fff;border:1px solid #1e3f61;border-radius:8px;padding:6px">'+['trial','active','suspended'].map(v=>'<option'+(c.status===v?' selected':'')+'>'+v+'</option>').join('')+'</select></td><td '+td+'><button type="button" data-open="'+esc(c.id)+'" style="'+btn+'background:#ff7a5c;color:#0a2540">Open CRM</button></td></tr>').join('')||'<tr><td '+td+' colspan="9">No companies yet.</td></tr>')+
+     (L.map(c=>'<tr><td '+td+'><strong>'+esc(c.name)+'</strong></td><td '+td+'>'+esc(c.owner)+'</td><td '+td+'>'+c.members+'</td><td '+td+'>'+c.clients+'</td><td '+td+'>'+c.bookings+'</td><td '+td+'>'+fmtI(c.collected)+'</td><td '+td+'>'+esc(day(c.last_activity))+'<div style="color:#9db3c6;font-size:.8rem">opened by you: '+esc(day(c.last_opened))+'</div></td><td '+td+'><select data-st="'+esc(c.id)+'" style="background:#06182b;color:#fff;border:1px solid #1e3f61;border-radius:8px;padding:6px">'+['trial','active','suspended'].map(v=>'<option'+(c.status===v?' selected':'')+'>'+v+'</option>').join('')+'</select></td><td '+td+'><button type="button" data-open="'+esc(c.id)+'" style="'+btn+'background:#ff7a5c;color:#0a2540">Open CRM</button> <button type="button" data-del="'+esc(c.id)+'" data-name="'+esc(c.name)+'" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete</button></td></tr>').join('')||'<tr><td '+td+' colspan="9">No companies yet.</td></tr>')+
      '</tbody></table></div>'+
      '<h2 style="margin:26px 0 8px;font-size:1.15rem">Demo requests</h2><div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:520px"><thead><tr><th '+th+'>Date</th><th '+th+'>Name</th><th '+th+'>Centre</th><th '+th+'>Email</th></tr></thead><tbody>'+
      (leads.map(l=>{const d=l.data||{};return'<tr><td '+td+'>'+esc(day(l.created_at))+'</td><td '+td+'>'+esc(d.name||'')+'</td><td '+td+'>'+esc(d.centre||'')+'</td><td '+td+'>'+esc(d.email||'')+'</td></tr>'}).join('')||'<tr><td '+td+' colspan="4">No demo requests yet.</td></tr>')+'</tbody></table></div></div>';
     W.querySelectorAll('[data-open]').forEach(b=>b.onclick=async()=>{const id=b.dataset.open;b.disabled=true;try{await api('/rest/v1/rpc/platform_enter',{method:'POST',body:{p_centre:id}})}catch(e){b.disabled=false;return}try{sessionStorage.setItem('sb-view',id)}catch(e){}location.hash='#home';location.reload()});
+    W.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+      const id=b.dataset.del,name=b.dataset.name;
+      const typed=window.prompt('Delete the company "'+name+'" and ALL its data (customers, bookings, payments, check-ins, team)? This cannot be undone.\n\nA backup file will be downloaded first.\n\nType the company name to confirm:');
+      if(typed===null)return;
+      if(typed.trim()!==name){window.alert('The name did not match. Nothing was deleted.');return}
+      b.disabled=true;
+      try{
+        const x=await api('/rest/v1/rpc/platform_export',{method:'POST',body:{p_centre:id}});
+        const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(x,null,1)],{type:'application/json'}));
+        a.download='scubook-backup-'+name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+new Date().toISOString().slice(0,10)+'.json';
+        document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+        await new Promise(r=>setTimeout(r,800));
+        await api('/rest/v1/rpc/platform_delete_centre',{method:'POST',body:{p_centre:id}});
+      }catch(e){b.disabled=false;window.alert('Could not delete. Nothing was removed.');return}
+      draw();
+    });
     W.querySelectorAll('[data-st]').forEach(sel=>sel.onchange=async()=>{try{await api('/rest/v1/rpc/platform_set_status',{method:'POST',body:{p_id:sel.dataset.st,p_status:sel.value}})}catch(e){}draw()});
     const o=W.querySelector('#phOut');if(o)o.onclick=()=>{SESS=null;LS.del('dd-session');location.reload()};
   };
