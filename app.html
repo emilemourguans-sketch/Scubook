@@ -2229,7 +2229,7 @@ async function platformHome(){
     let L=[],leads=[];
     try{L=await api('/rest/v1/rpc/platform_overview',{method:'POST',body:{}})}catch(e){}
     try{leads=await api('/rest/v1/leads?select=*&limit=200')||[]}catch(e){}
-    leads=(Array.isArray(leads)?leads:[]).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||''))).slice(0,15);
+    leads=(Array.isArray(leads)?leads:[]).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||''))).slice(0,50);
     const sum=k=>L.reduce((t,c)=>t+(+c[k]||0),0),cnt=st=>L.filter(c=>c.status===st).length;
     const tile=(n,v)=>'<div style="background:#0e2a47;border-radius:14px;padding:14px"><div style="color:#9db3c6;font-size:.85rem">'+n+'</div><div style="font-size:1.35rem;font-weight:700;overflow-wrap:anywhere">'+v+'</div></div>';
     const th='style="text-align:left;padding:8px;color:#9db3c6;font-weight:600;border-bottom:1px solid #1e3f61"',td='style="padding:10px 8px;border-bottom:1px solid #1e3f61;vertical-align:top"';
@@ -2240,8 +2240,8 @@ async function platformHome(){
      '<div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:820px"><thead><tr><th '+th+'>Company</th><th '+th+'>Owner</th><th '+th+'>Team</th><th '+th+'>Customers</th><th '+th+'>Bookings</th><th '+th+'>Collected</th><th '+th+'>Last activity</th><th '+th+'>Status</th><th '+th+'></th></tr></thead><tbody>'+
      (L.map(c=>'<tr><td '+td+'><strong>'+esc(c.name)+'</strong></td><td '+td+'>'+esc(c.owner)+'</td><td '+td+'>'+c.members+'</td><td '+td+'>'+c.clients+'</td><td '+td+'>'+c.bookings+'</td><td '+td+'>'+fmtI(c.collected)+'</td><td '+td+'>'+esc(day(c.last_activity))+'<div style="color:#9db3c6;font-size:.8rem">opened by you: '+esc(day(c.last_opened))+'</div></td><td '+td+'><select data-st="'+esc(c.id)+'" style="background:#06182b;color:#fff;border:1px solid #1e3f61;border-radius:8px;padding:6px">'+['trial','active','suspended'].map(v=>'<option'+(c.status===v?' selected':'')+'>'+v+'</option>').join('')+'</select></td><td '+td+'><button type="button" data-open="'+esc(c.id)+'" style="'+btn+'background:#ff7a5c;color:#0a2540">Open CRM</button> <button type="button" data-del="'+esc(c.id)+'" data-name="'+esc(c.name)+'" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete</button></td></tr>').join('')||'<tr><td '+td+' colspan="9">No companies yet.</td></tr>')+
      '</tbody></table></div>'+
-     '<h2 style="margin:26px 0 8px;font-size:1.15rem">Demo requests</h2><div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:520px"><thead><tr><th '+th+'>Date</th><th '+th+'>Name</th><th '+th+'>Centre</th><th '+th+'>Email</th></tr></thead><tbody>'+
-     (leads.map(l=>{const d=l.data||{};return'<tr><td '+td+'>'+esc(day(l.created_at))+'</td><td '+td+'>'+esc(d.name||'')+'</td><td '+td+'>'+esc(d.centre||'')+'</td><td '+td+'>'+esc(d.email||'')+'</td></tr>'}).join('')||'<tr><td '+td+' colspan="4">No demo requests yet.</td></tr>')+'</tbody></table></div></div>';
+     '<div style="display:flex;align-items:center;gap:12px;margin:26px 0 8px"><h2 style="margin:0;font-size:1.15rem">Demo requests</h2><div style="flex:1"></div>'+(leads.length?'<button type="button" id="phLeadsAll" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete all</button>':'')+'</div><div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:520px"><thead><tr><th '+th+'>Date</th><th '+th+'>Name</th><th '+th+'>Centre</th><th '+th+'>Email</th><th '+th+'></th></tr></thead><tbody>'+
+     (leads.map(l=>{const d=l.data||{};return'<tr><td '+td+'>'+esc(day(l.created_at))+'</td><td '+td+'>'+esc(d.name||'')+'</td><td '+td+'>'+esc(d.centre||'')+'</td><td '+td+'>'+esc(d.email||'')+'</td><td '+td+'><button type="button" data-lead="'+esc(l.id)+'" aria-label="Delete" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a;padding:4px 10px">✕</button></td></tr>'}).join('')||'<tr><td '+td+' colspan="5">No demo requests yet.</td></tr>')+'</tbody></table></div></div>';
     W.querySelectorAll('[data-open]').forEach(b=>b.onclick=async()=>{const id=b.dataset.open;b.disabled=true;try{await api('/rest/v1/rpc/platform_enter',{method:'POST',body:{p_centre:id}})}catch(e){b.disabled=false;return}try{sessionStorage.setItem('sb-view',id)}catch(e){}location.hash='#home';location.reload()});
     W.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
       const id=b.dataset.del,name=b.dataset.name;
@@ -2259,6 +2259,9 @@ async function platformHome(){
       }catch(e){b.disabled=false;window.alert('Could not delete. Nothing was removed.');return}
       draw();
     });
+    const delLeads=async ids=>{try{await api('/rest/v1/rpc/platform_delete_leads',{method:'POST',body:{p_ids:ids}})}catch(e){window.alert('Could not delete.');return}draw()};
+    W.querySelectorAll('[data-lead]').forEach(b=>b.onclick=()=>{b.disabled=true;delLeads([+b.dataset.lead])});
+    const la=W.querySelector('#phLeadsAll');if(la)la.onclick=()=>{if(window.confirm('Delete ALL demo requests (names and email addresses)? This cannot be undone.'))delLeads(null)};
     W.querySelectorAll('[data-st]').forEach(sel=>sel.onchange=async()=>{try{await api('/rest/v1/rpc/platform_set_status',{method:'POST',body:{p_id:sel.dataset.st,p_status:sel.value}})}catch(e){}draw()});
     const o=W.querySelector('#phOut');if(o)o.onclick=()=>{SESS=null;LS.del('dd-session');location.reload()};
   };
