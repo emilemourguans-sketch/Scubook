@@ -2399,7 +2399,7 @@ async function ensureSession(){
   }
   if(RECOVERY){await authFlow('newpw')}
   if(SESS&&SESS.refresh_token){if(Date.now()>SESS.exp-60000){await refresh()}}
-  if(!SESS)await authFlow(/[?&]signup/.test(location.search)&&!HASHNOTE?'signup':'login',HASHNOTE);
+  if(!SESS){try{sessionStorage.removeItem('sb-view')}catch(e){}await authFlow(/[?&]signup/.test(location.search)&&!HASHNOTE?'signup':'login',HASHNOTE)}
   for(;;){
     try{
       const m=await api('/rest/v1/members?select=email,role,name,centre_id,centres(name,status,trial_ends)&email=ilike.'+encodeURIComponent((SESS.email||'').replace(/[%*_]/g,''))+'&limit=1');
@@ -2407,7 +2407,7 @@ async function ensureSession(){
       const w=await onboardScreen(SESS.email||'');
       if(w==='out'){SESS=null;LS.del('dd-session');await authFlow('login')}
     }catch(e){
-      if(e.status===401||e.status===403){SESS=null;LS.del('dd-session');await authFlow('login','Session expired, please sign in again.')}
+      if(e.status===401||e.status===403){SESS=null;LS.del('dd-session');try{sessionStorage.removeItem('sb-view')}catch(x){}await authFlow('login','Session expired, please sign in again.')}
       else{document.getElementById('gText').textContent='No connection. Retrying…';await new Promise(r=>setTimeout(r,3000))}
     }
   }
