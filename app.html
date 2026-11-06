@@ -2202,7 +2202,7 @@ const CFG=window.DD_CONFIG||{};
 const DEMO=!!window.DD_FORCE_DEMO||/[?&]demo(=|&|$)/.test(location.search);
 const DEMO_KEY='dd-demo-v1';
 const URL_=String(CFG.url||'').replace(/\/+$/,''),KEY=CFG.key||'';
-const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const LS={get(k){try{return localStorage.getItem(k)||(k==='dd-session'?sessionStorage.getItem(k):null)}catch(e){return null}},set(k,v){try{(k==='dd-session'&&localStorage.getItem('dd-keep')==='0'?sessionStorage:localStorage).setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}try{sessionStorage.removeItem(k)}catch(e){}}};
 let SESS=null,ROLE=null,MEMBER_NAME='',CENTRE=null,CENTRE_NAME='';window.__api=(...a)=>api(...a);
 try{SESS=JSON.parse(LS.get('dd-session')||'null')}catch(e){}
 const H=(extra)=>Object.assign({apikey:KEY,Authorization:'Bearer '+((SESS&&SESS.access_token)||KEY),'Content-Type':'application/json'},window.__viewC?{'x-client-info':'scubook-view:'+window.__viewC}:{},extra||{});
@@ -2292,7 +2292,7 @@ async function api(path,opt){
 async function refresh(){
   try{
     const r=await fetch(URL_+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:SESS.refresh_token})});
-    if(!r.ok){SESS=null;LS.del('dd-session');return false}
+    if(!r.ok){if(r.status>=400&&r.status<500){SESS=null;LS.del('dd-session')}return false}
     saveSess(await r.json());return true;
   }catch(e){return false}
 }
@@ -2329,6 +2329,7 @@ function authScreen(mode,msg,notice){
     f.innerHTML=(mode==='signup'?fld('ddNm','Your name','text','name','maxlength="60"'):'')+
       (mode!=='newpw'?fld('ddEm','Email','email','username'):'')+
       (mode==='login'||mode==='signup'||mode==='newpw'?fld('ddPw',mode==='newpw'?'New password':'Password','password',mode==='login'?'current-password':'new-password',mode==='login'?'':'minlength="8"')+(mode!=='login'?'<span class="hint" style="font-size:.8rem">At least 8 characters.</span>':''):'')+
+      (mode==='login'?'<label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="ddKeep"'+(LS.get('dd-keep')==='0'?'':' checked')+'> Keep me signed in</label>':'')+
       '<button class="btn" type="submit" id="ddGo">'+(mode==='signup'?'Create account':mode==='reset'?'Send reset link':mode==='newpw'?'Save password':'Sign in')+'</button>'+
       '<div id="ddErr" role="alert" style="color:var(--bad);min-height:1.2em;font-size:.9rem"></div>'+
       '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.9rem">'+
@@ -2341,33 +2342,35 @@ function authScreen(mode,msg,notice){
       e.preventDefault();const b=document.getElementById('ddGo'),er=document.getElementById('ddErr');b.disabled=true;er.style.color='var(--bad)';er.textContent='';
       const email=E?E.value.trim().toLowerCase():'';
       try{
-        if(mode==='login'){await login(email,document.getElementById('ddPw').value);LS.set('dd-email',email);f.remove();resolve({done:true});return}
+        if(mode==='login'){const kp=document.getElementById('ddKeep'),keep=!kp||kp.checked;try{localStorage.setItem('dd-keep',keep?'1':'0');if(!keep)localStorage.removeItem('dd-session')}catch(x){}await login(email,document.getElementById('ddPw').value);LS.set('dd-email',email);f.remove();resolve({done:true});return}
         if(mode==='signup'){
-          const r=await authPost('/auth/v1/signup',{email:email,password:document.getElementById('ddPw').value,data:{name:document.getElementById('ddNm').value.trim()}});
+          const r=await authPost('/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+location.pathname),{email:email,password:document.getElementById('ddPw').value,data:{name:document.getElementById('ddNm').value.trim()}});
           if(!r.ok){er.textContent=errText(r,'Could not create the account.');b.disabled=false;return}
           LS.set('dd-email',email);
           if(r.j.access_token){saveSess(r.j);f.remove();resolve({done:true});return}
           f.remove();resolve({mode:'login',notice:'Account created. Check your inbox and click the confirmation link, then sign in.'});return}
         if(mode==='reset'){
-          const r=await authPost('/auth/v1/recover',{email:email});
+          const r=await authPost('/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+location.pathname),{email:email});
           if(!r.ok){er.textContent=errText(r,'Could not send the email.');b.disabled=false;return}
           f.remove();resolve({mode:'login',notice:'If this email has an account, a reset link is on its way.'});return}
         if(mode==='newpw'){
           const r=await fetch(URL_+'/auth/v1/user',{method:'PUT',headers:{apikey:KEY,Authorization:'Bearer '+RECOVERY,'Content-Type':'application/json'},body:JSON.stringify({password:document.getElementById('ddPw').value})});
           if(!r.ok){er.textContent='Could not save the password. The link may have expired.';b.disabled=false;return}
-          RECOVERY=null;try{history.replaceState(null,'',location.pathname)}catch(x){}
+          let u=null;try{u=await r.json()}catch(x){}
+          const tk=RECOVERY,rt=RECOVERY_RT;RECOVERY=null;RECOVERY_RT=null;try{history.replaceState(null,'',location.pathname)}catch(x){}
+          if(tk&&rt&&u&&u.email){saveSess({access_token:tk,refresh_token:rt,expires_in:3600,user:{email:u.email}});f.remove();resolve({done:true});return}
           f.remove();resolve({mode:'login',notice:'Password changed. You can sign in.'});return}
       }catch(err){er.textContent=err.message||'Something went wrong.';b.disabled=false}
     };
     setTimeout(()=>{const x=f.querySelector('input');x&&x.focus()},50);
   });
 }
-let RECOVERY=null,HASHNOTE=null;
+let RECOVERY=null,RECOVERY_RT=null,HASHNOTE=null,HASHSESS=null;
 try{const hp=new URLSearchParams(location.hash.slice(1));
  if(hp.get('error_code')||hp.get('error')){HASHNOTE=/expired|invalid/i.test(hp.get('error_description')||hp.get('error_code')||'')?'This confirmation link was already used or has expired. Try signing in: your email may already be confirmed.':'Sign-in link problem. Please sign in again.';history.replaceState(null,'',location.pathname+location.search)}
- else if(hp.get('type')==='signup'&&hp.get('access_token')){HASHNOTE='Email confirmed. You can now sign in.';history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+ else if(hp.get('type')==='signup'&&hp.get('access_token')){HASHNOTE='Email confirmed. You can now sign in.';if(hp.get('refresh_token'))HASHSESS={access_token:hp.get('access_token'),refresh_token:hp.get('refresh_token'),expires_in:+hp.get('expires_in')||3600};history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
 
-try{const h=new URLSearchParams(location.hash.slice(1));if(h.get('type')==='recovery'&&h.get('access_token')){RECOVERY=h.get('access_token');history.replaceState(null,'',location.pathname)}}catch(e){}
+try{const h=new URLSearchParams(location.hash.slice(1));if(h.get('type')==='recovery'&&h.get('access_token')){RECOVERY=h.get('access_token');RECOVERY_RT=h.get('refresh_token')||null;history.replaceState(null,'',location.pathname)}}catch(e){}
 async function authFlow(mode,notice,msg){
   for(;;){const r=await authScreen(mode,msg,notice);if(r.done)return;mode=r.mode;notice=r.notice;msg=null}
 }
@@ -2416,6 +2419,7 @@ async function ensureSession(){
     document.getElementById('gText').textContent='The Supabase address and key are missing in this file.';
     return false;
   }
+  if(HASHSESS&&!RECOVERY){try{const r=await fetch(URL_+'/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+HASHSESS.access_token}});if(r.ok){const u=await r.json();saveSess(Object.assign({},HASHSESS,{user:{email:u.email}}));HASHNOTE=null}}catch(e){}}
   if(RECOVERY){await authFlow('newpw')}
   if(SESS&&SESS.refresh_token){if(Date.now()>SESS.exp-60000){await refresh()}}
   if(!SESS){try{sessionStorage.removeItem('sb-view')}catch(e){}await authFlow(/[?&]signup/.test(location.search)&&!HASHNOTE?'signup':'login',HASHNOTE)}
