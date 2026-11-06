@@ -1950,10 +1950,17 @@ async function ciPoster(){
   let drawn=false;
   if(br.logo){try{const im=await ciLoadImg(br.logo),s=Math.min(820/im.width,240/im.height);x.drawImage(im,(W-im.width*s)/2,(380-im.height*s)/2,im.width*s,im.height*s);drawn=true}catch(e){}}
   if(!drawn){x.fillStyle=on;x.font='700 110px Fredoka,Inter,system-ui,sans-serif';x.fillText(br.name||'Scubook',W/2,190,1000)}
-  x.fillStyle='#0A2540';x.font='700 112px Inter,system-ui,sans-serif';x.fillText('Scan to check in',W/2,540);
-  x.fillStyle='#5B6B7F';x.font='400 46px Inter,system-ui,sans-serif';x.fillText('Fill in your details before your dive.',W/2,625);
-  const qc=qrCanvas(ciUrl(),1000),qs=860;x.imageSmoothingEnabled=false;x.drawImage(qc,(W-qs)/2,700,qs,qs);
-  x.fillStyle='#5B6B7F';x.font='400 32px Inter,system-ui,sans-serif';x.fillText(ciUrl().replace(/^https?:\/\//,'').replace(/\?c=.*/,''),W/2,1640,1100);
+  const val=(id,k)=>{const e=document.getElementById(id);return (e?e.value:((S.config&&S.config.checkinForm&&S.config.checkinForm[k])||'')).trim()};
+  const wrap=(t,font,max,lim)=>{x.font=font;const out=[];String(t).split(/\n/).forEach(par=>{let l='';par.split(/\s+/).filter(Boolean).forEach(w=>{const n=l?l+' '+w:w;if(x.measureText(n).width>max&&l){out.push(l);l=w}else l=n});out.push(l)});return out.filter(Boolean).slice(0,lim)};
+  const intro=val('ciIntro','intro')||'Fill in your details before your dive.',thanks=val('ciThanks','thanks').replace(/,?\s*\{name\}/g,'').replace(/\s{2,}/g,' ').trim(),consent=val('ciConsent','consent');
+  x.fillStyle='#0A2540';x.font='700 112px Inter,system-ui,sans-serif';x.fillText('Scan to check in',W/2,500,1100);
+  x.fillStyle='#5B6B7F';let y=585;const il=wrap(intro,'400 44px Inter,system-ui,sans-serif',1040,3);x.font='400 44px Inter,system-ui,sans-serif';il.forEach(t=>{x.fillText(t,W/2,y);y+=54});
+  const qy=Math.max(700,y+10),qs=Math.min(860,1560-qy);
+  const qc=qrCanvas(ciUrl(),1000);x.imageSmoothingEnabled=false;x.drawImage(qc,(W-qs)/2,qy,qs,qs);
+  y=qy+qs+50;
+  if(thanks){x.fillStyle='#0A2540';wrap(thanks,'600 38px Inter,system-ui,sans-serif',1040,2).forEach(t=>{x.fillText(t,W/2,y);y+=46})}
+  if(consent){x.fillStyle='#5B6B7F';wrap(consent,'400 28px Inter,system-ui,sans-serif',1100,2).forEach(t=>{x.fillText(t,W/2,y);y+=36})}
+  x.fillStyle='#5B6B7F';x.font='400 30px Inter,system-ui,sans-serif';x.fillText(ciUrl().replace(/^https?:\/\//,'').replace(/\?c=.*/,''),W/2,1715,1100);
   return c;
 }
 const CI_TYPES=[['text','Short answer'],['long','Long answer'],['choice','Choice list'],['yesno','Yes / No']];
