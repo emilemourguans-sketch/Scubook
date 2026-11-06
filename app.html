@@ -1949,7 +1949,20 @@ async function ciPoster(){
   x.textAlign='center';x.textBaseline='middle';
   let drawn=false;
   if(br.logo){try{const im=await ciLoadImg(br.logo),s=Math.min(820/im.width,240/im.height);x.drawImage(im,(W-im.width*s)/2,(380-im.height*s)/2,im.width*s,im.height*s);drawn=true}catch(e){}}
-  if(!drawn){x.fillStyle=on;x.font='700 110px Fredoka,Inter,system-ui,sans-serif';x.fillText(br.name||'Scubook',W/2,190,1000)}
+  if(!drawn){
+    const nm=(br.name||'').trim(),own=nm&&nm.toLowerCase()!=='scubook';
+    if(own){x.fillStyle=on;x.font='700 110px Fredoka,Inter,system-ui,sans-serif';x.fillText(nm,W/2,190,1000)}
+    else{
+      const fs=120,ty=222;x.font='600 '+fs+'px Fredoka,Inter,system-ui,sans-serif';x.textAlign='left';
+      const w1=x.measureText('Scub').width,w2=x.measureText('ook').width,l=(W-w1-w2)/2;
+      x.fillStyle='#FF7A5C';x.fillText('Scub',l,ty);x.fillStyle=on;x.fillText('ook',l+w1,ty);
+      const k=1.7*fs/60,ox=l+2.1*fs,oy=ty-fs*0.5-0.47*fs+fs*0.02*-1;
+      x.strokeStyle='#8AD9E3';x.fillStyle='#8AD9E3';x.lineWidth=2.2*k;
+      x.beginPath();x.arc(ox+9*k,oy+14*k,5*k,0,7);x.stroke();
+      x.lineWidth=2*k;x.beginPath();x.arc(ox+32*k,oy+9*k,3.4*k,0,7);x.stroke();
+      x.beginPath();x.arc(ox+50*k,oy+13*k,2.2*k,0,7);x.fill();
+      x.textAlign='center';
+    }}
   const val=(id,k)=>{const e=document.getElementById(id);return (e?e.value:((S.config&&S.config.checkinForm&&S.config.checkinForm[k])||'')).trim()};
   const wrap=(t,font,max,lim)=>{x.font=font;const out=[];String(t).split(/\n/).forEach(par=>{let l='';par.split(/\s+/).filter(Boolean).forEach(w=>{const n=l?l+' '+w:w;if(x.measureText(n).width>max&&l){out.push(l);l=w}else l=n});out.push(l)});return out.filter(Boolean).slice(0,lim)};
   const intro=val('ciIntro','intro')||'Fill in your details before your dive.',thanks=val('ciThanks','thanks').replace(/,?\s*\{name\}/g,'').replace(/\s{2,}/g,' ').trim(),consent=val('ciConsent','consent');
