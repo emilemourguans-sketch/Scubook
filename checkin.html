@@ -72,7 +72,7 @@ fieldset{border-top:3px solid var(--accent)}
 </fieldset>
 <fieldset><legend>Last step</legend>
 <label class="f">How did you hear about us? (hotel, agent, friend, online…)<input name="heard"></label>
-<label class="chk"><input type="checkbox" name="consent" required><span>I agree that this dive centre stores these details to organise my dive. *</span></label>
+<label class="chk"><input type="checkbox" name="consent" required><span>I agree that this dive center stores these details to organise my dive. *</span></label>
 </fieldset>
 <div id="err" role="alert"></div>
 <button type="submit" id="go">Send my check-in</button>
@@ -135,7 +135,7 @@ f.addEventListener('submit',async e=>{
   go.disabled=true;go.textContent='Sending…';
   try{
     const c=window.DD_CONFIG;
-    if(!/^[0-9a-f-]{36}$/i.test(CID))throw new Error('no centre');
+    if(!/^[0-9a-f-]{36}$/i.test(CID))throw new Error('no center');
     const r=await fetch(c.url.replace(/\/+$/,'')+'/rest/v1/checkins',{method:'POST',headers:{apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({centre_id:CID,data:d})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     document.getElementById('m').innerHTML='<div class="done"><h1>You\'re all set!</h1><p>'+esc(FC&&FC.thanks?FC.thanks.split('{name}').join(d.first):'Thank you, '+d.first+'. See you at the dive shop.')+'</p></div>';
