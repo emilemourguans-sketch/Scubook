@@ -282,7 +282,14 @@ main{gap:20px;padding-block:28px 56px}
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt=n=>Math.round(Number(n)||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+/* currency: one per centre, stored in config.currency. [name, decimals, demo scale (IDR per unit)] */
+const CURS={IDR:['Indonesian rupiah',0,1],EUR:['Euro',2,20000],USD:['US dollar',2,12500],GBP:['British pound',2,20000],AUD:['Australian dollar',2,10000],THB:['Thai baht',2,500],PHP:['Philippine peso',2,250],MYR:['Malaysian ringgit',2,4000],EGP:['Egyptian pound',2,250],MXN:['Mexican peso',2,1000]};
+const CUR=()=>{try{const c=S.config&&S.config.currency;return CURS[c]?c:'IDR'}catch(e){return 'IDR'}};
+const CDEC=()=>CURS[CUR()][1];
+const STEP=()=>CDEC()?'0.01':'1000';
+const rnd=n=>{const k=CDEC()?100:1;return Math.round((Number(n)||0)*k)/k};
+const KDEF=n=>{const k=CURS[CUR()][2];return k===1?n:Math.round(n/k*100)/100};
+const fmt=n=>{n=Number(n)||0;if(!CDEC())return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');const v=Math.round(n*100)/100,a=Math.abs(v),i=Math.floor(a),c=Math.round((a-i)*100);return (v<0?'-':'')+String(i).replace(/\B(?=(\d{3})+(?!\d))/g,',')+(c?'.'+String(c).padStart(2,'0'):'')};
 const pad=n=>String(n).padStart(2,'0');
 const isoDate=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const today=()=>isoDate(new Date());
@@ -308,7 +315,7 @@ function perBind(root,refill){
   setv();
 }
 const byNom=(a,b)=>String(a.nom||'').localeCompare(String(b.nom||''),'en');
-const sum=(l,f)=>l.reduce((s,x)=>s+(+f(x)||0),0);
+const sum=(l,f)=>Math.round(l.reduce((s,x)=>s+(+f(x)||0),0)*100)/100;
 const pl=(n,w)=>n+' '+w+(n===1?'':'s');
 
 const STATUTS=['Pending','Confirmed','Completed','Cancelled'];
@@ -412,20 +419,20 @@ const ST={view:'home',date:today(),sel:new Set(),month:monthNow(),payTab:'due'};
 let MODAL={};
 
 const BN=()=>(S.config&&S.config.brand&&S.config.brand.name)||'Scubook';
-const cfg=()=>{const c=S.config||{};return{sites:c.sites||DEF.sites,agents:c.agents||DEF.agents,niveaux:c.niveaux||DEF.niveaux,frais:Object.assign({},DEF.frais,c.frais||{}),commission:Object.assign({},DEF.commission,c.commission||{}),lockPay:c.lockPay!==false}};
-const tarifs=()=>{const l=Object.values(S.tarifs);if(l.length)return{list:l.sort((a,b)=>(a.ordre||0)-(b.ordre||0)),isDefault:false};return{list:DEFAULT_TARIFS,isDefault:true}};
+const cfg=()=>{const c=S.config||{};return{sites:c.sites||DEF.sites,agents:c.agents||DEF.agents,niveaux:c.niveaux||DEF.niveaux,frais:Object.assign({},{eco:KDEF(DEF.frais.eco),parcEtranger:KDEF(DEF.frais.parcEtranger),parcLocal:KDEF(DEF.frais.parcLocal)},c.frais||{}),commission:Object.assign({},{coursePct:DEF.commission.coursePct,funPerDive:KDEF(DEF.commission.funPerDive)},c.commission||{}),lockPay:c.lockPay!==false}};
+const tarifs=()=>{const l=Object.values(S.tarifs);if(l.length)return{list:l.sort((a,b)=>(a.ordre||0)-(b.ordre||0)),isDefault:false};return{list:CUR()==='IDR'?DEFAULT_TARIFS:DEFAULT_TARIFS.map(t=>Object.assign({},t,{prix:KDEF(t.prix)})),isDefault:true}};
 const isFun=b=>/fun/i.test(b.categorie||'');
 const funCount=b=>isFun(b)?Math.max(1,+b.plongees||0)*(+b.qte||1):0;
 const feeUnitOf=id=>{const t=(S.tarifs&&S.tarifs[id])||DEFAULT_TARIFS.find(x=>x.id===id)||{};return Math.max(0,(+t.feeAgency||0)+(+t.feeOther||0))};
 const feeOf=b=>isFun(b)?0:Math.max(0,(b.feeUnit!=null&&b.feeUnit!==''?+b.feeUnit||0:feeUnitOf(b.tarifId)))*(+b.qte||1);
 const funRateOf=s=>(+s.funRate>0)?+s.funRate:(+cfg().commission.funPerDive||0);
-function commOf(b,s){const c=cfg().commission;if(isFun(b))return funCount(b)*funRateOf(s);const pct=(+s.commission>0)?+s.commission:(+c.coursePct||0);return Math.round(Math.max(0,calc(b).net-feeOf(b))*pct/100)}
+function commOf(b,s){const c=cfg().commission;if(isFun(b))return funCount(b)*funRateOf(s);const pct=(+s.commission>0)?+s.commission:(+c.coursePct||0);return rnd(Math.max(0,calc(b).net-feeOf(b))*pct/100)}
 const feeFor=c=>{const f=cfg().frais;return (+f.eco||0)+((c&&c.local)?(+f.parcLocal||0):(+f.parcEtranger||0))};
 function calc(b){
-  const net=Math.round((+b.prixUnit||0)*(+b.qte||1)*(1-(+b.remise||0)/100));
+  const net=rnd((+b.prixUnit||0)*(+b.qte||1)*(1-(+b.remise||0)/100));
   const frais=+b.frais||0,total=net;
-  const paid=(IDX.pay[b.id]||[]).reduce((s,p)=>s+(+p.montant||0),0);
-  return{net,frais,total,paid,due:b.statut==='Cancelled'?0:total-paid,feePaid:!!b.fraisPaye,feeDue:(b.statut==='Cancelled'||b.fraisPaye)?0:frais};
+  const paid=rnd((IDX.pay[b.id]||[]).reduce((s,p)=>s+(+p.montant||0),0));
+  return{net,frais,total,paid,due:b.statut==='Cancelled'?0:rnd(total-paid),feePaid:!!b.fraisPaye,feeDue:(b.statut==='Cancelled'||b.fraisPaye)?0:frais};
 }
 function reindex(){
   IDX.pay={};IDX.byClient={};
@@ -468,13 +475,13 @@ function csvDownload(name,rows){
 const FIN_SHEET='155h_LSbcxGNDciMu6Dhlp4VWnt4QS3H0cIYl7E0iXwg';
 const XD={
  fees(){const m=perTag(),F=Object.values(S.bookings).filter(b=>(+b.frais||0)>0&&b.statut!=='Cancelled'&&b.fraisPaye&&inPer(b.fraisPayeLe||b.date)).sort((a,b)=>(a.fraisPayeLe||a.date)<(b.fraisPayeLe||b.date)?-1:1);
-  return{file:'marine-fees-'+m,name:'Marine fees',sid:FIN_SHEET,tab:'Marine fees',widths:[12,24,16,14,30,12,18,18],rows:[['Paid on','Customer','Nationality','Local resident','Activity','Dive date','Marine fees (IDR)','Confirmed by']].concat(F.map(b=>{const c=S.clients[b.clientId]||{};return [b.fraisPayeLe||b.date,c.nom||'',c.nationalite||'',c.local?'Yes':'No',b.tarifNom||'',b.date||'',b.frais,b.fraisPayePar||'']})).concat([['Total','','','','','',sum(F,b=>b.frais),'']])}},
+  return{file:'marine-fees-'+m,name:'Marine fees',sid:FIN_SHEET,tab:'Marine fees',widths:[12,24,16,14,30,12,18,18],rows:[['Paid on','Customer','Nationality','Local resident','Activity','Dive date','Marine fees ('+CUR()+')','Confirmed by']].concat(F.map(b=>{const c=S.clients[b.clientId]||{};return [b.fraisPayeLe||b.date,c.nom||'',c.nationalite||'',c.local?'Yes':'No',b.tarifNom||'',b.date||'',b.frais,b.fraisPayePar||'']})).concat([['Total','','','','','',sum(F,b=>b.frais),'']])}},
  pay(){const L=Object.values(S.payments).filter(p=>inPer(p.date)).sort((a,b)=>a.date<b.date?-1:1);
-  return{file:'payments-'+perTag(),name:'Payments',sid:FIN_SHEET,tab:'Payments period',widths:[12,26,32,12,16,24],rows:[['Date','Customer','Activity','Method','Amount (IDR)','Reference']].concat(L.map(p=>[p.date,(S.clients[p.clientId]||{}).nom||'',(S.bookings[p.bookingId]||{}).tarifNom||'',p.methode,p.montant,p.ref||'']))}},
- com(){const m=PER.from;return{file:'commissions-'+perTag(),name:'Commissions',sid:PAYROLLSHEET.id,tab:'Commissions',widths:[22,12,24,12,24,18],rows:[['Instructor','Courses','Course commission (IDR)','Fun dives','Fun dive commission (IDR)','Total (IDR)']].concat(comRows(m).map(r=>[r.s.nom,r.nC,r.cc,r.nF,r.cf,r.cc+r.cf]))}},
+  return{file:'payments-'+perTag(),name:'Payments',sid:FIN_SHEET,tab:'Payments period',widths:[12,26,32,12,16,24],rows:[['Date','Customer','Activity','Method','Amount ('+CUR()+')','Reference']].concat(L.map(p=>[p.date,(S.clients[p.clientId]||{}).nom||'',(S.bookings[p.bookingId]||{}).tarifNom||'',p.methode,p.montant,p.ref||'']))}},
+ com(){const m=PER.from;return{file:'commissions-'+perTag(),name:'Commissions',sid:PAYROLLSHEET.id,tab:'Commissions',widths:[22,12,24,12,24,18],rows:[['Instructor','Courses','Course commission ('+CUR()+')','Fun dives','Fun dive commission ('+CUR()+')','Total ('+CUR()+')']].concat(comRows(m).map(r=>[r.s.nom,r.nC,r.cc,r.nF,r.cf,r.cc+r.cf]))}},
  mk(){const all=!!ST.mkAll,L=Object.values(S.clients).filter(c=>all||inPer(c.creeLe||c.checkinAt)).sort((a,b)=>String(a.nom).localeCompare(String(b.nom)));
   return{file:'customers-by-source'+(all?'':'-'+perTag()),name:'Customers by source',sid:FIN_SHEET,tab:'Customers by source',widths:[26,28,18,16,16,26,30,14,16,12],rows:[['Customer','Email','Phone','Nationality','Source','Answer given','Wants to do','Planned date','Preferred time','First seen']].concat(L.map(c=>[c.nom,c.email||'',c.tel||'',c.nationalite||'',normSrc(c.heard),c.heard||'',c.interest||'',c.plannedDate||'',c.plannedSlot||'',c.creeLe||c.checkinAt||'']))}},
- prices(){return{file:'dream-divers-prices',name:'Prices',sid:FIN_SHEET,tab:'Prices',widths:[22,40,16,14,30],rows:[['Category','Name','Price (IDR)','Dives included','Note']].concat(tarifs().list.map(t=>[t.categorie,t.nom,t.prix,t.plongees||0,t.note||'']))}}
+ prices(){return{file:'dream-divers-prices',name:'Prices',sid:FIN_SHEET,tab:'Prices',widths:[22,40,16,14,30],rows:[['Category','Name','Price ('+CUR()+')','Dives included','Note']].concat(tarifs().list.map(t=>[t.categorie,t.nom,t.prix,t.plongees||0,t.note||'']))}}
 };
 const exBtns=(k,sm)=>['csv|CSV','xlsx|Excel'].concat(window.DD_STANDALONE?[]:['gs|Google Sheet']).map(x=>{const[a,b]=x.split('|');return '<button type="button" class="btn ghost'+(sm?' sm':'')+'" data-act="exOut" data-k="'+k+'" data-f="'+a+'">'+b+'</button>'}).join('');
 async function exOut(t){
@@ -690,23 +697,23 @@ V.payments={
   if(loading()){$('#payList').innerHTML=emptyBox('Loading…');return}
   if(ST.payTab==='due'){
     const L=Object.values(S.bookings).map(b=>({b,k:calc(b)})).filter(x=>x.k.due>0).sort((a,b)=>a.b.date<b.b.date?-1:1);
-    $('#payTotal').innerHTML=L.length?'<span class="due">'+pl(L.length,'open balance')+' · '+fmt(sum(L,x=>x.k.due))+' IDR to collect</span>':'<span class="paid">✓ No open balances: everything is collected</span>';
+    $('#payTotal').innerHTML=L.length?'<span class="due">'+pl(L.length,'open balance')+' · '+fmt(sum(L,x=>x.k.due))+' '+CUR()+' to collect</span>':'<span class="paid">✓ No open balances: everything is collected</span>';
     $('#payList').innerHTML=L.length?L.map((x,i)=>{const c=S.clients[x.b.clientId]||{};
       return '<div class="row '+(x.k.paid>0?'rpart':'rdue')+'" style="'+(i===0?'border-top:0':'')+'"><button type="button" class="row-main" data-act="payBooking" data-id="'+esc(x.b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(x.b.statut)+'</span><span class="r2">'+esc(x.b.tarifNom||'')+' · '+esc(fmtShort(x.b.date))+'</span><span class="hint">Total '+fmt(x.k.total)+' · paid '+fmt(x.k.paid)+'</span></button><div class="r-side"><span class="due" style="font-size:1.02rem">'+fmt(x.k.due)+'</span><br><span class="btn sm" style="margin-top:6px">Collect</span></div></div>';
     }).join(''):emptyBox('✓ Everything is paid','Bookings with a remaining balance appear here.');
   }else if(ST.payTab==='fees'){
     const F=Object.values(S.bookings).filter(b=>(+b.frais||0)>0&&b.statut!=='Cancelled'),mth=perLabel();
     const open=F.filter(b=>!b.fraisPaye).sort((a,b)=>a.date<b.date?-1:1),done=F.filter(b=>b.fraisPaye&&inPer(b.fraisPayeLe||b.date)).sort((a,b)=>(a.fraisPayeLe||a.date)<(b.fraisPayeLe||b.date)?1:-1);
-    $('#payTotal').innerHTML=open.length?'<span class="due">'+pl(open.length,'booking')+' with fees unpaid · '+fmt(sum(open,b=>b.frais))+' IDR to collect</span>':'<span class="paid">✓ All marine fees collected</span>';
+    $('#payTotal').innerHTML=open.length?'<span class="due">'+pl(open.length,'booking')+' with fees unpaid · '+fmt(sum(open,b=>b.frais))+' '+CUR()+' to collect</span>':'<span class="paid">✓ All marine fees collected</span>';
     const row=(b,isOpen)=>{const c=S.clients[b.clientId]||{};return '<div class="row '+(isOpen?'rdue':'rok')+'"><div class="row-main"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(b.statut)+'</span><span class="r2">'+esc(b.tarifNom||'')+' · '+esc(fmtShort(b.date))+'</span>'+(isOpen?'':'<span class="hint">Paid '+esc(fmtShort(b.fraisPayeLe||b.date))+(b.fraisPayePar?' · confirmed by '+esc(b.fraisPayePar):'')+'</span>')+'</div><div class="r-side"><span class="'+(isOpen?'due':'paid')+'">'+fmt(b.frais)+'</span><br>'+feeBadge(!isOpen)+(isOpen?(canWrite?'<br><button type="button" class="btn sm" style="margin-top:6px" data-act="feePaid" data-id="'+esc(b.id)+'">Mark paid</button>':''):(cfg().lockPay?'<br><span class="hint" style="display:inline-block;margin-top:6px">🔒 Confirmed</span>'+(canEdit?'<br><button type="button" class="btn ghost sm" style="margin-top:6px" data-act="feeRefund" data-id="'+esc(b.id)+'">Refund</button>':''):(canWrite?'<br><button type="button" class="btn ghost sm" style="margin-top:6px" data-act="feeUndo" data-id="'+esc(b.id)+'">Undo</button>':'')))+'</div></div>'};
     $('#payList').innerHTML='<div class="note" style="margin:12px">Eco Trust and Marine Park fees are paid in cash and passed on to the authorities. They are never included in the dive price, the balances or the revenue.</div>'+
-     '<div class="ghead"><span>To collect</span><small>'+fmt(sum(open,b=>b.frais))+' IDR</small></div>'+(open.length?open.map(b=>row(b,true)).join(''):'<div class="empty"><b>All fees collected</b></div>')+
-     '<div class="ghead"><span>Collected in '+esc(mth)+'</span><small>'+fmt(sum(done,b=>b.frais))+' IDR</small></div>'+(done.length?done.map(b=>row(b,false)).join(''):'<div class="empty"><b>No fees collected this month</b></div>')+
+     '<div class="ghead"><span>To collect</span><small>'+fmt(sum(open,b=>b.frais))+' '+CUR()+'</small></div>'+(open.length?open.map(b=>row(b,true)).join(''):'<div class="empty"><b>All fees collected</b></div>')+
+     '<div class="ghead"><span>Collected in '+esc(mth)+'</span><small>'+fmt(sum(done,b=>b.frais))+' '+CUR()+'</small></div>'+(done.length?done.map(b=>row(b,false)).join(''):'<div class="empty"><b>No fees collected this month</b></div>')+
      '<div class="row" style="justify-content:flex-end;gap:8px"><span class="hint" style="align-self:center">Paid in: '+esc(mth)+'</span>'+exBtns('fees',1)+'</div>';
   }else{
     const L=Object.values(S.payments).filter(p=>inPer(p.date)).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0);
     const by={};L.forEach(p=>{by[p.methode]=(by[p.methode]||0)+(+p.montant||0)});
-    $('#payTotal').innerHTML=esc(perLabel())+' · <span class="paid">'+fmt(sum(L,p=>p.montant))+' IDR collected</span>'+esc((Object.keys(by).length?' ('+Object.keys(by).map(k=>k+' '+fmt(by[k])).join(' · ')+')':''));
+    $('#payTotal').innerHTML=esc(perLabel())+' · <span class="paid">'+fmt(sum(L,p=>p.montant))+' '+CUR()+' collected</span>'+esc((Object.keys(by).length?' ('+Object.keys(by).map(k=>k+' '+fmt(by[k])).join(' · ')+')':''));
     $('#payList').innerHTML=L.length?L.map((p,i)=>{const c=S.clients[p.clientId]||{},b=S.bookings[p.bookingId]||{};
       return '<div class="row '+(p.montant<0?'rdue':'rok')+'" style="'+(i===0?'border-top:0':'')+'"><div class="row-main"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong><span class="chip">'+esc(p.methode||'')+'</span></span><span class="r2">'+esc(fmtShort(p.date))+' · '+esc(b.tarifNom||'')+(p.ref?' · ref. '+esc(p.ref):'')+'</span></div><div class="r-side '+(p.montant<0?'due':'paid')+'">'+(p.montant<0?'− '+fmt(-p.montant)+'<br><span class="pbadge pb-due">Refund</span>':'+ '+fmt(p.montant)+'<br><span class="pbadge pb-ok">✓ Collected</span>')+(canEdit?(payLocked(p)?'<br><span class="hint" style="display:inline-block;margin-top:6px">🔒 Protected</span>'+(p.montant>0?'<br><button type="button" class="btn ghost sm" style="margin-top:6px" data-act="payRefund" data-id="'+esc(p.id)+'">Refund</button>':''):'<br><button type="button" class="btn danger sm" style="margin-top:6px" data-act="delPay" data-id="'+esc(p.id)+'">Delete</button>'):'')+'</div></div>';
     }).join(''):emptyBox('No payments this month','Recorded payments appear here.');
@@ -742,7 +749,7 @@ V.team={
   const m=PER.from,act=Object.values(S.bookings).filter(b=>inPer(b.date)&&(b.statut==='Confirmed'||b.statut==='Completed'));
   const ag={};act.forEach(b=>{if(b.agent){const a=ag[b.agent]=ag[b.agent]||{n:0,net:0};a.n++;a.net+=calc(b).net}});
   const ak=Object.keys(ag).sort((a,b)=>ag[b].n-ag[a].n);
-  $('#agTable').innerHTML=ak.length?'<table><thead><tr><th>Agent / hotel</th><th class="n">Bookings</th><th class="n">Net amount (IDR)</th></tr></thead><tbody>'+ak.map(k=>'<tr><td>'+esc(k)+'</td><td class="n">'+ag[k].n+'</td><td class="n">'+fmt(ag[k].net)+'</td></tr>').join('')+'</tbody></table>':emptyBox('No agent bookings this month','Fill in the agent or hotel on the booking.');
+  $('#agTable').innerHTML=ak.length?'<table><thead><tr><th>Agent / hotel</th><th class="n">Bookings</th><th class="n">Net amount ('+CUR()+')</th></tr></thead><tbody>'+ak.map(k=>'<tr><td>'+esc(k)+'</td><td class="n">'+ag[k].n+'</td><td class="n">'+fmt(ag[k].net)+'</td></tr>').join('')+'</tbody></table>':emptyBox('No agent bookings this month','Fill in the agent or hotel on the booking.');
  }
 };
 
@@ -757,7 +764,7 @@ V.prices={
   $('#tNew').hidden=!canEdit||T.isDefault;$('#tImp').hidden=!canEdit||T.isDefault;
   $('#tNote').innerHTML=T.isDefault?'<div class="note warn">These prices come from the 2026 brochure and are not saved in the database yet. '+(canEdit?'<button type="button" class="btn sm" data-act="importTarifs" style="margin-left:8px">Save the 2026 brochure</button>':'A manager needs to save them before they can be edited.')+'</div>':'';
   const g={};T.list.forEach(t=>{(g[t.categorie]=g[t.categorie]||[]).push(t)});
-  $('#tList').innerHTML=Object.keys(g).map(k=>'<section class="group"><div class="ghead"><span>'+esc(k)+'</span><small>'+g[k].length+' prices</small></div>'+g[k].map(t=>'<div class="row"><div class="row-main"><span class="r1"><strong>'+esc(t.nom)+'</strong></span>'+(t.note?'<span class="hint">'+esc(t.note)+'</span>':'')+'</div><div class="r-side">'+fmt(t.prix)+' IDR'+(canEdit&&!T.isDefault?'<br><button type="button" class="btn ghost sm" style="margin-top:6px" data-act="tarifEdit" data-id="'+esc(t.id)+'">Edit</button>':'')+'</div></div>').join('')+'</section>').join('');
+  $('#tList').innerHTML=Object.keys(g).map(k=>'<section class="group"><div class="ghead"><span>'+esc(k)+'</span><small>'+g[k].length+' prices</small></div>'+g[k].map(t=>'<div class="row"><div class="row-main"><span class="r1"><strong>'+esc(t.nom)+'</strong></span>'+(t.note?'<span class="hint">'+esc(t.note)+'</span>':'')+'</div><div class="r-side">'+fmt(t.prix)+' '+CUR()+''+(canEdit&&!T.isDefault?'<br><button type="button" class="btn ghost sm" style="margin-top:6px" data-act="tarifEdit" data-id="'+esc(t.id)+'">Edit</button>':'')+'</div></div>').join('')+'</section>').join('');
  }
 };
 
@@ -830,7 +837,7 @@ function buildXlsxMulti(sheets){
   ].concat(sheets.map((sh,i)=>['xl/worksheets/sheet'+(i+1)+'.xml',sheetXml(sh)])));
 }
 function buildXlsx(sheet,rows,widths){return buildXlsxMulti([{name:sheet,rows,widths,headerRows:[0]}])}
-const PAY_HEAD=['Date','Customer','Email','Phone','Nationality','Source','Activity','Category','Activity date','Instructor','Type','Method','Amount (IDR)','Reference','Dive price (IDR)','Dive balance (IDR)','Marine fees (IDR, cash, separate)','Marine fees paid'];
+const PAY_HEAD=['Date','Customer','Email','Phone','Nationality','Source','Activity','Category','Activity date','Instructor','Type','Method','Amount ('+CUR()+')','Reference','Dive price ('+CUR()+')','Dive balance ('+CUR()+')','Marine fees ('+CUR()+', cash, separate)','Marine fees paid'];
 function payRowsAll(){
   const L=Object.values(S.payments).sort((a,b)=>(a.date||'')<(b.date||'')?-1:1);
   return [PAY_HEAD].concat(L.map(p=>{
@@ -907,7 +914,7 @@ V.gear={
 
 V.comm={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Marketing</h1><p class="sub">Where your customers come from. Revenue in IDR.</p></div><div class="toolbar">'+exBtns('mk')+'</div></div>'+
+  m.innerHTML='<div class="head"><div><h1>Marketing</h1><p class="sub">Where your customers come from. Revenue in '+CUR()+'.</p></div><div class="toolbar">'+exBtns('mk')+'</div></div>'+
    perBar('<label class="fld check" style="flex:none"><input type="checkbox" id="mkAll"><span>All time</span></label>')+
    '<div id="mkSum"></div><section class="card"><h2>By source</h2><div id="mkTable"></div></section>'+
    '<section class="card"><h2>What customers come for</h2><div id="mkInt"></div></section>'+
@@ -928,7 +935,7 @@ V.comm={
  fill(){
   if(loading()){$('#mkTable').innerHTML=emptyBox('Loading…');return}
   const rows=V.comm.data(),totC=sum(rows,r=>r.newC.length),totR=sum(rows,r=>r.rev),unk=rows.find(r=>r.k==='Unknown');
-  $('#mkSum').innerHTML='<div class="chips" style="margin-bottom:10px"><span class="pill st-confirmed">'+pl(totC,'new customer')+'</span><span class="pill st-completed">'+fmt(totR)+' IDR revenue</span>'+(unk&&totC?'<span class="pill st-pending">'+Math.round(100*unk.newC.length/totC)+'% unknown source</span>':'')+'</div>';
+  $('#mkSum').innerHTML='<div class="chips" style="margin-bottom:10px"><span class="pill st-confirmed">'+pl(totC,'new customer')+'</span><span class="pill st-completed">'+fmt(totR)+' '+CUR()+' revenue</span>'+(unk&&totC?'<span class="pill st-pending">'+Math.round(100*unk.newC.length/totC)+'% unknown source</span>':'')+'</div>';
   const all=!!ST.mkAll,ic={};
   Object.values(S.clients).filter(c=>c.interest&&(all||inPer(c.checkinAt||c.creeLe))).forEach(c=>interestList(c.interest).forEach(k=>ic[k]=(ic[k]||0)+1));
   const ik=Object.keys(ic).sort((a,b)=>ic[b]-ic[a]),im=Math.max(1,...ik.map(k=>ic[k]));
@@ -980,12 +987,13 @@ V.settings={
    SECS.map(k=>'<tr><td><strong>'+k[1]+'</strong></td>'+['staff','viewer','instructor'].map(r=>'<td><select id="ac-'+r+'-'+k[0]+'">'+[['edit','Edit'],['view','View'],['none','Hidden']].filter(o=>!(o[0]==='edit'&&(r==='viewer'||k[0]==='prices'||(r==='instructor'&&!['team','leave'].includes(k[0]))))).map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join('')+'</select></td>').join('')+'</tr>').join('')+
    '</tbody></table></div><p class="hint">Prices can only ever be changed by managers. Access is set per role. To give someone a role, use <strong id="accHintTxt">the Share menu (Editor = Manager, Contributor = Staff, Viewer = Read-only)</strong>.</p>'+
    '<div class="actions"><button type="button" class="btn" data-act="saveAccess">Save access</button></div></section>'+
+   '<section class="card" id="curCard"><h2>Currency</h2><p class="hint">All amounts in the app are shown in this currency. Changing it does not convert amounts already entered.</p><div class="gf"><label class="fld">Currency<select id="cCur">'+Object.keys(CURS).map(k=>'<option value="'+k+'">'+k+' · '+CURS[k][0]+'</option>').join('')+'</select></label></div><div class="actions"><button type="button" class="btn" data-act="saveCur">Save currency</button></div></section>'+
    '<section class="card"><h2>Settings</h2><p class="hint" id="cfgHint"></p><div class="gf">'+
-   '<label class="fld">Eco / conservation fee (IDR, per diver)<input type="number" id="cEco" min="0" step="1000"></label>'+
-   '<label class="fld">Marine Park fee, foreign (IDR)<input type="number" id="cPe" min="0" step="1000"></label>'+
-   '<label class="fld">Marine Park fee, local (IDR)<input type="number" id="cPl" min="0" step="1000"></label><span></span>'+
+   '<label class="fld">Eco / conservation fee ('+CUR()+', per diver)<input type="number" id="cEco" min="0" step="'+STEP()+'"></label>'+
+   '<label class="fld">Marine Park fee, foreign ('+CUR()+')<input type="number" id="cPe" min="0" step="'+STEP()+'"></label>'+
+   '<label class="fld">Marine Park fee, local ('+CUR()+')<input type="number" id="cPl" min="0" step="'+STEP()+'"></label><span></span>'+
    '<label class="fld">Commission on courses (%)<input type="number" id="cCp" min="0" max="100" step="0.5"></label>'+
-   '<label class="fld">Commission per fun dive (IDR)<input type="number" id="cCf" min="0" step="1000"></label>'+
+   '<label class="fld">Commission per fun dive ('+CUR()+')<input type="number" id="cCf" min="0" step="'+STEP()+'"></label>'+
    '<label class="fld">Dive sites (one per line)<textarea id="cSites" rows="6"></textarea></label>'+
    '<label class="fld">Agents and hotels (one per line)<textarea id="cAgents" rows="6"></textarea></label>'+
    '<label class="fld full">Certification levels (one per line)<textarea id="cNiv" rows="6"></textarea></label></div>'+
@@ -996,7 +1004,7 @@ V.settings={
  fill(){
   if(!V.settings.cfgLoaded&&(LOADED.config||!db)){
     const c=cfg();
-    $('#cCp').value=c.commission.coursePct;$('#cCf').value=c.commission.funPerDive;$('#cEco').value=c.frais.eco;$('#cPe').value=c.frais.parcEtranger;$('#cPl').value=c.frais.parcLocal;
+    $('#cCur').value=CUR();$('#cCp').value=c.commission.coursePct;$('#cCf').value=c.commission.funPerDive;$('#cEco').value=c.frais.eco;$('#cPe').value=c.frais.parcEtranger;$('#cPl').value=c.frais.parcLocal;
     $('#cSites').value=c.sites.join('\n');$('#cAgents').value=c.agents.join('\n');$('#cNiv').value=c.niveaux.join('\n');
     $('#cLock').checked=c.lockPay;V.settings.cfgLoaded=true;
     const br=(S.config&&S.config.brand)||{};$('#bName').value=br.name||'';$('#bNavy').value=br.navy||'#0A2540';$('#bAcc').value=br.accent||'#0B7285';$('#bPrevImg').src=br.logo||LOGO0;V.settings.pendLogo=undefined;
@@ -1008,7 +1016,7 @@ V.settings={
   $('#cfgHint').textContent=canEdit?'Paid in cash by each diver and passed on to the authorities. Tracked separately from the dive price.':'Managers only.';
   if(!V.settings.feesLoaded&&(LOADED.tarifs||!db)){
     const fl=tarifs().list.filter(x=>!isFun({categorie:x.categorie}));
-    $('#feeRows').innerHTML=fl.map(x=>'<tr><td class="wrapc"><span class="hint">'+esc(x.categorie)+'</span><br><strong>'+esc(x.nom)+'</strong></td><td class="n">'+fmt(x.prix)+'</td><td class="n"><input class="fee-a" data-id="'+esc(x.id)+'" type="number" min="0" step="1000" value="'+(+x.feeAgency||0)+'" style="width:120px;text-align:right"></td><td class="n"><input class="fee-o" data-id="'+esc(x.id)+'" type="number" min="0" step="1000" value="'+(+x.feeOther||0)+'" style="width:120px;text-align:right"></td><td class="n"><strong class="fee-base" data-id="'+esc(x.id)+'" data-p="'+(+x.prix||0)+'">'+fmt(Math.max(0,(+x.prix||0)-(+x.feeAgency||0)-(+x.feeOther||0)))+'</strong></td></tr>').join('')||'<tr><td colspan="5" class="hint">Add your prices first.</td></tr>';
+    $('#feeRows').innerHTML=fl.map(x=>'<tr><td class="wrapc"><span class="hint">'+esc(x.categorie)+'</span><br><strong>'+esc(x.nom)+'</strong></td><td class="n">'+fmt(x.prix)+'</td><td class="n"><input class="fee-a" data-id="'+esc(x.id)+'" type="number" min="0" step="'+STEP()+'" value="'+(+x.feeAgency||0)+'" style="width:120px;text-align:right"></td><td class="n"><input class="fee-o" data-id="'+esc(x.id)+'" type="number" min="0" step="'+STEP()+'" value="'+(+x.feeOther||0)+'" style="width:120px;text-align:right"></td><td class="n"><strong class="fee-base" data-id="'+esc(x.id)+'" data-p="'+(+x.prix||0)+'">'+fmt(Math.max(0,(+x.prix||0)-(+x.feeAgency||0)-(+x.feeOther||0)))+'</strong></td></tr>').join('')||'<tr><td colspan="5" class="hint">Add your prices first.</td></tr>';
     $('#feeCard .actions .btn').hidden=!canEdit;$$('.fee-a,.fee-o').forEach(i=>i.disabled=!canEdit);
     V.settings.feesLoaded=true;
   }
@@ -1102,7 +1110,7 @@ function openBooking(id,draft){
    '<label class="fld">Date<input type="date" id="f-date" value="'+esc(b.date)+'"></label>'+
    '<label class="fld">Slot<select id="f-creneau">'+CRENEAUX.map(x=>opt(x,x,x===slotNorm(b.creneau))).join('')+'</select></label>'+
    '<label class="fld full">Activity<select id="f-tarif">'+tOpts+'</select></label>'+
-   '<label class="fld">Unit price (IDR)<input type="number" id="f-prix" min="0" step="1000" value="'+esc(b.prixUnit||'')+'"></label>'+
+   '<label class="fld">Unit price ('+CUR()+')<input type="number" id="f-prix" min="0" step="'+STEP()+'" value="'+esc(b.prixUnit||'')+'"></label>'+
    '<label class="fld">Quantity<input type="number" id="f-qte" min="1" step="1" value="'+esc(b.qte||1)+'"></label>'+
    '<label class="fld">Discount (%)<input type="number" id="f-remise" min="0" max="100" step="1" value="'+esc(b.remise||0)+'"></label>'+
    '<label class="fld">Status<select id="f-statut">'+STATUTS.map(x=>opt(x,x,x===b.statut)).join('')+'</select></label>'+
@@ -1110,7 +1118,7 @@ function openBooking(id,draft){
    '<label class="fld">Instructor<select id="f-instr">'+opt('','To assign',!b.instructeurId)+gl.map(s=>opt(s.id,s.nom,s.id===b.instructeurId)).join('')+'</select></label>'+
    '<div class="err full" id="f-leave" role="status" style="margin:-4px 0 0"></div>'+
    '<label class="fld full">Agent or hotel<input id="f-agent" list="dl-agents" autocomplete="off" value="'+esc(b.agent||'')+'"><datalist id="dl-agents">'+agents+'</datalist></label>'+
-   '<label class="fld check full"><input type="checkbox" id="f-fee"'+(feeOn?' checked':'')+'><span>Marine fees: Eco Trust + Marine Park (<span id="f-feeamt">0</span> IDR). Paid in cash, kept separate from the dive price.</span></label>'+
+   '<label class="fld check full"><input type="checkbox" id="f-fee"'+(feeOn?' checked':'')+'><span>Marine fees: Eco Trust + Marine Park (<span id="f-feeamt">0</span> '+CUR()+'). Paid in cash, kept separate from the dive price.</span></label>'+
    '<label class="fld check full" id="f-feepaidrow"><input type="checkbox" id="f-feepaid"'+(b.fraisPaye?' checked':'')+'><span>Marine fees paid in cash by the customer</span></label>'+
    '<label class="fld full">Notes<textarea id="f-notes">'+esc(b.notes||'')+'</textarea></label></div>'+
    '<div class="sum" id="f-sum"></div><div class="err" id="f-err" role="alert"></div>'+
@@ -1142,8 +1150,8 @@ function updateTotals(){
   $('#f-feeamt').textContent=fmt(fee);$('#f-feepaidrow').hidden=!r.feeOn;
   const k=calc({prixUnit:r.prixUnit,qte:r.qte,remise:r.remise,frais:r.feeOn?fee:0,statut:r.statut,id:MODAL.bookingId});
   const paid=MODAL.bookingId?calc(S.bookings[MODAL.bookingId]||{id:MODAL.bookingId}).paid:0;
-  $('#f-sum').innerHTML='<span class="tot">Dive price</span><span class="tot">'+fmt(k.total)+' IDR</span>'+(MODAL.bookingId?'<span>Already paid</span><span>'+fmt(paid)+' IDR</span><span>Balance due</span><span>'+fmt(k.total-paid)+' IDR</span>':'')+
-   (r.feeOn?'<span>Marine fees (cash, separate)</span><span>'+fmt(fee)+' IDR · '+(r.feePaid?'paid':'<b>not paid yet</b>')+'</span>':'');
+  $('#f-sum').innerHTML='<span class="tot">Dive price</span><span class="tot">'+fmt(k.total)+' '+CUR()+'</span>'+(MODAL.bookingId?'<span>Already paid</span><span>'+fmt(paid)+' '+CUR()+'</span><span>Balance due</span><span>'+fmt(k.total-paid)+' '+CUR()+'</span>':'')+
+   (r.feeOn?'<span>Marine fees (cash, separate)</span><span>'+fmt(fee)+' '+CUR()+' · '+(r.feePaid?'paid':'<b>not paid yet</b>')+'</span>':'');
 }
 async function saveBk(){
   const r=readBk(),err=$('#f-err');
@@ -1415,14 +1423,14 @@ function openTarifImport(){
   if(!canEdit){toast('Only a manager can change prices.','bad');return}
   MODAL={kind:'ti',plan:null};
   openModal('Import prices',
-   '<p class="sub">Fill in the price sheet in Excel or Google Sheets, save it as <strong>CSV</strong> and choose it below. Columns: Category, Name, Price (IDR), Dives included, Note. Prices with the same name are updated, new names are added, nothing is deleted.</p>'+
+   '<p class="sub">Fill in the price sheet in Excel or Google Sheets, save it as <strong>CSV</strong> and choose it below. Columns: Category, Name, Price ('+CUR()+'), Dives included, Note. Prices with the same name are updated, new names are added, nothing is deleted.</p>'+
    '<label class="fld">CSV file<input type="file" id="ti-file" accept=".csv,text/csv,text/plain"></label><div id="ti-out"></div>'+
    '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="tarifImportRun" id="ti-go" disabled>Apply</button></div>');
 }
 function planTarifs(rows){
   if(rows.length<2)throw new Error('The file has no rows.');
   const map=rows[0].map(h=>{const n=normH(h);return n.includes('categ')?'cat':(n.includes('price')||n.includes('prix')||n.includes('idr'))?'prix':(n.includes('dive')||n.includes('plong'))?'pl':n.includes('note')?'note':(n.includes('name')||n.includes('nom')||n.includes('activity'))?'nom':null});
-  if(!map.includes('nom')||!map.includes('prix'))throw new Error('Columns "Name" and "Price (IDR)" are required. Use the price sheet template.');
+  if(!map.includes('nom')||!map.includes('prix'))throw new Error('Columns "Name" and "Price ('+CUR()+')" are required. Use the price sheet template.');
   const T=tarifs().list,key=t=>(t.categorie+'|'+t.nom).toLowerCase(),byKey={},byNom={};
   T.forEach(t=>{byKey[key(t)]=t;byNom[String(t.nom).toLowerCase()]=t});
   let ordre=Math.max(0,...T.map(x=>x.ordre||0));
@@ -1430,7 +1438,7 @@ function planTarifs(rows){
   rows.slice(1).forEach(r=>{
     const g=k=>{const i=map.indexOf(k);return i<0?'':String(r[i]==null?'':r[i]).trim()};
     const nom=g('nom');if(!nom){skip++;return}
-    const prix=Math.max(0,parseInt(g('prix').replace(/[^\d]/g,''),10)||0),cat=g('cat'),pl=g('pl')===''?null:Math.max(0,parseInt(g('pl'),10)||0),note=g('note');
+    const prix=Math.max(0,CDEC()?rnd(parseFloat(g('prix').replace(/[^\d.,]/g,'').replace(/,(?=\d{3}(\D|$))/g,'').replace(',','.'))||0):(parseInt(g('prix').replace(/[^\d]/g,''),10)||0)),cat=g('cat'),pl=g('pl')===''?null:Math.max(0,parseInt(g('pl'),10)||0),note=g('note');
     const old=byKey[(cat+'|'+nom).toLowerCase()]||byNom[nom.toLowerCase()];
     if(old){
       const d={categorie:cat||old.categorie,nom:old.nom,prix,plongees:pl==null?(old.plongees||0):pl,note:map.includes('note')?note:(old.note||''),ordre:old.ordre||0};
@@ -1449,7 +1457,7 @@ async function onTarifFile(file){
   try{
     const plan=planTarifs(parseCSV(await file.text()));MODAL.plan=plan;
     out.innerHTML='<div class="chips" style="margin-bottom:8px"><span class="pill st-completed">'+plan.list.filter(x=>x.isNew).length+' new</span><span class="pill st-confirmed">'+plan.list.filter(x=>!x.isNew).length+' changed</span><span class="pill st-pending">'+plan.same+' unchanged</span>'+(plan.skip?'<span class="pill st-cancelled">'+plan.skip+' skipped</span>':'')+'</div>'+
-     (plan.list.length?'<div class="tablewrap"><table><thead><tr><th>Name</th><th class="n">Price (IDR)</th></tr></thead><tbody>'+plan.list.slice(0,15).map(x=>'<tr><td>'+esc(x.d.nom)+(x.isNew?' <span class="hint">(new)</span>':'')+'</td><td class="n">'+(x.isNew?'':'<span class="old">'+fmt(x.old.prix)+'</span> ')+fmt(x.d.prix)+'</td></tr>').join('')+'</tbody></table></div>'+(plan.list.length>15?'<p class="hint">+ '+(plan.list.length-15)+' more.</p>':''):'<p class="hint">Nothing to change.</p>');
+     (plan.list.length?'<div class="tablewrap"><table><thead><tr><th>Name</th><th class="n">Price ('+CUR()+')</th></tr></thead><tbody>'+plan.list.slice(0,15).map(x=>'<tr><td>'+esc(x.d.nom)+(x.isNew?' <span class="hint">(new)</span>':'')+'</td><td class="n">'+(x.isNew?'':'<span class="old">'+fmt(x.old.prix)+'</span> ')+fmt(x.d.prix)+'</td></tr>').join('')+'</tbody></table></div>'+(plan.list.length>15?'<p class="hint">+ '+(plan.list.length-15)+' more.</p>':''):'<p class="hint">Nothing to change.</p>');
     go.disabled=!plan.list.length;go.textContent='Apply '+plan.list.length+' change'+(plan.list.length===1?'':'s');
   }catch(e){out.innerHTML='<div class="err" role="alert">'+esc(e.message||'Could not read this file.')+'</div>'}
 }
@@ -1461,31 +1469,31 @@ function openPay(bookingId,preset){
   const c=S.clients[b.clientId]||{},k=calc(b);
   MODAL={kind:'pay',bookingId};
   openModal('Collect a payment',
-   '<div class="sum"><span>'+esc(c.nom||'Customer')+' · '+esc(b.tarifNom||'')+'</span><span>'+esc(fmtShort(b.date))+'</span><span>Total</span><span>'+fmt(k.total)+' IDR</span><span>Already paid</span><span>'+fmt(k.paid)+' IDR</span><span class="tot">Balance</span><span class="tot">'+fmt(k.total-k.paid)+' IDR</span></div>'+
+   '<div class="sum"><span>'+esc(c.nom||'Customer')+' · '+esc(b.tarifNom||'')+'</span><span>'+esc(fmtShort(b.date))+'</span><span>Total</span><span>'+fmt(k.total)+' '+CUR()+'</span><span>Already paid</span><span>'+fmt(k.paid)+' '+CUR()+'</span><span class="tot">Balance</span><span class="tot">'+fmt(k.total-k.paid)+' '+CUR()+'</span></div>'+
    '<div class="gf"><label class="fld full">Discount (%)<input id="p-rem" type="number" min="0" max="100" step="1" value="'+esc(b.remise||0)+'"'+(canEdit?'':' disabled')+'></label>'+
    '<div class="hint full" id="p-remInfo"></div>'+
    '<label class="fld">Type<select id="p-type"><option value="1">Payment</option>'+(canEdit?'<option value="-1">Refund</option>':'')+'</select></label>'+
-   '<label class="fld">Amount (IDR)<input id="p-amt" type="number" min="0" step="1000" value="'+(k.total-k.paid>0?k.total-k.paid:'')+'"></label>'+
-   '<label class="fld">Method<select id="p-met">'+METHODES.map(x=>opt(x)).join('')+'</select></label>'+
+   '<label class="fld">Amount ('+CUR()+')<input id="p-amt" type="number" min="0" step="'+STEP()+'" value="'+(k.total-k.paid>0?rnd(k.total-k.paid):'')+'"></label>'+
+   '<label class="fld">Method<select id="p-met">'+METHODES.filter(x=>x!=='QRIS'||CUR()==='IDR').map(x=>opt(x)).join('')+'</select></label>'+
    '<label class="fld">Date<input id="p-date" type="date" value="'+today()+'"></label>'+
    '<label class="fld full">Reference or note<input id="p-ref"></label></div>'+
    '<div class="err" id="p-err" role="alert"></div>'+
    '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="savePay" id="p-save">Save payment</button></div>');
   const upd=(fromUser)=>{
     const rem=Math.min(100,Math.max(0,+$('#p-rem').value||0)),k2=calc(Object.assign({},b,{remise:rem}));
-    $('#p-remInfo').textContent=rem!==(+b.remise||0)?'New total: '+fmt(k2.total)+' IDR · balance: '+fmt(k2.total-k2.paid)+' IDR. The discount is applied to the booking when you save.':(canEdit?'Change the discount here if needed before taking the payment.':'Only a manager can change the discount.');
-    if(fromUser&&+$('#p-type').value===1)$('#p-amt').value=k2.total-k2.paid>0?k2.total-k2.paid:'';
+    $('#p-remInfo').textContent=rem!==(+b.remise||0)?'New total: '+fmt(k2.total)+' '+CUR()+' · balance: '+fmt(k2.total-k2.paid)+' '+CUR()+'. The discount is applied to the booking when you save.':(canEdit?'Change the discount here if needed before taking the payment.':'Only a manager can change the discount.');
+    if(fromUser&&+$('#p-type').value===1)$('#p-amt').value=k2.total-k2.paid>0?rnd(k2.total-k2.paid):'';
   };
   $('#p-rem').oninput=()=>upd(true);upd(false);
   if(preset){if(preset.type<0&&canEdit)$('#p-type').value='-1';if(preset.amount)$('#p-amt').value=preset.amount;if(preset.method)$('#p-met').value=preset.method;if(preset.ref)$('#p-ref').value=preset.ref;
     const h=$('#p-remInfo');if(preset.type<0)h.textContent='Refund: the amount is filled in with the payment you are refunding. Change it for a partial refund.'}
 }
 async function savePay(){
-  const amt=Math.abs(+$('#p-amt').value||0),sign=+$('#p-type').value,date=$('#p-date').value;
+  const amt=rnd(Math.abs(+$('#p-amt').value||0)),sign=+$('#p-type').value,date=$('#p-date').value;
   if(!amt){$('#p-err').textContent='Enter an amount.';return}
   if(!date){$('#p-err').textContent='Enter the date.';return}
   const b=S.bookings[MODAL.bookingId],rem=Math.min(100,Math.max(0,+$('#p-rem').value||0));
-  if(sign<0&&amt>calc(b).paid){$('#p-err').textContent='The refund is higher than what was paid ('+fmt(calc(b).paid)+' IDR).';return}
+  if(sign<0&&amt>calc(b).paid){$('#p-err').textContent='The refund is higher than what was paid ('+fmt(calc(b).paid)+' '+CUR()+').';return}
   $('#p-save').disabled=true;
   const ok=await W(async()=>{if(canEdit&&rem!==(+b.remise||0))await col('bookings').doc(MODAL.bookingId).update({remise:rem});await col('payments').doc().set({bookingId:MODAL.bookingId,clientId:b.clientId,montant:sign*amt,methode:$('#p-met').value,date,ref:$('#p-ref').value.trim()})},'Payment saved');
   if(ok)closeModal();else{const x=$('#p-save');if(x)x.disabled=false}
@@ -1522,8 +1530,8 @@ function poolCalc(m){
     return{id:s.id,s:s,days:new Set(l.map(x=>x.date)).size,acts:sum(l,x=>x.qty),present:!ab.includes(s.id)};
   });
   const w=r=>!r.present?0:c.method==='days'?r.days:c.method==='acts'?r.acts:1,W_=sum(P,w);
-  out.gross=g;out.dist=Math.round(g*c.pct/100);out.kept=g-out.dist;
-  out.rows=P.map(r=>Object.assign(r,{share:W_?w(r)/W_:0,amt:W_?Math.round(out.dist*w(r)/W_):0}));
+  out.gross=g;out.dist=rnd(g*c.pct/100);out.kept=rnd(g-out.dist);
+  out.rows=P.map(r=>Object.assign(r,{share:W_?w(r)/W_:0,amt:W_?rnd(out.dist*w(r)/W_):0}));
   return out;
 }
 function poolCard(){
@@ -1535,7 +1543,7 @@ function poolCard(){
   if(canEdit)h+='<div class="actions"><button type="button" class="btn" data-act="savePool">Save</button></div>';
   if(c.on){
     h+='<div class="kpis" style="margin:12px 0"><div class="kpi"><span>Pool (net revenue)</span><b>'+fmt(PC.gross)+'</b></div><div class="kpi"><span>Shared with instructors</span><b>'+fmt(PC.dist)+'</b></div><div class="kpi"><span>Kept by the center</span><b>'+fmt(PC.kept)+'</b></div><div class="kpi"><span>Instructors in the pool</span><b>'+PC.rows.filter(r=>r.present).length+'</b></div></div>';
-    h+=PC.rows.length?'<div class="tablewrap"><table id="poolTable"><thead><tr><th>Instructor</th><th>Present</th><th class="n">Days worked</th><th class="n">Activities</th><th class="n">Share</th><th class="n">Pool amount (IDR)</th></tr></thead><tbody>'+PC.rows.map(r=>'<tr><td><button type="button" class="btn ghost sm" data-act="staffMonth" data-id="'+esc(r.id)+'">'+flag(r.s.pays)+esc(r.s.nom)+'</button></td><td><input type="checkbox" class="pl-pres" data-act="poolPresent" data-id="'+esc(r.id)+'"'+(r.present?' checked':'')+(canEdit?'':' disabled')+' aria-label="Present in this period"></td><td class="n">'+r.days+'</td><td class="n">'+r.acts+'</td><td class="n">'+(Math.round(r.share*1000)/10)+'%</td><td class="n"><strong>'+fmt(r.amt)+'</strong></td></tr>').join('')+'</tbody><tfoot><tr><td colspan="5"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(PC.rows,r=>r.amt))+'</strong></td></tr></tfoot></table></div><p class="hint">Every active instructor in the pool is listed and shares it. Untick Present for someone who did not work in this period (holiday, leave): they get no share and the others split it. Freelancers set to Commission only are not in the pool. Days worked = different dates with an activity.</p>':emptyBox('Nobody in the pool','Add active instructors in Team, or switch them from Commission only.');
+    h+=PC.rows.length?'<div class="tablewrap"><table id="poolTable"><thead><tr><th>Instructor</th><th>Present</th><th class="n">Days worked</th><th class="n">Activities</th><th class="n">Share</th><th class="n">Pool amount ('+CUR()+')</th></tr></thead><tbody>'+PC.rows.map(r=>'<tr><td><button type="button" class="btn ghost sm" data-act="staffMonth" data-id="'+esc(r.id)+'">'+flag(r.s.pays)+esc(r.s.nom)+'</button></td><td><input type="checkbox" class="pl-pres" data-act="poolPresent" data-id="'+esc(r.id)+'"'+(r.present?' checked':'')+(canEdit?'':' disabled')+' aria-label="Present in this period"></td><td class="n">'+r.days+'</td><td class="n">'+r.acts+'</td><td class="n">'+(Math.round(r.share*1000)/10)+'%</td><td class="n"><strong>'+fmt(r.amt)+'</strong></td></tr>').join('')+'</tbody><tfoot><tr><td colspan="5"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(PC.rows,r=>r.amt))+'</strong></td></tr></tfoot></table></div><p class="hint">Every active instructor in the pool is listed and shares it. Untick Present for someone who did not work in this period (holiday, leave): they get no share and the others split it. Freelancers set to Commission only are not in the pool. Days worked = different dates with an activity.</p>':emptyBox('Nobody in the pool','Add active instructors in Team, or switch them from Commission only.');
   }
   return h;
 }
@@ -1550,9 +1558,9 @@ V.commission={
   const pc=$('#poolCard');const ae=document.activeElement;if(pc&&!(ae&&pc.contains(ae)&&/^(SELECT|INPUT)$/.test(ae.tagName)&&ae.type!=='checkbox'))pc.innerHTML=poolCard();
   stmtFill();
   const m=PER.from,cm=cfg().commission,P=poolCfg();
-  $('#comHint').textContent=P.on?'Pool system is ON: the amounts below show each instructor\'s pool share. The individual breakdown (courses at '+cm.coursePct+'% after fees, fun dives at '+fmt(cm.funPerDive)+' IDR) stays visible for reference.':'Courses: '+cm.coursePct+'% of the net amount after agency fees and costs (cash marine fees excluded). Fun dives: '+fmt(cm.funPerDive)+' IDR per dive. Only confirmed or completed bookings count. Tap an instructor to see exactly what they did in the selected period.';
+  $('#comHint').textContent=P.on?'Pool system is ON: the amounts below show each instructor\'s pool share. The individual breakdown (courses at '+cm.coursePct+'% after fees, fun dives at '+fmt(cm.funPerDive)+' '+CUR()+') stays visible for reference.':'Courses: '+cm.coursePct+'% of the net amount after agency fees and costs (cash marine fees excluded). Fun dives: '+fmt(cm.funPerDive)+' '+CUR()+' per dive. Only confirmed or completed bookings count. Tap an instructor to see exactly what they did in the selected period.';
   const rows=comRows(m);
-  $('#comTable').innerHTML=rows.length?'<table><thead><tr><th>Name</th>'+(P.on?'<th>System</th>':'')+'<th class="n">Courses</th><th class="n">Course comm.</th><th class="n">Fun dives</th><th class="n">Fun dive comm.</th><th class="n">'+(P.on?'Individual (ref.)':'Total (IDR)')+'</th>'+(P.on?'<th class="n">Pool share</th><th class="n">To pay (IDR)</th>':'')+(canEdit?'<th></th>':'')+'</tr></thead><tbody>'+rows.map(r=>'<tr><td><button type="button" class="btn ghost sm" data-act="staffMonth" data-id="'+esc(r.s.id)+'">'+flag(r.s.pays)+esc(r.s.nom)+'</button><div class="hint">'+(r.s.commission>0?r.s.commission+'% courses':cm.coursePct+'% courses')+' · '+fmt(funRateOf(r.s))+'/fun dive'+((r.s.commission>0||r.s.funRate>0)?' (custom)':'')+'</div></td>'+(P.on?'<td>'+(r.inPool?'Pool':'Commission only')+'</td>':'')+'<td class="n">'+r.nC+'</td><td class="n">'+fmt(r.cc)+'</td><td class="n">'+r.nF+'</td><td class="n">'+fmt(r.cf)+'</td><td class="n">'+(P.on?fmt(r.cc+r.cf):'<strong>'+fmt(r.cc+r.cf)+'</strong>')+'</td>'+(P.on?'<td class="n">'+(r.inPool?fmt(r.pool):'—')+'</td><td class="n"><strong>'+fmt(r.total)+'</strong></td>':'')+(canEdit?'<td><button type="button" class="btn ghost sm" data-act="staffEdit" data-id="'+esc(r.s.id)+'">Rates</button></td>':'')+'</tr>').join('')+'</tbody><tfoot><tr><td colspan="'+(P.on?7:5)+'"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(rows,r=>P.on?r.pool:r.cc+r.cf))+'</strong></td>'+(P.on?'<td class="n"><strong>'+fmt(sum(rows,r=>r.total))+'</strong></td>':'')+(canEdit?'<td></td>':'')+'</tr></tfoot></table>':emptyBox('No instructors','Add instructors in Team.');
+  $('#comTable').innerHTML=rows.length?'<table><thead><tr><th>Name</th>'+(P.on?'<th>System</th>':'')+'<th class="n">Courses</th><th class="n">Course comm.</th><th class="n">Fun dives</th><th class="n">Fun dive comm.</th><th class="n">'+(P.on?'Individual (ref.)':'Total ('+CUR()+')')+'</th>'+(P.on?'<th class="n">Pool share</th><th class="n">To pay ('+CUR()+')</th>':'')+(canEdit?'<th></th>':'')+'</tr></thead><tbody>'+rows.map(r=>'<tr><td><button type="button" class="btn ghost sm" data-act="staffMonth" data-id="'+esc(r.s.id)+'">'+flag(r.s.pays)+esc(r.s.nom)+'</button><div class="hint">'+(r.s.commission>0?r.s.commission+'% courses':cm.coursePct+'% courses')+' · '+fmt(funRateOf(r.s))+'/fun dive'+((r.s.commission>0||r.s.funRate>0)?' (custom)':'')+'</div></td>'+(P.on?'<td>'+(r.inPool?'Pool':'Commission only')+'</td>':'')+'<td class="n">'+r.nC+'</td><td class="n">'+fmt(r.cc)+'</td><td class="n">'+r.nF+'</td><td class="n">'+fmt(r.cf)+'</td><td class="n">'+(P.on?fmt(r.cc+r.cf):'<strong>'+fmt(r.cc+r.cf)+'</strong>')+'</td>'+(P.on?'<td class="n">'+(r.inPool?fmt(r.pool):'—')+'</td><td class="n"><strong>'+fmt(r.total)+'</strong></td>':'')+(canEdit?'<td><button type="button" class="btn ghost sm" data-act="staffEdit" data-id="'+esc(r.s.id)+'">Rates</button></td>':'')+'</tr>').join('')+'</tbody><tfoot><tr><td colspan="'+(P.on?7:5)+'"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(rows,r=>P.on?r.pool:r.cc+r.cf))+'</strong></td>'+(P.on?'<td class="n"><strong>'+fmt(sum(rows,r=>r.total))+'</strong></td>':'')+(canEdit?'<td></td>':'')+'</tr></tfoot></table>':emptyBox('No instructors','Add instructors in Team.');
  }
 };
 /* ---------- leave ---------- */
@@ -1618,16 +1626,16 @@ function comRows(m){
     return{s,inPool,total:inPool?(pr?pr.amt:0):ind,pool:pr?pr.amt:0,nC:sum(co,x=>x.qty),cc:sum(co,x=>x.comm),nF:sum(fu,x=>x.qty),cf:sum(fu,x=>x.comm),pend:payLines(s.id,m).filter(x=>x.status!=='Counted').length};
   });
 }
-const STMT_HEAD=['Date','Customer / note','Activity','Type','Quantity','Base after fees (IDR)','Rate','Commission (IDR)','Source','Status'];
-const stmtRow=x=>[x.date,x.who,x.activity,x.type,x.qty,x.base,x.type==='Course'?x.rate+'%':x.rate+' IDR/dive',x.comm,x.src,x.status];
+const STMT_HEAD=['Date','Customer / note','Activity','Type','Quantity','Base after fees ('+CUR()+')','Rate','Commission ('+CUR()+')','Source','Status'];
+const stmtRow=x=>[x.date,x.who,x.activity,x.type,x.qty,x.base,x.type==='Course'?x.rate+'%':x.rate+' '+CUR()+'/dive',x.comm,x.src,x.status];
 function stmtSheets(staffId,m){
   const s=S.staff[staffId],L=payLines(staffId,m),ok=L.filter(x=>x.status==='Counted'),co=ok.filter(x=>x.type==='Course'),fu=ok.filter(x=>x.type==='Fun dive');
   const PCx=poolCalc(m),PRx=PCx.on?PCx.rows.find(x=>x.id===staffId):null,inPx=!!PRx||(PCx.on&&s.payMode!=='commission');
-  const rows=[[BN()+' · Instructor statement'],['Instructor',s.nom],['Period',monthLabel()],[],STMT_HEAD].concat(L.map(stmtRow),(inPx?[[],['','','','','','','POOL SHARE (IDR) · '+PCx.pct+'% of pool, '+PCx.method,PRx?PRx.amt:0]]:[]),[[],['Courses done',sum(co,x=>x.qty),'','','','','Course commission (IDR)',sum(co,x=>x.comm)],['Fun dives done',sum(fu,x=>x.qty),'','','','','Fun dive commission (IDR)',sum(fu,x=>x.comm)],['','','','','','','TOTAL TO PAY (IDR)',sum(ok,x=>x.comm)]]);
+  const rows=[[BN()+' · Instructor statement'],['Instructor',s.nom],['Period',monthLabel()],[],STMT_HEAD].concat(L.map(stmtRow),(inPx?[[],['','','','','','','POOL SHARE ('+CUR()+') · '+PCx.pct+'% of pool, '+PCx.method,PRx?PRx.amt:0]]:[]),[[],['Courses done',sum(co,x=>x.qty),'','','','','Course commission ('+CUR()+')',sum(co,x=>x.comm)],['Fun dives done',sum(fu,x=>x.qty),'','','','','Fun dive commission ('+CUR()+')',sum(fu,x=>x.comm)],['','','','','','','TOTAL TO PAY ('+CUR()+')',sum(ok,x=>x.comm)]]);
   return [{name:s.nom.slice(0,28),rows,widths:[12,28,36,10,10,14,16,18,24,18],headerRows:[0,4]}];
 }
 function allSheets(){const m=PER.from;
-  const R=comRows(m),PO=poolCfg().on,tot_=r=>r.total,sum_=[['Instructor','Courses done','Course commission (IDR)','Fun dives done','Fun dive commission (IDR)',PO?'Pool share = total to pay (IDR)':'Total to pay (IDR)','Waiting for approval']].concat(R.map(r=>[r.s.nom,r.nC,r.cc,r.nF,r.cf,tot_(r),r.pend]),[['TOTAL',sum(R,r=>r.nC),sum(R,r=>r.cc),sum(R,r=>r.nF),sum(R,r=>r.cf),sum(R,tot_),sum(R,r=>r.pend)]]);
+  const R=comRows(m),PO=poolCfg().on,tot_=r=>r.total,sum_=[['Instructor','Courses done','Course commission ('+CUR()+')','Fun dives done','Fun dive commission ('+CUR()+')',PO?'Pool share = total to pay ('+CUR()+')':'Total to pay ('+CUR()+')','Waiting for approval']].concat(R.map(r=>[r.s.nom,r.nC,r.cc,r.nF,r.cf,tot_(r),r.pend]),[['TOTAL',sum(R,r=>r.nC),sum(R,r=>r.cc),sum(R,r=>r.nF),sum(R,r=>r.cf),sum(R,tot_),sum(R,r=>r.pend)]]);
   const det=[['Instructor'].concat(STMT_HEAD)];R.forEach(r=>payLines(r.s.id,m).forEach(x=>det.push([r.s.nom].concat(stmtRow(x)))));
   return {summary:sum_,details:det};
 }
@@ -1650,7 +1658,7 @@ function stmtFill(){
   if(!ST.stmtId||!S.staff[ST.stmtId])ST.stmtId=gl[0].id;
   const m=PER.from,L=payLines(ST.stmtId,m),ok=L.filter(x=>x.status==='Counted'),co=ok.filter(x=>x.type==='Course'),fu=ok.filter(x=>x.type==='Fun dive');
   el.innerHTML='<div class="toolbar"><label class="fld" style="flex:1 1 200px">Instructor<select id="stmtSel">'+gl.map(x=>opt(x.id,x.nom,x.id===ST.stmtId)).join('')+'</select></label></div>'+
-   '<div class="chips" style="margin:4px 0 10px"><span class="pill st-confirmed">'+pl(co.length?sum(co,x=>x.qty):0,'course')+' · '+fmt(sum(co,x=>x.comm))+' IDR</span><span class="pill st-completed">'+pl(sum(fu,x=>x.qty),'fun dive')+' · '+fmt(sum(fu,x=>x.comm))+' IDR</span><span class="pill st-pending"><b>'+(poolCfg().on&&S.staff[ST.stmtId].payMode!=='commission'?'Individual (ref.) ':'Total ')+fmt(sum(ok,x=>x.comm))+' IDR</b></span>'+(poolCfg().on&&S.staff[ST.stmtId].payMode!=='commission'?'<span class="pill st-completed"><b>Pool share '+fmt(((poolCalc(m).rows.find(x=>x.id===ST.stmtId))||{amt:0}).amt)+' IDR</b></span>':'')+'</div>'+
+   '<div class="chips" style="margin:4px 0 10px"><span class="pill st-confirmed">'+pl(co.length?sum(co,x=>x.qty):0,'course')+' · '+fmt(sum(co,x=>x.comm))+' '+CUR()+'</span><span class="pill st-completed">'+pl(sum(fu,x=>x.qty),'fun dive')+' · '+fmt(sum(fu,x=>x.comm))+' '+CUR()+'</span><span class="pill st-pending"><b>'+(poolCfg().on&&S.staff[ST.stmtId].payMode!=='commission'?'Individual (ref.) ':'Total ')+fmt(sum(ok,x=>x.comm))+' '+CUR()+'</b></span>'+(poolCfg().on&&S.staff[ST.stmtId].payMode!=='commission'?'<span class="pill st-completed"><b>Pool share '+fmt(((poolCalc(m).rows.find(x=>x.id===ST.stmtId))||{amt:0}).amt)+' '+CUR()+'</b></span>':'')+'</div>'+
    (L.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Activity</th><th class="n">Qty</th><th class="n">Commission</th><th></th></tr></thead><tbody>'+L.map(x=>'<tr><td>'+esc(fmtShort(x.date))+'</td><td>'+esc(x.activity)+'<div class="hint">'+esc(x.who)+(x.decl?' · declared':'')+'</div></td><td class="n">'+x.qty+(x.type==='Fun dive'?' dives':'')+'</td><td class="n">'+(x.status==='Counted'?fmt(x.comm):'<span class="hint">'+fmt(x.comm)+'</span>')+'</td><td>'+(x.status==='Counted'?(x.decl&&canEdit?'<button type="button" class="btn ghost sm" data-act="declDel" data-id="'+esc(x.id)+'">✕</button>':''):(canEdit?'<button type="button" class="btn sm" data-act="declOk" data-id="'+esc(x.id)+'">Approve</button> <button type="button" class="btn ghost sm" data-act="declNo" data-id="'+esc(x.id)+'">Reject</button>':'<span class="pill st-pending">Pending</span>'))+'</td></tr>').join('')+'</tbody></table></div>':emptyBox('Nothing this month','No confirmed bookings or declared activities for this instructor.'))+
    '<p class="hint">Pending activities were declared by the instructor and are not counted until a manager approves them.</p>'+
    '<div class="actions" style="flex-wrap:wrap"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button><button type="button" class="btn ghost" data-act="stmtXlsx">Excel (this instructor)</button><button type="button" class="btn ghost" data-act="payrollXlsx">Excel (everyone)</button><button type="button" class="btn ghost" data-act="payrollSheet">Google Sheet (everyone)</button></div>';
@@ -1680,8 +1688,8 @@ function openStaffMonth(id){
   const keys=Object.keys(g).sort((a,b)=>g[b].n-g[a].n);
   const mt=perLabel();
   openModal(s.nom+' · '+mt,
-   (keys.length?'<h3>Summary</h3><div class="tablewrap"><table><thead><tr><th>Activity</th><th class="n">Done</th><th class="n">Commission (IDR)</th></tr></thead><tbody>'+keys.map(k=>'<tr><td>'+esc(k)+'</td><td class="n">'+g[k].n+(g[k].fun?' dives':'')+'</td><td class="n">'+fmt(g[k].c)+'</td></tr>').join('')+'</tbody><tfoot><tr><td colspan="2"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(keys,k=>g[k].c))+'</strong></td></tr></tfoot></table></div>'+
-   '<h3>Bookings</h3>'+l.map(b=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(fmtShort(b.date))+'</strong> '+esc((S.clients[b.clientId]||{}).nom||'')+'</span><span class="r2">'+esc(b.tarifNom||'')+'</span></button><div class="r-side">'+fmt(commOf(b,s))+' IDR</div></div>').join(''):'<p class="hint">No confirmed or completed bookings for this instructor in this month.</p>')+
+   (keys.length?'<h3>Summary</h3><div class="tablewrap"><table><thead><tr><th>Activity</th><th class="n">Done</th><th class="n">Commission ('+CUR()+')</th></tr></thead><tbody>'+keys.map(k=>'<tr><td>'+esc(k)+'</td><td class="n">'+g[k].n+(g[k].fun?' dives':'')+'</td><td class="n">'+fmt(g[k].c)+'</td></tr>').join('')+'</tbody><tfoot><tr><td colspan="2"><strong>Total</strong></td><td class="n"><strong>'+fmt(sum(keys,k=>g[k].c))+'</strong></td></tr></tfoot></table></div>'+
+   '<h3>Bookings</h3>'+l.map(b=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(fmtShort(b.date))+'</strong> '+esc((S.clients[b.clientId]||{}).nom||'')+'</span><span class="r2">'+esc(b.tarifNom||'')+'</span></button><div class="r-side">'+fmt(commOf(b,s))+' '+CUR()+'</div></div>').join(''):'<p class="hint">No confirmed or completed bookings for this instructor in this month.</p>')+
    '<p class="hint">This list comes from the bookings assigned to '+esc(s.nom)+' in Schedule. To change who led an activity, open the booking and change the instructor.</p>'+
    '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Close</button>'+(canWrite?'<button type="button" class="btn" data-act="staffAddDone" data-id="'+esc(id)+'">+ Add an activity</button>':'')+'</div>');
 }
@@ -1695,7 +1703,7 @@ function openStaff(id){
    '<label class="fld">Phone<input id="s-tel" type="tel" value="'+esc(s.tel||'')+'"></label>'+
    '<label class="fld full">Sign-in email (links this person to their own login, so an instructor sees their own commissions)<input id="s-email" type="email" autocomplete="off" value="'+esc(s.email||'')+'"></label>'+
    '<label class="fld">Course commission override (%)<input id="s-com" type="number" min="0" max="100" step="0.5" placeholder="Default '+cfg().commission.coursePct+'%" value="'+esc(s.commission||'')+'"></label>'+
-   '<label class="fld">Fun dive rate override (IDR per dive)<input id="s-fun" type="number" min="0" step="1000" placeholder="Default '+fmt(cfg().commission.funPerDive)+'" value="'+esc(s.funRate||'')+'"></label>'+
+   '<label class="fld">Fun dive rate override ('+CUR()+' per dive)<input id="s-fun" type="number" min="0" step="'+STEP()+'" placeholder="Default '+fmt(cfg().commission.funPerDive)+'" value="'+esc(s.funRate||'')+'"></label>'+
    '<label class="fld">Pay system<select id="s-pm"><option value="default"'+(s.payMode==='commission'?'':' selected')+'>Follow the center setting (pool if on)</option><option value="commission"'+(s.payMode==='commission'?' selected':'')+'>Commission only (never in the pool)</option></select></label>'+
    '<label class="fld check"><input type="checkbox" id="s-act"'+(s.actif!==false?' checked':'')+'><span>Active</span></label></div>'+
    '<div class="err" id="s-err" role="alert"></div>'+
@@ -1708,11 +1716,11 @@ function openTarif(id){
   const cur=id?(t.categorie||cats[0]):cats[0];if(cats.indexOf(cur)<0)cats.push(cur);
   openModal(id?'Edit price':'New price',
    '<div class="gf"><label class="fld">Category<select id="t-catsel">'+cats.map(x=>'<option value="'+esc(x)+'"'+(x===cur?' selected':'')+'>'+esc(x)+'</option>').join('')+'<option value="__new">+ New category…</option></select><input id="t-cat" value="'+esc(cur)+'" placeholder="Name of the new category" hidden style="margin-top:6px"></label>'+
-   '<label class="fld">Price (IDR)<input id="t-prix" type="number" min="0" step="1000" value="'+esc(t.prix||'')+'"></label>'+
+   '<label class="fld">Price ('+CUR()+')<input id="t-prix" type="number" min="0" step="'+STEP()+'" value="'+esc(t.prix||'')+'"></label>'+
    '<label class="fld full">Name<input id="t-nom" value="'+esc(t.nom||'')+'"></label>'+
    '<label class="fld">Dives included<input id="t-pl" type="number" min="0" step="1" value="'+esc(t.plongees||0)+'"></label>'+
-   '<label class="fld">Agency fee, PADI/SSI… (IDR per person)<input id="t-fa" type="number" min="0" step="1000" value="'+esc(t.feeAgency||0)+'"></label>'+
-   '<label class="fld">Other costs, tanks… (IDR per person)<input id="t-fo" type="number" min="0" step="1000" value="'+esc(t.feeOther||0)+'"></label>'+
+   '<label class="fld">Agency fee, PADI/SSI… ('+CUR()+' per person)<input id="t-fa" type="number" min="0" step="'+STEP()+'" value="'+esc(t.feeAgency||0)+'"></label>'+
+   '<label class="fld">Other costs, tanks… ('+CUR()+' per person)<input id="t-fo" type="number" min="0" step="'+STEP()+'" value="'+esc(t.feeOther||0)+'"></label>'+
    '<label class="fld">Note<input id="t-note" value="'+esc(t.note||'')+'"></label></div>'+
    '<div class="err" id="t-err" role="alert"></div>'+
    '<div class="actions">'+(id?'<button type="button" class="btn danger push" data-act="delTarif">Delete</button>':'')+'<button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="saveTarif">Save</button></div>');
@@ -1892,8 +1900,8 @@ const ACT={
  tarifEdit(t){openTarif(t.dataset.id)},
  async saveFees(t){
   const T=tarifs(),isDef=T.isDefault,vals={};
-  $$('.fee-a').forEach(i=>{(vals[i.dataset.id]=vals[i.dataset.id]||{}).a=Math.max(0,Math.round(+i.value||0))});
-  $$('.fee-o').forEach(i=>{(vals[i.dataset.id]=vals[i.dataset.id]||{}).o=Math.max(0,Math.round(+i.value||0))});
+  $$('.fee-a').forEach(i=>{(vals[i.dataset.id]=vals[i.dataset.id]||{}).a=Math.max(0,rnd(+i.value||0))});
+  $$('.fee-o').forEach(i=>{(vals[i.dataset.id]=vals[i.dataset.id]||{}).o=Math.max(0,rnd(+i.value||0))});
   t.disabled=true;
   const ok=await W(async()=>{for(const x of T.list){const v=vals[x.id]||{a:+x.feeAgency||0,o:+x.feeOther||0};
     if(!isDef&&(+x.feeAgency||0)===v.a&&(+x.feeOther||0)===v.o)continue;
@@ -1947,12 +1955,18 @@ const ACT={
   await W(()=>db.doc('config/main').update({brand:null}),'Default branding restored');
   V.settings.cfgLoaded=false;if(V.settings.fill)V.settings.fill();
  },
+ async saveCur(){
+  const v=$('#cCur').value;if(!CURS[v]||v===CUR())return;
+  if(typeof window.DD_DEMO_CUR==='function'){window.DD_DEMO_CUR(v);return}
+  const ok=await W(()=>S.config?db.doc('config/main').update({currency:v}):db.doc('config/main').set({currency:v}),'Currency saved');
+  if(ok)location.reload();
+ },
  async saveCfg(){
   const lines=id=>$('#'+id).value.split('\n').map(x=>x.trim()).filter(Boolean);
   const d={sites:lines('cSites'),agents:lines('cAgents'),niveaux:lines('cNiv'),frais:{eco:Math.max(0,+$('#cEco').value||0),parcEtranger:Math.max(0,+$('#cPe').value||0),parcLocal:Math.max(0,+$('#cPl').value||0)},commission:{coursePct:Math.min(100,Math.max(0,+$('#cCp').value||0)),funPerDive:Math.max(0,+$('#cCf').value||0)}};
   d.lockPay=$('#cLock').checked;
   if(S.config&&S.config.payPin)d.payPin=S.config.payPin;
-  ['brand','home','access','pool','checkinForm'].forEach(k=>{if(S.config&&S.config[k])d[k]=S.config[k]});
+  ['brand','home','access','pool','checkinForm','currency'].forEach(k=>{if(S.config&&S.config[k])d[k]=S.config[k]});
   await W(()=>db.doc('config/main').set(d),'Settings saved');
  }
 };
@@ -2602,15 +2616,17 @@ function demoLogo(nm){
   const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="100" viewBox="0 0 '+w+' 100"><path d="M6 20 L24 66 L40 34 L56 66 L74 20" fill="none" stroke="#0C0D0E" stroke-width="9" stroke-linejoin="miter"/><path d="M8 82 Q16 76 24 82 T40 82 T56 82 T72 82" fill="none" stroke="#44AFE4" stroke-width="5" stroke-linecap="round"/><text x="88" y="68" font-family="Poppins,Arial,Helvetica,sans-serif" font-weight="700" font-size="44" fill="#0C0D0E">'+nm+'</text></svg>';
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
-function seedDemo(centre){
+function seedDemo(centre,cur){
+  const K=({EUR:20000,USD:12500,GBP:20000,AUD:10000,THB:500,PHP:250,MYR:4000,EGP:250,MXN:1000})[cur]||1,cv=x=>K===1?x:Math.round(x/K*100)/100;
   const R=rng(20260101),pick=a=>a[Math.floor(R()*a.length)],pad=n=>String(n).padStart(2,'0');
   const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const day=o=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+o);return iso(d)};
   const D={};
   D.config={main:{sites:['Coral Garden','Shark Point','Turtle Reef','Manta Ridge','House Reef','Wall Street'],agents:['Seaview Hotel','Palm Resort','Backpackers Inn','Island Travel Desk'],brand:{}}};
+  if(K!==1)D.config.main.currency=cur;
   const ST=[['s1','Maya Collins','GB,ES,FR','Instructor',0],['s2','Tomás Ribeiro','PT,ES,GB','Instructor',0],['s3','Lena Fischer','DE,GB','Instructor',32],['s4','Kadek Wirawan','ID,GB','Divemaster',0],['s5','Sam Taylor','GB','Divemaster',0]];
   D.staff={};ST.forEach(x=>D.staff[x[0]]={nom:x[1],pays:x[2],role:x[3],commission:x[4],actif:true});
-  const T=(typeof DEFAULT_TARIFS!=='undefined'?DEFAULT_TARIFS:[]).map(t=>Object.assign({},t,{note:''}));
+  const T=(typeof DEFAULT_TARIFS!=='undefined'?DEFAULT_TARIFS:[]).map(t=>Object.assign({},t,{note:'',prix:cv(t.prix)}));
   D.tarifs={};T.forEach(t=>{D.tarifs[t.id]={categorie:t.categorie,nom:t.nom,prix:t.prix,plongees:t.plongees,note:'',ordre:t.ordre}});
   const tb=n=>T.find(t=>t.nom===n)||T[0];
   const C=[['Emma Larsen','Denmark','English','Open Water Diver','Instagram'],['Lucas Moreau','France','French','None (beginner)','Booking.com'],['Sofia Rossi','Italy','English','Advanced Open Water','Google / Google Maps'],['Jonas Weber','Germany','German','Open Water Diver','Friend / recommendation'],['Chloe Martin','Canada','English','None (beginner)','Hotel / accommodation'],['Hiro Tanaka','Japan','English','Advanced Open Water','Tripadvisor'],['Olivia Brown','United Kingdom','English','Scuba Diver','Instagram'],['Mateo García','Spain','Spanish','Open Water Diver','Travel agent / other dive shop'],['Anna Kowalska','Poland','English','None (beginner)','TikTok'],['Liam Walsh','Ireland','English','Rescue Diver','Returning customer'],['Isabelle Dubois','Belgium','French','None (beginner)','Hotel / accommodation'],['Noah Peters','Netherlands','English','Open Water Diver','Google / Google Maps'],['Mia Johansson','Sweden','English','Advanced Open Water','Instagram'],['Arjun Mehta','India','English','None (beginner)','Booking.com']];
@@ -2629,14 +2645,14 @@ function seedDemo(centre){
    [13,1,'Discovery Scuba Dive','','Pending','none'],[4,1,'Open Water','s1','Confirmed','part'],[5,1,'Rescue Diver (Min 4 Dives)','s2','Confirmed','none'],[6,2,'Scuba Diver','s3','Confirmed','part'],[7,2,'Fun Dive','','Confirmed','none'],[8,3,'Open Water','s1','Confirmed','none'],[9,3,'Nitrox (2 Dives)','s2','Confirmed','none'],[10,4,'Fun Dive','s4','Pending','none'],[11,5,'3 Dives Package','','Confirmed','none']];
   plan.forEach((p,i)=>{
     const t=tb(p[2]),id='b'+(i+1),client=D.clients[cid(p[0])],date=day(p[1]);
-    const foreignFee=150000,fun=/fun/i.test(t.categorie);
+    const foreignFee=cv(150000),fun=/fun/i.test(t.categorie);
     const remise=(i%7===3)?10:0;
     const paidFee=p[4]==='Completed'||(p[5]!=='none'&&i%2===0);
     D.bookings[id]={agent:i%5===0?pick(agents):'',categorie:t.categorie,clientId:cid(p[0]),creeLe:day(Math.min(p[1],0)-1),creneau:i%3===0?'Morning 11:00':'Morning 9:00',date:date,frais:foreignFee,fraisPaye:paidFee,fraisPayeLe:paidFee?date:'',fraisPayePar:paidFee?'Maya Collins':'',instructeurId:p[3],notes:'',plongees:t.plongees,prixUnit:t.prix,qte:1,remise:remise,site:fun||t.plongees?pick(sites):'',statut:p[4],tarifId:t.id,tarifNom:t.nom};
-    const net=Math.round(t.prix*(1-remise/100));
+    const net=K===1?Math.round(t.prix*(1-remise/100)):Math.round(t.prix*(1-remise/100)*100)/100;
     const pay=(amt,met,d)=>{D.payments['p'+id+'_'+met+d]={bookingId:id,clientId:cid(p[0]),montant:amt,methode:met,date:d,ref:''}};
     if(p[5]==='full')pay(net,i%2?'Card':'Cash',date);
-    else if(p[5]==='part')pay(Math.round(net*0.3/1000)*1000,p[1]<=0?'Card':'Transfer',p[1]<=0?date:day(-1));
+    else if(p[5]==='part')pay(K===1?Math.round(net*0.3/1000)*1000:Math.round(net*0.3),p[1]<=0?'Card':'Transfer',p[1]<=0?date:day(-1));
   });
   D.declarations={d1:{staffId:'s4',date:day(-2),tarifId:tb('Fun Dive').id,tarifNom:'Fun Dive',categorie:'Fun dives',plongees:1,prixUnit:tb('Fun Dive').prix,qte:2,note:'Walk-in couple',status:'Pending',declaredBy:'Kadek Wirawan',declaredAt:new Date().toISOString()}};
   D.leaves={};D.leaves['s5_'+day(3)]={staffId:'s5',date:day(3),by:'Demo'};D.leaves['s5_'+day(4)]={staffId:'s5',date:day(4),by:'Demo'};
@@ -2649,6 +2665,14 @@ async function postLead(rec){
   try{await fetch(URL_+'/rest/v1/leads',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({data:rec})})}catch(e){}
 }
 const SITE=(CFG.site||'./');
+const DEMO_CURS=[['IDR','Indonesian rupiah'],['EUR','Euro'],['USD','US dollar'],['GBP','British pound'],['AUD','Australian dollar'],['THB','Thai baht'],['PHP','Philippine peso'],['MYR','Malaysian ringgit'],['EGP','Egyptian pound'],['MXN','Mexican peso']];
+function demoCur(){try{return (DEMO_STATE.data.config.main.currency)||'IDR'}catch(e){return 'IDR'}}
+function guessCur(){let z='';try{z=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch(e){}
+  if(/^Asia\/(Jakarta|Makassar|Jayapura|Pontianak)$/.test(z))return 'IDR';if(z==='Asia/Bangkok')return 'THB';if(z==='Asia/Manila')return 'PHP';if(/^Asia\/(Kuala_Lumpur|Kuching)$/.test(z))return 'MYR';if(z==='Africa/Cairo')return 'EGP';
+  if(/^America\/(Mexico_City|Cancun|Merida|Monterrey|Mazatlan|Tijuana|Chihuahua|Hermosillo|Bahia_Banderas)$/.test(z))return 'MXN';if(/^Australia\//.test(z))return 'AUD';if(z==='Europe/London')return 'GBP';if(/^Europe\//.test(z))return 'EUR';return 'USD'}
+if(DEMO)window.DD_DEMO_CUR=function(v){if(!DEMO_STATE||!confirm('Switch the demo to '+v+'? The sample data starts again in that currency.'))return;
+  let b={};try{b=DEMO_STATE.data.config.main.brand||{}}catch(e){}
+  clearTimeout(demoSave.t);const seed=seedDemo(DEMO_STATE.lead.centre,v);seed.config.main.brand=b;DEMO_STATE.data=seed;LS.set(DEMO_KEY,JSON.stringify(DEMO_STATE));location.reload()};
 function demoBar(){
   const bar=document.createElement('div');bar.id='demoBar';
   bar.style.cssText='background:var(--lime);color:var(--on-lime);padding:8px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-weight:700;font-size:.9rem;position:relative;z-index:5';
@@ -2656,7 +2680,7 @@ function demoBar(){
   const app=document.getElementById('app');app.insertBefore(bar,app.firstChild);
   const tick=()=>{const ms=DEMO_STATE.expires-Date.now();if(ms<=0){location.reload();return}const h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60e3);document.getElementById('demoLeft').textContent='· '+h+'h '+String(m).padStart(2,'0')+'m left'};
   tick();setInterval(tick,30000);
-  document.getElementById('demoReset').onclick=()=>{if(confirm('Reset the demo to its original data?')){DEMO_STATE.data=seedDemo(DEMO_STATE.lead.centre);LS.set(DEMO_KEY,JSON.stringify(DEMO_STATE));location.reload()}};
+  document.getElementById('demoReset').onclick=()=>{if(confirm('Reset the demo to its original data?')){clearTimeout(demoSave.t);DEMO_STATE.data=seedDemo(DEMO_STATE.lead.centre,demoCur());LS.set(DEMO_KEY,JSON.stringify(DEMO_STATE));location.reload()}};
 }
 function demoGate(expired){
   return new Promise(resolve=>{
@@ -2668,6 +2692,7 @@ function demoGate(expired){
     f.innerHTML=fld('dmNm','Your name','text','name','maxlength="60"')+fld('dmCt','Dive center name','text','organization','maxlength="60"')+fld('dmEm','Email','email','email')+
       '<label style="display:grid;gap:4px;font-weight:600">Your logo <span style="font-weight:400;opacity:.75">(optional, PNG or JPG)</span><input id="dmLg" type="file" accept="image/*" style="'+INP+'"></label>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label style="display:grid;gap:4px;font-weight:600">Header colour<input id="dmNv" type="color" value="#0A2540" style="height:44px;padding:2px;width:100%;border-radius:8px"></label><label style="display:grid;gap:4px;font-weight:600">Button colour<input id="dmAc" type="color" value="#FF7A5C" style="height:44px;padding:2px;width:100%;border-radius:8px"></label></div>'+
+      '<label style="display:grid;gap:4px;font-weight:600">Currency<select id="dmCu" style="'+INP+'">'+DEMO_CURS.map(c=>'<option value="'+c[0]+'"'+(c[0]===guessCur()?' selected':'')+'>'+c[0]+' · '+c[1]+'</option>').join('')+'</select></label>'+
       '<span style="font-size:.8rem;margin-top:-4px;opacity:.75">Your demo opens with your name, logo and colours.</span>'+
       '<label style="display:flex;gap:8px;align-items:flex-start;font-size:.85rem"><input id="dmOk" type="checkbox" required style="margin-top:3px"><span>I agree to be contacted about this product. No spam.</span></label>'+
       '<button class="btn" type="submit">Start my demo</button><span class="hint" style="font-size:.8rem">The demo lives in this browser for 24 hours.</span>';
@@ -2682,7 +2707,7 @@ function demoGate(expired){
     f.onsubmit=async e=>{e.preventDefault();
       const lead={name:document.getElementById('dmNm').value.trim(),centre:document.getElementById('dmCt').value.trim(),email:document.getElementById('dmEm').value.trim().toLowerCase()};
       postLead({kind:'demo',name:lead.name,centre:lead.centre,email:lead.email,lang:navigator.language||''});
-      const seed=seedDemo(lead.centre);seed.config.main.brand=dmBrand();
+      const seed=seedDemo(lead.centre,document.getElementById('dmCu').value);seed.config.main.brand=dmBrand();
       DEMO_STATE={start:Date.now(),expires:Date.now()+24*3600e3,lead:lead,data:seed};LS.set(DEMO_KEY,JSON.stringify(DEMO_STATE));f.remove();resolve(true)};
     setTimeout(()=>document.getElementById('dmNm').focus(),50);
   });
