@@ -1,0 +1,23 @@
+# Scubook
+
+> Scubook is the back-office software (CRM) for dive centers: bookings, instructors, payments, marine fees, gear, commissions and payroll, in one place. Built by a dive center for dive centers. Made in Indonesia.
+
+## Key facts
+
+- Product: web app for dive centers, works in any browser on computer, tablet and phone. Nothing to install.
+- Price: one plan, €89 per month. 20% off when billed yearly (€71 per month, billed €854 per year).
+- Setup: about 10 minutes.
+- Free 24-hour demo, no credit card.
+- Features: bookings, schedule and instructors; QR check-in for guests; payments and marine fees; commissions and payroll; marketing report and inventory; unlimited staff accounts; your logo and colors everywhere.
+- Contact: contact@scubook.app
+
+## Pages
+
+- [Home](https://scubook.app/): what Scubook does, product video (4 minutes), pricing, contact
+- [Bookings](https://scubook.app/dive-center-booking-software.html): Booking and scheduling software for dive centers: one-click bookings, the whole day by instructor, prices and agency fees calculated for you. Free demo.
+- [Check-in](https://scubook.app/dive-center-check-in.html): Paperless check-in for dive centers: divers scan a QR code and fill in their details, sizes, emergency contact and consent on their own phone. Free demo.
+- [Payments](https://scubook.app/dive-center-payments.html): Track every payment at your dive center: cash, card or transfer, partial or full, balances still to collect, and marine park fees kept apart. Free demo.
+- [Commissions](https://scubook.app/dive-instructor-commission.html): Instructor commissions calculated automatically for dive centers: a percentage for courses, a fixed amount per fun dive, individual or shared pool. Free demo.
+- [FAQ](https://scubook.app/faq.html): setup, pricing, QR check-in, commissions, marine fees, data safety, free demo
+- [Product video](https://scubook.app/scubook-demo.mp4): full tour of the app
+- [Video captions](https://scubook.app/scubook-demo.vtt): full text of the product video
