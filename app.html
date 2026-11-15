@@ -31,6 +31,7 @@
 .wm b{font-weight:600;color:#FF7A5C}.wm i{font-style:normal;color:var(--on-navy)}
 .wm .wmb{position:absolute;left:2.1em;top:-.02em;width:1.7em;height:.47em;overflow:visible}
 .wm.plain{padding-top:0}.wm.plain i{color:var(--on-navy)}
+.brand{min-width:0;flex:0 1 auto}.wm.plain{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;line-height:1.25}.bar>#setBtn,.bar>#newBtn{flex:none}.bar>#meChip{flex:0 1 auto;min-width:40px}@media(max-width:480px){.brand .wm.plain{font-size:20px}.bar>#meChip{max-width:76px}}
 .brand .wm{font-size:28px}.gate-card .wm{font-size:58px}
 .bLogo{display:none;object-fit:contain;object-position:left center}
 .gate-card a{color:var(--on-navy);text-decoration:underline;font-weight:600}
@@ -455,7 +456,7 @@ async function W(fn,ok){
   try{await fn();if(ok)toast(ok);return true}
   catch(e){console.error(e);toast(e&&e.code==='invalid_argument'?'Save refused: read-only access or invalid data.':'Save failed. Please try again.','bad');return false}
 }
-function openModal(title,html){$('#mTitle').textContent=title;$('#mBody').innerHTML=html;$('#modal').hidden=false;document.body.classList.add('noscroll');$('#mBody').scrollTop=0}
+function openModal(title,html){$('#mBody').oninput=$('#mBody').onchange=null;$('#mTitle').textContent=title;$('#mBody').innerHTML=html;$('#modal').hidden=false;document.body.classList.add('noscroll');$('#mBody').scrollTop=0}
 function closeModal(){$('#modal').hidden=true;document.body.classList.remove('noscroll');MODAL={}}
 const opt=(v,label,sel)=>'<option value="'+esc(v)+'"'+(sel?' selected':'')+'>'+esc(label==null?v:label)+'</option>';
 const stPill=s=>'<span class="pill st-'+stc(s)+'">'+esc(s||'Pending')+'</span>';
@@ -2448,7 +2449,7 @@ function authScreen(mode,msg,notice){
           const tk=RECOVERY,rt=RECOVERY_RT;RECOVERY=null;RECOVERY_RT=null;try{history.replaceState(null,'',location.pathname)}catch(x){}
           if(tk&&rt&&u&&u.email){saveSess({access_token:tk,refresh_token:rt,expires_in:3600,user:{email:u.email}});f.remove();resolve({done:true});return}
           f.remove();resolve({mode:'login',notice:'Password changed. You can sign in.'});return}
-      }catch(err){er.textContent=err.message||'Something went wrong.';b.disabled=false}
+      }catch(err){er.textContent=(err instanceof TypeError||/failed to fetch|load failed|networkerror/i.test(err.message||''))?'No connection. Check your internet and try again.':(err.message||'Something went wrong.');b.disabled=false}
     };
     setTimeout(()=>{const x=f.querySelector('input');x&&x.focus()},50);
   });
