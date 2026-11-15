@@ -212,6 +212,13 @@ h1{font-size:2.1rem}h2{font-size:1.15rem}
 .tab{font-weight:500;font-size:.92rem;border-bottom:2px solid transparent;padding:12px 12px 10px;letter-spacing:-.01em}
 .tab[aria-current="page"]{border-bottom-color:var(--on-navy)}
 .tab svg{stroke-width:1.6}
+/* active section: a filled pill in the centre's accent colour */
+.tab{margin:6px 0;padding:8px 13px;border-bottom:0;border-radius:11px;transition:background .2s ease,color .2s ease}
+.tab:hover{color:var(--on-navy);background:rgba(255,255,255,.08)}
+.tab[aria-current="page"],.tab[aria-current="page"]:hover{background:var(--lime);color:var(--on-lime);font-weight:700;border-bottom:0}
+.tab:focus-visible{outline:2px solid var(--on-navy);outline-offset:2px}
+@media(max-width:760px){.tab{margin:5px 2px;padding:6px 8px 5px;border-top:0;border-radius:12px}.tab[aria-current="page"]{border-top:0}}
+@media(prefers-reduced-motion:reduce){.tab{transition:none}}
 .me{border-radius:99px;font-weight:500;background:rgba(255,255,255,.12);border-color:transparent}
 .card{border:0;border-radius:var(--r);box-shadow:var(--shadow);padding:22px;gap:14px}
 .card h2{font-weight:600}
@@ -245,6 +252,29 @@ main{gap:20px;padding-block:28px 56px}
 .bars{display:flex;flex-direction:column;gap:8px;min-width:0}
 .bars svg{width:100%;height:150px;display:block}
 .bars .cap{display:flex;justify-content:space-between;font-size:.74rem;color:var(--muted)}
+/* 3D charts */
+.c3,.bars svg.c3{width:100%;height:auto;display:block;overflow:visible}
+.c3 .b{outline:none;cursor:default}
+.c3 .b.dim .grow{opacity:.36;transition:opacity .2s}
+.c3 .b.dim:hover .grow,.c3 .b.dim:focus .grow{opacity:.7}
+.c3 .grow{transform-box:fill-box;transform-origin:50% 100%}
+.c3.go .grow{animation:c3g .85s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d)}
+@keyframes c3g{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.c3 .v{font-size:12px;font-weight:700;fill:var(--ink);opacity:0;transition:opacity .15s;font-variant-numeric:tabular-nums;paint-order:stroke;stroke:var(--surface,#fff);stroke-width:4px;stroke-linejoin:round}
+.c3 .v.on,.c3 .b:hover .v,.c3 .b:focus .v{opacity:1}
+.c3.go .v.on{animation:c3f .4s ease both;animation-delay:calc(var(--d) + .6s)}
+@keyframes c3f{from{opacity:0}to{opacity:1}}
+.c3 .l{font-size:11px;font-weight:500;fill:var(--muted);text-anchor:middle}
+.c3 .l.on{fill:var(--ink);font-weight:800}
+.c3 .s{font-size:11px;font-weight:700;text-anchor:middle;font-variant-numeric:tabular-nums}
+.c3card{margin:0 12px 12px;padding:14px 16px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.c3card .acthead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.c3card h3{margin:0;font-size:1rem}
+.c3leg{display:flex;gap:14px;font-size:.78rem;color:var(--muted);flex-wrap:wrap}
+.c3leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.rings.go{animation:c3r 1.1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes c3r{from{transform:perspective(700px) rotateX(62deg) scale(.84);opacity:.15}to{transform:perspective(700px) rotateX(0) scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.c3.go .grow,.c3.go .v.on,.rings.go{animation:none}}
 @media(max-width:900px){.actgrid{grid-template-columns:1fr;justify-items:center}.alg{width:100%}.bars{width:100%}}
 #demoBar{background:#fff!important;color:var(--ink)!important;border-bottom:1px solid var(--line);font-weight:500!important;font-size:.85rem!important}
 #demoBar a{background:var(--ink)!important;color:#fff!important}
@@ -388,7 +418,7 @@ prices:'<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.3"/>
 };
 const NAV=[['home','Home'],['schedule','Schedule'],['customers','Customers'],['payments','Payments'],['prices','Prices'],['comm','Marketing'],['gear','Inventory'],['team','Team'],['commission','Commission'],['leave','Leave']];
 
-const HOME_KEYS=[['kpis','Today\'s figures'],['today','On the schedule'],['due','To collect'],['ci','New check-ins to book'],['week','Next 7 days']];
+const HOME_KEYS=[['kpis','Today\'s figures'],['today','On the schedule'],['due','To collect'],['rem','Reminders for tomorrow'],['ci','New check-ins to book'],['week','Next 7 days']];
 const SECS=NAV.map(n=>[n[0],n[1]]);
 let BASE_WRITE=true;
 const ACC_DEF={staff:{home:'edit',schedule:'edit',customers:'edit',payments:'edit',prices:'view',comm:'edit',gear:'edit',team:'edit',commission:'view',leave:'edit'},viewer:{},instructor:{home:'view',schedule:'view',customers:'view',payments:'none',prices:'none',comm:'none',gear:'view',team:'edit',commission:'none',leave:'edit'}};
@@ -412,7 +442,7 @@ function buildNav(){
 /* ---------- state ---------- */
 let db=null,dl=null,canEdit=false,canWrite=true;
 const ME={name:'',level:''};
-const S={clients:{},bookings:{},payments:{},staff:{},tarifs:{},gear:{},gearLog:{},declarations:{},leaves:{},removed:{},config:null};
+const S={clients:{},bookings:{},payments:{},expenses:{},staff:{},tarifs:{},gear:{},gearLog:{},declarations:{},leaves:{},removed:{},config:null};
 const LOADED={};
 const IDX={pay:{},byClient:{}};
 const ST={view:'home',date:today(),sel:new Set(),month:monthNow(),payTab:'due'};
@@ -453,6 +483,52 @@ function flag1(code){
 }
 const sFlag=id=>{const x=S.staff[id];return x?flag(x.pays):''};
 const staffName=id=>{const s=S.staff[id];return s?s.nom:'Deleted instructor'};
+/* WhatsApp: wa.me needs the number in international format, digits only */
+const waNum=t=>{let d=String(t||'').trim();if(d.startsWith('00'))d='+'+d.slice(2);return d.replace(/\D/g,'')};
+const waOk=t=>waNum(t).length>=8;
+const waLink=(tel,msg)=>'https://wa.me/'+waNum(tel)+'?text='+encodeURIComponent(msg);
+const firstName=n=>String(n||'').trim().split(/\s+/)[0]||'';
+const slotTime=x=>String(x||'').replace(/^[A-Za-z]+\s+/,'');
+const helloMsg=c=>'Hi '+firstName(c.nom)+', this is '+BN()+'.';
+const remindMsg=(b,c)=>'Hi '+firstName(c.nom)+', this is '+BN()+'. A reminder for tomorrow, '+fmtLong(b.date)+': '+(b.tarifNom||'your dive')+(slotTime(b.creneau)?' at '+slotTime(b.creneau):'')+'. See you soon!';
+const EXP_CATS=['Fuel & boat','Tank fills & gas','Equipment','Rent','Salaries','Commissions','Agency fees','Marketing','Supplies','Utilities','Taxes & licences','Other'];
+function openExpense(id){
+  if(!canWrite){toast('You have read-only access.','bad');return}
+  const x=id?S.expenses[id]:{date:today(),categorie:EXP_CATS[0]};if(!x)return;
+  MODAL={kind:'exp',id:id||null};
+  const cats=Array.from(new Set(EXP_CATS.concat(Object.values(S.expenses).map(e=>e.categorie).filter(Boolean))));
+  openModal(id?'Edit expense':'New expense',
+   '<div class="gf"><label class="fld">Date<input id="e-date" type="date" value="'+esc(x.date||today())+'"></label>'+
+   '<label class="fld">Category<select id="e-cat">'+cats.map(c=>opt(c,c,c===x.categorie)).join('')+'</select></label>'+
+   '<label class="fld">Amount ('+CUR()+')<input id="e-amt" type="number" min="0" step="'+STEP()+'" value="'+esc(x.montant||'')+'"></label>'+
+   '<label class="fld">Description<input id="e-note" maxlength="120" value="'+esc(x.note||'')+'" placeholder="Boat fuel, shop rent…"></label></div>'+
+   '<div class="err" id="e-err" role="alert"></div>'+
+   '<div class="actions">'+(id&&canEdit?'<button type="button" class="btn danger push" data-act="delExp">Delete</button>':'')+'<button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="saveExp" id="e-save">Save</button></div>');
+}
+function openReceipt(bookingId){
+  const b=S.bookings[bookingId];if(!b)return;
+  const c=S.clients[b.clientId]||{},k=calc(b),P=(IDX.pay[b.id]||[]).slice().sort((x,y)=>x.date<y.date?-1:1),br=(S.config&&S.config.brand)||{};
+  const logo=/^(data:image\/|https:\/\/)/.test(br.logo||'')?br.logo:'';
+  const no='R-'+today().replace(/-/g,'')+'-'+String(b.id).slice(-4).toUpperCase(),cu=' '+CUR();
+  const w=window.open('','_blank');
+  if(!w){toast('Allow pop-ups to open the receipt.','bad');return}
+  const row=(a,v,cl)=>'<tr'+(cl?' class="'+cl+'"':'')+'><td>'+a+'</td><td>'+v+'</td></tr>';
+  w.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Receipt '+esc(no)+'</title><style>'+
+   '*{box-sizing:border-box}body{font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif;color:#0A2540;margin:0;padding:32px;background:#fff}.p{max-width:640px;margin:0 auto}'+
+   '.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:2px solid #0A2540;padding-bottom:16px}.top img{max-height:56px;max-width:220px}.top h1{font-size:22px;margin:0}.top .r{text-align:right}.top h2{font-size:26px;margin:0;letter-spacing:-.02em}'+
+   '.m{color:#55657a;font-size:13px}h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#55657a;margin:26px 0 6px}table{width:100%;border-collapse:collapse}td{padding:7px 0;border-bottom:1px solid #e3e8ef;vertical-align:top}td:last-child{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}'+
+   '.tot td{font-weight:700;border-bottom:0;font-size:17px}.foot{margin-top:32px;color:#55657a;font-size:13px}.bar{margin:24px 0 0;display:flex;gap:10px}.bar button{font:inherit;font-weight:600;padding:10px 18px;border-radius:99px;border:0;background:#FF7A5C;color:#0A2540;cursor:pointer}.bar button+button{background:#eef1f5}'+
+   '@media print{.bar{display:none}body{padding:0}}</style></head><body><div class="p">'+
+   '<div class="top"><div>'+(logo?'<img src="'+esc(logo)+'" alt="">':'<h1>'+esc(BN())+'</h1>')+(logo?'<div class="m">'+esc(BN())+'</div>':'')+'</div><div class="r"><h2>Receipt</h2><div class="m">No. '+esc(no)+'<br>Issued '+esc(fmtLong(today()))+'</div></div></div>'+
+   '<h3>Customer</h3><div><strong>'+esc(c.nom||'Customer')+'</strong>'+(c.email?'<br><span class="m">'+esc(c.email)+'</span>':'')+'</div>'+
+   '<h3>Details</h3><table>'+row(esc(b.tarifNom||'Activity')+((+b.qte||1)>1?' × '+esc(b.qte):'')+'<div class="m">'+esc(fmtLong(b.date))+'</div>',fmt((+b.prixUnit||0)*(+b.qte||1))+cu)+
+   ((+b.remise||0)?row('Discount '+esc(b.remise)+'%','− '+fmt(rnd((+b.prixUnit||0)*(+b.qte||1)-k.net))+cu):'')+row('Total',fmt(k.total)+cu,'tot')+'</table>'+
+   '<h3>Payments</h3><table>'+(P.length?P.map(p=>row(esc(fmtLong(p.date))+'<div class="m">'+esc(p.methode||'')+((+p.montant||0)<0?' · refund':'')+(p.ref?' · '+esc(p.ref):'')+'</div>',((+p.montant||0)<0?'− ':'')+fmt(Math.abs(+p.montant||0))+cu)).join(''):row('<span class="m">No payment recorded</span>',''))+
+   row('Paid',fmt(k.paid)+cu,'tot')+row('Balance due',fmt(rnd(k.total-k.paid))+cu,'tot')+'</table>'+
+   ((+b.frais||0)>0&&b.fraisPaye?'<p class="m">Marine park and eco fees: '+fmt(b.frais)+cu+', paid in cash and passed on to the authorities. Not included in the total above.</p>':'')+
+   '<p class="foot">Thank you for diving with '+esc(BN())+'.</p><div class="bar"><button onclick="print()">Print or save as PDF</button><button onclick="close()">Close</button></div></div></body></html>');
+  w.document.close();
+}
 const guides=keep=>Object.values(S.staff).filter(s=>GUIDES.includes(s.role)&&(s.actif!==false||s.id===keep)).sort(byNom);
 const col=n=>db.collection(n);
 
@@ -476,12 +552,22 @@ const FIN_SHEET='155h_LSbcxGNDciMu6Dhlp4VWnt4QS3H0cIYl7E0iXwg';
 const XD={
  fees(){const m=perTag(),F=Object.values(S.bookings).filter(b=>(+b.frais||0)>0&&b.statut!=='Cancelled'&&b.fraisPaye&&inPer(b.fraisPayeLe||b.date)).sort((a,b)=>(a.fraisPayeLe||a.date)<(b.fraisPayeLe||b.date)?-1:1);
   return{file:'marine-fees-'+m,name:'Marine fees',sid:FIN_SHEET,tab:'Marine fees',widths:[12,24,16,14,30,12,18,18],rows:[['Paid on','Customer','Nationality','Local resident','Activity','Dive date','Marine fees ('+CUR()+')','Confirmed by']].concat(F.map(b=>{const c=S.clients[b.clientId]||{};return [b.fraisPayeLe||b.date,c.nom||'',c.nationalite||'',c.local?'Yes':'No',b.tarifNom||'',b.date||'',b.frais,b.fraisPayePar||'']})).concat([['Total','','','','','',sum(F,b=>b.frais),'']])}},
+ exp(){const L=Object.values(S.expenses).filter(x=>inPer(x.date)).sort((a,b)=>a.date<b.date?-1:1);
+  return{file:'expenses-'+perTag(),name:'Expenses',sid:FIN_SHEET,tab:'Expenses',widths:[12,22,40,16,18],rows:[['Date','Category','Description','Amount ('+CUR()+')','Added by']].concat(L.map(x=>[x.date,x.categorie||'',x.note||'',x.montant,x.by||''])).concat([['Total','','',sum(L,x=>x.montant),'']])}},
  pay(){const L=Object.values(S.payments).filter(p=>inPer(p.date)).sort((a,b)=>a.date<b.date?-1:1);
   return{file:'payments-'+perTag(),name:'Payments',sid:FIN_SHEET,tab:'Payments period',widths:[12,26,32,12,16,24],rows:[['Date','Customer','Activity','Method','Amount ('+CUR()+')','Reference']].concat(L.map(p=>[p.date,(S.clients[p.clientId]||{}).nom||'',(S.bookings[p.bookingId]||{}).tarifNom||'',p.methode,p.montant,p.ref||'']))}},
  com(){const m=PER.from;return{file:'commissions-'+perTag(),name:'Commissions',sid:PAYROLLSHEET.id,tab:'Commissions',widths:[22,12,24,12,24,18],rows:[['Instructor','Courses','Course commission ('+CUR()+')','Fun dives','Fun dive commission ('+CUR()+')','Total ('+CUR()+')']].concat(comRows(m).map(r=>[r.s.nom,r.nC,r.cc,r.nF,r.cf,r.cc+r.cf]))}},
  mk(){const all=!!ST.mkAll,L=Object.values(S.clients).filter(c=>all||inPer(c.creeLe||c.checkinAt)).sort((a,b)=>String(a.nom).localeCompare(String(b.nom)));
   return{file:'customers-by-source'+(all?'':'-'+perTag()),name:'Customers by source',sid:FIN_SHEET,tab:'Customers by source',widths:[26,28,18,16,16,26,30,14,16,12],rows:[['Customer','Email','Phone','Nationality','Source','Answer given','Wants to do','Planned date','Preferred time','First seen']].concat(L.map(c=>[c.nom,c.email||'',c.tel||'',c.nationalite||'',normSrc(c.heard),c.heard||'',c.interest||'',c.plannedDate||'',c.plannedSlot||'',c.creeLe||c.checkinAt||'']))}},
- prices(){return{file:'dream-divers-prices',name:'Prices',sid:FIN_SHEET,tab:'Prices',widths:[22,40,16,14,30],rows:[['Category','Name','Price ('+CUR()+')','Dives included','Note']].concat(tarifs().list.map(t=>[t.categorie,t.nom,t.prix,t.plongees||0,t.note||'']))}}
+ cust(){const L=Object.values(S.clients).sort((a,b)=>String(a.nom).localeCompare(String(b.nom)));
+  return{file:'customers',name:'Customers',sid:FIN_SHEET,tab:'Customers',widths:[26,28,18,16,14,10,24,16,22,18,8,10,8,10,22,12,10],rows:[['Customer','Email','Phone','Nationality','Language','Local resident','Certification level','Certification no.','Emergency contact','Emergency phone','BCD','Wetsuit','Fins','Weights (kg)','Source','First seen','Bookings']].concat(L.map(c=>{const t=c.tailles||{};return [c.nom||'',c.email||'',c.tel||'',c.nationalite||'',c.langue||'',c.local?'Yes':'No',c.niveau||'',c.numCert||'',c.urgenceNom||'',c.urgenceTel||'',t.bcd||'',t.combi||'',t.palmes||'',t.plombs||'',normSrc(c.heard),c.creeLe||c.checkinAt||'',(IDX.byClient[c.id]||[]).length]}))}},
+ book(){const L=Object.values(S.bookings).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:String(a.creneau)<String(b.creneau)?-1:1);
+  return{file:'bookings',name:'Bookings',sid:FIN_SHEET,tab:'Bookings',widths:[12,14,26,30,18,8,22,18,12,14,10,14,14,14,14,10,20],rows:[['Date','Slot','Customer','Activity','Category','Quantity','Instructor','Dive site','Status','Unit price ('+CUR()+')','Discount (%)','Total ('+CUR()+')','Paid ('+CUR()+')','Balance ('+CUR()+')','Marine fees ('+CUR()+')','Fees paid','Agent']].concat(L.map(b=>{const k=calc(b);return [b.date||'',b.creneau||'',(S.clients[b.clientId]||{}).nom||'',b.tarifNom||'',b.categorie||'',+b.qte||1,b.instructeurId?staffName(b.instructeurId):'',b.site||'',b.statut||'',+b.prixUnit||0,+b.remise||0,k.total,k.paid,k.due,+b.frais||0,b.fraisPaye?'Yes':'No',b.agent||'']}))}},
+ gear(){const L=Object.values(S.gear).sort((a,b)=>String(a.categorie).localeCompare(String(b.categorie))||(a.ordre||0)-(b.ordre||0));
+  return{file:'inventory',name:'Inventory',sid:FIN_SHEET,tab:'Inventory',widths:[18,22,10,8,30,20,18],rows:[['Category','Item','Quantity','Unit','Notes','Last checked','Checked by']].concat(L.map(g=>[g.categorie||'',g.nom||'',+g.qte||0,g.unite||'pcs',g.notes||'',g.checkedAt?String(g.checkedAt).slice(0,10):'',g.checkedBy||'']))}},
+ staff(){const L=Object.values(S.staff).sort((a,b)=>String(a.nom).localeCompare(String(b.nom)));
+  return{file:'team',name:'Team',sid:FIN_SHEET,tab:'Team',widths:[24,18,16,18,28,10],rows:[['Name','Role','Languages','Phone','Email','Active']].concat(L.map(x=>[x.nom||'',x.role||'',x.pays||'',x.tel||'',x.email||'',x.actif===false?'No':'Yes']))}},
+ prices(){return{file:'prices',name:'Prices',sid:FIN_SHEET,tab:'Prices',widths:[22,40,16,14,30],rows:[['Category','Name','Price ('+CUR()+')','Dives included','Note']].concat(tarifs().list.map(t=>[t.categorie,t.nom,t.prix,t.plongees||0,t.note||'']))}}
 };
 const exBtns=(k,sm)=>['csv|CSV','xlsx|Excel'].concat(window.DD_STANDALONE?[]:['gs|Google Sheet']).map(x=>{const[a,b]=x.split('|');return '<button type="button" class="btn ghost'+(sm?' sm':'')+'" data-act="exOut" data-k="'+k+'" data-f="'+a+'">'+b+'</button>'}).join('');
 async function exOut(t){
@@ -535,13 +621,14 @@ V.home={
    '<div class="kpis" id="kpis"></div>'+
    '<div class="grid2"><section class="card"><h2>On the schedule</h2><div id="todayList"></div></section>'+
    '<section class="card"><h2>To collect</h2><div id="dueList"></div></section></div>'+
+   '<section class="card"><h2>Reminders for tomorrow</h2><div id="remList"></div></section>'+
    '<section class="card"><h2>New check-ins to book</h2><div id="ciList"></div></section>'+
    '<section class="card"><h2>Next 7 days</h2><div class="week" id="week"></div></section>';
  },
  fill(){
   const t=today();$('#hDate').textContent=fmtLong(t);
   {const hm=(S.config&&S.config.home)||{},hd=hm.hide||{};$('#hTitleOut').textContent=hm.title||'Today';$('#hWelcome').textContent=hm.msg||'';$('#hWelcome').hidden=!hm.msg;
-   $('#kpis').hidden=!!hd.kpis;$('#todayList').closest('section').hidden=!!hd.today;$('#dueList').closest('section').hidden=!!hd.due;$('#ciList').closest('section').hidden=!!hd.ci;$('#week').closest('section').hidden=!!hd.week;
+   $('#kpis').hidden=!!hd.kpis;$('#todayList').closest('section').hidden=!!hd.today;$('#dueList').closest('section').hidden=!!hd.due;$('#ciList').closest('section').hidden=!!hd.ci;$('#remList').closest('section').hidden=!!hd.rem;$('#week').closest('section').hidden=!!hd.week;
    const g=$('#todayList').closest('.grid2');if(g)g.hidden=!!(hd.today&&hd.due)}
   if(loading()){$('#kpis').innerHTML='';$('#todayList').innerHTML=emptyBox('Loading…','Fetching the shared data.');return}
   const B=Object.values(S.bookings).filter(b=>b.statut!=='Cancelled');
@@ -574,6 +661,9 @@ V.home={
   }).join('')+(due.length>8?'<p class="hint">+ '+(due.length-8)+' more in the Payments tab.</p>':''):emptyBox('Everything is paid','Balances still owed appear here.');
   const ci=Object.values(S.clients).filter(c=>c.checkinAt&&c.checkinAt>=addDays(t,-3)&&!(IDX.byClient[c.id]||[]).length).sort((a,b)=>a.checkinAt<b.checkinAt?1:-1);
   $('#ciList').innerHTML=ci.length?ci.slice(0,10).map(c=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editClient" data-id="'+esc(c.id)+'"><span class="r1"><strong>'+esc(c.nom)+'</strong></span><span class="r2">'+esc(c.interest||'No activity chosen')+(c.plannedDate?' · '+esc(fmtShort(c.plannedDate))+(c.plannedSlot?' '+esc(c.plannedSlot.replace('Morning ','')):''):'')+'</span></button><div class="r-side">'+(canWrite?'<button type="button" class="btn sm" data-act="checkinBook" data-id="'+esc(c.id)+'">+ Booking</button>':'')+'</div></div>').join(''):emptyBox('No check-ins waiting','Customers who fill in the form and have no booking yet appear here.');
+  {const tm=addDays(t,1),RL=B.filter(b=>b.date===tm).sort((a,b)=>String(a.creneau)<String(b.creneau)?-1:1);
+   $('#remList').innerHTML=RL.length?RL.map(b=>{const c=S.clients[b.clientId]||{};
+    return '<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+(b.rappelLe?'<span class="pill st-confirmed">✓ Reminded</span>':'')+'</span><span class="r2">'+esc(b.tarifNom||'')+(b.creneau?' · '+esc(b.creneau):'')+'</span></button><div class="r-side">'+(waOk(c.tel)?'<button type="button" class="btn sm'+(b.rappelLe?' ghost':'')+'" data-act="remind" data-id="'+esc(b.id)+'">WhatsApp</button>':'<span class="hint">No phone number</span>')+'</div></div>'}).join(''):emptyBox('Nobody to remind','Tomorrow\'s bookings appear here with a ready-to-send WhatsApp message.')}
   let w='';
   for(let i=0;i<7;i++){
     const d=addDays(t,i),l=B.filter(b=>b.date===d),u=l.filter(b=>!b.instructeurId).length;
@@ -583,6 +673,35 @@ V.home={
  }
 };
 
+/* ===== 3D bar chart: extruded bars that grow from the floor. groups:[{label,strong,sub,subColor,bars:[{v,c,dim,name}]}] ===== */
+const C3K={};
+function chart3d(el,groups,o){
+  if(!el)return;o=o||{};
+  const W=Math.max(280,Math.round(el.clientWidth||560)),H=o.h||190,padB=o.sub?44:26,padT=24,dx=W<420?5:9,dy=W<420?4:7,n=groups.length||1,gap=3;
+  const per=Math.max.apply(null,groups.map(g=>g.bars.length).concat([1])),gw=(W-dx-2)/n,bw=Math.max(4,Math.min(o.bw||36,(gw*.74-gap*(per-1))/per));
+  const mx=Math.max.apply(null,[1].concat(...groups.map(g=>g.bars.map(b=>Math.max(0,+b.v||0))))),base=H-padB,ph=base-padT-dy;
+  const key=JSON.stringify(groups.map(g=>g.bars.map(b=>b.v)))+CUR(),id=o.id||el.id;
+  const still=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches,anim=C3K[id]!==key&&!still;C3K[id]=key;
+  const f=o.fmt||fmt,P=a=>a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  let s='<svg class="c3'+(anim?' go':'')+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(o.label||'Chart')+'">';
+  s+='<polygon points="'+P([[0,base],[W-dx,base],[W,base-dy],[dx,base-dy]])+'" fill="var(--line)" opacity=".5"/>';
+  [1/3,2/3,1].forEach(q=>{const y=base-dy-ph*q;s+='<line x1="'+dx+'" x2="'+W+'" y1="'+y.toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 6"/>'});
+  groups.forEach((g,i)=>{
+    const tw=bw*g.bars.length+gap*(g.bars.length-1),gx=i*gw+(gw-tw)/2,cx=gx+tw/2+dx/2;
+    g.bars.forEach((b,j)=>{
+      const v=Math.max(0,+b.v||0),h=v>0?Math.max(ph*v/mx,3):0,x=gx+j*(bw+gap),y=base-h,c=b.c||'var(--accent)';
+      const last=i===n-1&&j===g.bars.length-1,first=i===0&&j===0;
+      s+='<g class="b'+(b.dim?' dim':'')+'" tabindex="0" style="--d:'+(i*45+j*35)+'ms"><title>'+esc((b.name?b.name+' · ':'')+(g.title||g.label||'')+': '+f(v))+'</title><g class="grow">'+
+       (h?'<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+c+'"/>'+
+        '<polygon points="'+P([[x+bw,y],[x+bw+dx,y-dy],[x+bw+dx,base-dy],[x+bw,base]])+'" fill="'+c+'"/><polygon points="'+P([[x+bw,y],[x+bw+dx,y-dy],[x+bw+dx,base-dy],[x+bw,base]])+'" fill="#000" opacity=".2"/>':'')+
+       '<polygon points="'+P([[x,y],[x+bw,y],[x+bw+dx,y-dy],[x+dx,y-dy]])+'" fill="'+c+'"'+(h?'':' opacity=".35"')+'/><polygon points="'+P([[x,y],[x+bw,y],[x+bw+dx,y-dy],[x+dx,y-dy]])+'" fill="#fff" opacity="'+(h?'.38':'.2')+'"/></g>'+
+       '<text class="v'+(b.show?' on':'')+'" x="'+(last?Math.min(W,x+bw+dx):first?Math.max(0,x):x+bw/2+dx/2).toFixed(1)+'" y="'+(y-dy-7).toFixed(1)+'" text-anchor="'+(last?'end':first?'start':'middle')+'">'+esc(f(v))+'</text></g>';
+    });
+    if(g.label!=null)s+='<text class="l'+(g.strong?' on':'')+'" x="'+cx.toFixed(1)+'" y="'+(base+16)+'">'+esc(g.label)+'</text>';
+    if(o.sub&&g.sub!=null)s+='<text class="s" x="'+cx.toFixed(1)+'" y="'+(base+33)+'" fill="'+(g.subColor||'var(--muted)')+'">'+esc(g.sub)+'</text>';
+  });
+  el.innerHTML=s+'</svg>';
+}
 /* ===== Activity panel (Apple-style rings + 14-day chart) ===== */
 (()=>{const _s=V.home.shell,_f=V.home.fill;
  V.home.shell=function(m){_s.apply(this,arguments);try{const k=m.querySelector('#kpis');if(k&&!m.querySelector('#actCard')){const d=document.createElement('section');d.className='card act';d.id='actCard';d.innerHTML='<div class="acthead"><h2>Activity</h2><span class="sub">Today vs. your 14-day average</span></div><div class="actgrid"><div class="rings" id="actRings"></div><div class="alg" id="actLeg"></div><div class="bars" id="actBars"></div></div>';k.after(d)}}catch(e){}};
@@ -595,17 +714,17 @@ V.home={
   const M=[['Collected',rev[13],Math.max(avg(rev),rev[13],1),'var(--lime,#FF7A5C)',fmt],['Bookings',bk[13],Math.max(Math.round(avg(bk)),bk[13],1),'var(--accent)',x=>x],['New customers',nc[13],Math.max(Math.round(avg(nc)),nc[13],1),'var(--good,#34C759)',x=>x]];
   const R=[88,68,48],C2=2*Math.PI;let svg='<svg viewBox="0 0 200 200">';
   M.forEach((m,i)=>{const r=R[i],len=C2*r,pc=Math.min(m[1]/m[2],1);svg+='<circle class="trk" cx="100" cy="100" r="'+r+'" stroke="'+m[3]+'"/><circle class="val" cx="100" cy="100" r="'+r+'" stroke="'+m[3]+'" stroke-dasharray="'+len+'" stroke-dashoffset="'+len+'" data-to="'+(len*(1-pc))+'"/>'});
-  document.getElementById('actRings').innerHTML=svg+'</svg>';
+  {const rk=JSON.stringify(M.map(m=>[m[1],m[2]])),re=document.getElementById('actRings');re.innerHTML=svg+'</svg>';if(C3K.rings!==rk){C3K.rings=rk;re.classList.remove('go');void re.offsetWidth;re.classList.add('go')}}
   requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('#actRings .val').forEach(e=>e.style.strokeDashoffset=e.dataset.to)));
   document.getElementById('actLeg').innerHTML=M.map(m=>'<div><small style="color:'+m[3]+'">'+m[0]+'</small><b>'+m[4](m[1])+' <i>/ '+m[4](Math.round(m[2]))+'</i></b></div>').join('');
-  const mx=Math.max.apply(null,rev.concat([1])),W=560,H=150,bw=W/14;let b='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
-  [0.25,0.5,0.75].forEach(f=>b+='<line x1="0" x2="'+W+'" y1="'+(H*f)+'" y2="'+(H*f)+'" stroke="var(--line)" stroke-width="1"/>');
-  rev.forEach((v,i)=>{const h=Math.max(v/mx*(H-8),v>0?4:2),x=i*bw+bw*.2;b+='<rect x="'+x+'" y="'+(H-h)+'" width="'+(bw*.6)+'" height="'+h+'" rx="5" fill="'+(i===13?'var(--lime,#FF7A5C)':'var(--accent)')+'" opacity="'+(i===13?1:.32)+'"/>'});
-  document.getElementById('actBars').innerHTML=b+'</svg><div class="cap"><span>Revenue, last 14 days</span><span>Peak '+fmt(mx)+'</span></div>'}
+  const mx=Math.max.apply(null,rev.concat([1])),bx=document.getElementById('actBars');
+  if(!bx.querySelector('#actChart'))bx.innerHTML='<div id="actChart"></div><div class="cap"><span>Revenue, last 14 days</span><span id="actPeak"></span></div>';
+  chart3d(document.getElementById('actChart'),days.map((d,i)=>({label:String(+d.slice(8)),title:fmtShort(d),strong:i===13,bars:[{v:rev[i],c:i===13?'var(--lime,#FF7A5C)':'var(--accent)',dim:i!==13,show:i===13&&rev[i]>0}]})),{h:176,label:'Revenue for the last 14 days'});
+  document.getElementById('actPeak').textContent='Peak '+fmt(mx)}
 })();
 V.schedule={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Schedule</h1><p class="sub" id="pSub"></p></div></div>'+
+  m.innerHTML='<div class="head"><div><h1>Schedule</h1><p class="sub" id="pSub"></p></div><div class="toolbar"><span class="hint" style="align-self:center">All bookings:</span>'+exBtns('book')+'</div></div>'+
    '<div class="toolbar"><div class="datenav"><button type="button" class="btn ghost" data-act="dPrev" aria-label="Previous day">‹</button><input type="date" id="pDate" aria-label="Date"><button type="button" class="btn ghost" data-act="dNext" aria-label="Next day">›</button><button type="button" class="btn ghost" data-act="dToday">Today</button></div>'+
    '<div class="filters"><select id="fStaff" aria-label="Instructor"></select><select id="fCat" aria-label="Activity type"></select><input type="search" id="fQ" placeholder="Search customers" aria-label="Search"></div></div>'+
    '<div id="pList"></div>'+
@@ -656,7 +775,7 @@ V.schedule={
 
 V.customers={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Customers</h1><p class="sub" id="cSub"></p></div><div class="toolbar"><button type="button" class="btn ghost" data-act="syncOpen" id="syncBtn">Sync check-ins</button><button type="button" class="btn ghost" data-act="importOpen" id="impBtn">Import CSV</button><button type="button" class="btn" data-act="newClient">+ New customer</button></div></div>'+
+  m.innerHTML='<div class="head"><div><h1>Customers</h1><p class="sub" id="cSub"></p></div><div class="toolbar">'+exBtns('cust')+'<button type="button" class="btn ghost" data-act="syncOpen" id="syncBtn">Sync check-ins</button><button type="button" class="btn ghost" data-act="importOpen" id="impBtn">Import CSV</button><button type="button" class="btn" data-act="newClient">+ New customer</button></div></div>'+
  '<p class="hint" id="syncNote" style="margin:-6px 0 10px"></p>'+
    '<div class="toolbar"><input type="search" id="cQ" style="flex:1 1 240px;width:auto" placeholder="Name, phone, email, nationality" aria-label="Search customers"><label class="fld check" style="flex:none"><input type="checkbox" id="cToday"><span>Checked in today</span></label></div>'+
    '<div class="group" id="cList"></div>';
@@ -685,7 +804,7 @@ V.customers={
 V.payments={
  shell(m){
   m.innerHTML='<div class="head"><div><h1>Payments</h1><p class="sub" id="payTotal"></p></div>'+
-   '<div class="toolbar"><button type="button" class="btn" data-act="payAdd" id="payAdd">+ Add a dive or item</button><div class="seg" role="group" aria-label="View"><button type="button" data-act="tabPay" data-t="due" id="tbDue">To collect</button><button type="button" data-act="tabPay" data-t="fees" id="tbFees">Marine fees</button><button type="button" data-act="tabPay" data-t="hist" id="tbHist">History</button></div></div></div>'+
+   '<div class="toolbar"><button type="button" class="btn" data-act="payAdd" id="payAdd">+ Add a dive or item</button><div class="seg" role="group" aria-label="View"><button type="button" data-act="tabPay" data-t="due" id="tbDue">To collect</button><button type="button" data-act="tabPay" data-t="fees" id="tbFees">Marine fees</button><button type="button" data-act="tabPay" data-t="hist" id="tbHist">History</button><button type="button" data-act="tabPay" data-t="exp" id="tbExp">Expenses</button></div></div></div>'+
    '<div id="payTools" hidden>'+perBar()+'<div class="actions"><span class="hint" style="align-self:center">This period:</span>'+exBtns('pay')+'<button type="button" class="btn ghost" data-act="payXlsx">Excel (all history)</button><button type="button" class="btn ghost" data-act="paySheet">Google Sheet (all history)</button></div></div>'+
    '<div class="group" id="payList"></div>';
   perBind(m,()=>V.payments.fill());
@@ -693,8 +812,25 @@ V.payments={
  },
  fill(){
   $('#tbDue').setAttribute('aria-pressed',ST.payTab==='due');$('#tbHist').setAttribute('aria-pressed',ST.payTab==='hist');$('#tbFees').setAttribute('aria-pressed',ST.payTab==='fees');
-  $('#payTools').hidden=ST.payTab!=='hist';
+  $('#tbExp').setAttribute('aria-pressed',ST.payTab==='exp');
+  $('#payTools').hidden=ST.payTab!=='hist'&&ST.payTab!=='exp';{const pa=$('#payTools .actions');if(pa)pa.hidden=ST.payTab==='exp'}
   if(loading()){$('#payList').innerHTML=emptyBox('Loading…');return}
+  if(ST.payTab==='exp'){
+    const E=Object.values(S.expenses).filter(x=>inPer(x.date)).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0),inc=sum(Object.values(S.payments).filter(p=>inPer(p.date)),p=>p.montant),out=sum(E,x=>x.montant),pr=rnd(inc-out);
+    const by={};E.forEach(x=>{const c=x.categorie||'Other';by[c]=(by[c]||0)+(+x.montant||0)});
+    $('#payTotal').innerHTML=esc(perLabel())+' · <span class="'+(pr<0?'due':'paid')+'">Profit '+fmt(pr)+' '+CUR()+'</span>';
+    $('#payList').innerHTML='<div class="kpis" style="padding:12px"><div class="kpi"><span>Collected</span><b>'+fmt(inc)+'</b></div><div class="kpi"><span>Expenses</span><b>'+fmt(out)+'</b></div><div class="kpi'+(pr<0?' warn':'')+'"><span>Profit ('+CUR()+')</span><b>'+fmt(pr)+'</b></div></div>'+
+     '<div class="c3card"><div class="acthead"><h3>Last 6 months</h3><div class="c3leg"><span><i style="background:var(--accent)"></i>Collected</span><span><i style="background:var(--lime,#FF7A5C)"></i>Expenses</span><span>Profit below each month</span></div></div><div id="expChart"></div></div>'+
+     '<div class="note" style="margin:0 12px 12px">Profit = payments collected − expenses, for the period above. Marine fees are not counted. Instructor commissions are only counted if you add them as an expense.</div>'+
+     '<div class="row" style="justify-content:flex-end;gap:8px;flex-wrap:wrap">'+exBtns('exp',1)+(canWrite?'<button type="button" class="btn sm" data-act="expNew">+ Expense</button>':'')+'</div>'+
+     (Object.keys(by).length?'<div class="ghead"><span>By category</span><small>'+esc(Object.keys(by).sort((a,b)=>by[b]-by[a]).map(c=>c+' '+fmt(by[c])).join(' · '))+'</small></div>':'')+
+     (E.length?E.map(x=>'<div class="row"><button type="button" class="row-main" data-act="expEdit" data-id="'+esc(x.id)+'"><span class="r1"><strong>'+esc(x.categorie||'Other')+'</strong></span><span class="r2">'+esc(fmtShort(x.date))+(x.note?' · '+esc(x.note):'')+'</span></button><div class="r-side due">− '+fmt(x.montant)+'</div></div>').join(''):emptyBox('No expenses in this period','Add fuel, rent, equipment and other costs to see your profit.'));
+    {const ms=[],d0=new Date();d0.setDate(1);for(let i=5;i>=0;i--){const d=new Date(d0.getFullYear(),d0.getMonth()-i,1);ms.push(d.getFullYear()+'-'+pad(d.getMonth()+1))}
+     const PP=Object.values(S.payments),EE=Object.values(S.expenses);
+     chart3d($('#expChart'),ms.map((m,i)=>{const a=sum(PP.filter(p=>String(p.date).slice(0,7)===m),p=>p.montant),e=sum(EE.filter(x=>String(x.date).slice(0,7)===m),x=>x.montant),p=rnd(a-e),nm=new Date(m+'-01T00:00:00').toLocaleDateString('en-GB',{month:'short'});
+       return{label:nm,title:nm,strong:i===5,sub:(a||e)?(p<0?'− ':'+ ')+fmt(Math.abs(p)):'–',subColor:(a||e)?(p<0?'var(--bad,#C0392B)':'var(--good,#1E8E4E)'):'var(--muted)',bars:[{v:a,c:'var(--accent)',name:'Collected',show:i===5&&a>0},{v:e,c:'var(--lime,#FF7A5C)',name:'Expenses'}]}}),{h:210,sub:true,bw:30,id:'expChart',label:'Collected and expenses for the last 6 months'})}
+    return;
+  }
   if(ST.payTab==='due'){
     const L=Object.values(S.bookings).map(b=>({b,k:calc(b)})).filter(x=>x.k.due>0).sort((a,b)=>a.b.date<b.b.date?-1:1);
     $('#payTotal').innerHTML=L.length?'<span class="due">'+pl(L.length,'open balance')+' · '+fmt(sum(L,x=>x.k.due))+' '+CUR()+' to collect</span>':'<span class="paid">✓ No open balances: everything is collected</span>';
@@ -715,7 +851,7 @@ V.payments={
     const by={};L.forEach(p=>{by[p.methode]=(by[p.methode]||0)+(+p.montant||0)});
     $('#payTotal').innerHTML=esc(perLabel())+' · <span class="paid">'+fmt(sum(L,p=>p.montant))+' '+CUR()+' collected</span>'+esc((Object.keys(by).length?' ('+Object.keys(by).map(k=>k+' '+fmt(by[k])).join(' · ')+')':''));
     $('#payList').innerHTML=L.length?L.map((p,i)=>{const c=S.clients[p.clientId]||{},b=S.bookings[p.bookingId]||{};
-      return '<div class="row '+(p.montant<0?'rdue':'rok')+'" style="'+(i===0?'border-top:0':'')+'"><div class="row-main"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong><span class="chip">'+esc(p.methode||'')+'</span></span><span class="r2">'+esc(fmtShort(p.date))+' · '+esc(b.tarifNom||'')+(p.ref?' · ref. '+esc(p.ref):'')+'</span></div><div class="r-side '+(p.montant<0?'due':'paid')+'">'+(p.montant<0?'− '+fmt(-p.montant)+'<br><span class="pbadge pb-due">Refund</span>':'+ '+fmt(p.montant)+'<br><span class="pbadge pb-ok">✓ Collected</span>')+(canEdit?(payLocked(p)?'<br><span class="hint" style="display:inline-block;margin-top:6px">🔒 Protected</span>'+(p.montant>0?'<br><button type="button" class="btn ghost sm" style="margin-top:6px" data-act="payRefund" data-id="'+esc(p.id)+'">Refund</button>':''):'<br><button type="button" class="btn danger sm" style="margin-top:6px" data-act="delPay" data-id="'+esc(p.id)+'">Delete</button>'):'')+'</div></div>';
+      return '<div class="row '+(p.montant<0?'rdue':'rok')+'" style="'+(i===0?'border-top:0':'')+'"><div class="row-main"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong><span class="chip">'+esc(p.methode||'')+'</span></span><span class="r2">'+esc(fmtShort(p.date))+' · '+esc(b.tarifNom||'')+(p.ref?' · ref. '+esc(p.ref):'')+'</span></div><div class="r-side '+(p.montant<0?'due':'paid')+'">'+(p.montant<0?'− '+fmt(-p.montant)+'<br><span class="pbadge pb-due">Refund</span>':'+ '+fmt(p.montant)+'<br><span class="pbadge pb-ok">✓ Collected</span>')+(b.id?'<br><button type="button" class="btn ghost sm" style="margin-top:6px" data-act="receipt" data-id="'+esc(b.id)+'">Receipt</button>':'')+(canEdit?(payLocked(p)?'<br><span class="hint" style="display:inline-block;margin-top:6px">🔒 Protected</span>'+(p.montant>0?'<br><button type="button" class="btn ghost sm" style="margin-top:6px" data-act="payRefund" data-id="'+esc(p.id)+'">Refund</button>':''):'<br><button type="button" class="btn danger sm" style="margin-top:6px" data-act="delPay" data-id="'+esc(p.id)+'">Delete</button>'):'')+'</div></div>';
     }).join(''):emptyBox('No payments this month','Recorded payments appear here.');
   }
  }
@@ -728,7 +864,7 @@ V.team={
     '<section class="card"><h2>Declare my activities</h2><p class="hint">Add the courses and fun dives you did that are not in the schedule. A manager approves them before they count.</p><div class="actions"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button></div></section>';
    perBind(m,()=>V.team.fill());return;
   }
-  m.innerHTML='<div class="head"><div><h1>Team</h1><p class="sub">Instructors and reception. Commissions are in the Commission tab.</p></div><button type="button" class="btn" data-act="staffNew" id="stNew">+ Member</button></div>'+
+  m.innerHTML='<div class="head"><div><h1>Team</h1><p class="sub">Instructors and reception. Commissions are in the Commission tab.</p></div><div class="toolbar">'+exBtns('staff')+'<button type="button" class="btn" data-act="staffNew" id="stNew">+ Member</button></div></div>'+
    '<section class="card"><h2>Staff</h2><div id="stList"></div></section>'+
    perBar()+
    '<section class="card"><h2>Bookings by agent or hotel</h2><div class="tablewrap" id="agTable"></div></section>';
@@ -878,7 +1014,7 @@ async function gearStamp(g,id,from,to,kind){
 }
 V.gear={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Inventory</h1><p class="sub" id="gSub"></p></div><div class="toolbar"><button type="button" class="btn ghost" data-act="gearSeed" id="gSeed">Add standard sizes</button><button type="button" class="btn" data-act="gearNew" id="gNew">+ Item</button></div></div>'+
+  m.innerHTML='<div class="head"><div><h1>Inventory</h1><p class="sub" id="gSub"></p></div><div class="toolbar">'+exBtns('gear')+'<button type="button" class="btn ghost" data-act="gearSeed" id="gSeed">Add standard sizes</button><button type="button" class="btn" data-act="gearNew" id="gNew">+ Item</button></div></div>'+
    '<div id="gSum"></div><div id="gList" style="display:flex;flex-direction:column;gap:14px"></div>'+
    '<section class="card"><h2>Recent activity</h2><div id="gLog"></div></section>';
   $('#gNew').hidden=!canWrite;$('#gSeed').hidden=!canWrite;
@@ -1206,6 +1342,7 @@ function openClient(id,opts){
    (id?'<hr class="sep"><h3>Bookings</h3>'+(hist.length?hist.map(b=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(fmtShort(b.date))+'</strong>'+stPill(b.statut)+'</span><span class="r2">'+esc(b.tarifNom||'')+'</span></button><div class="r-side">'+(calc(b).due>0?'<span class="due">Due '+fmt(calc(b).due)+'</span>':'')+'</div></div>').join(''):'<p class="hint">No bookings for this customer.</p>'):'')+
    '<div class="err" id="c-err" role="alert"></div>'+
    '<div class="actions">'+(id&&canEdit?'<button type="button" class="btn danger push" data-act="delClient">Delete</button>':'')+
+   (id&&waOk(v.tel)?'<a class="btn ghost" href="'+esc(waLink(v.tel,helloMsg(v)))+'" target="_blank" rel="noopener">WhatsApp</a>':'')+
    (id?'<button type="button" class="btn ghost" data-act="bookForClient">+ Booking</button>':'')+
    '<button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="saveClient" id="c-save">Save</button></div>');
 }
@@ -1478,7 +1615,7 @@ function openPay(bookingId,preset){
    '<label class="fld">Date<input id="p-date" type="date" value="'+today()+'"></label>'+
    '<label class="fld full">Reference or note<input id="p-ref"></label></div>'+
    '<div class="err" id="p-err" role="alert"></div>'+
-   '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="savePay" id="p-save">Save payment</button></div>');
+   '<div class="actions">'+(k.paid>0?'<button type="button" class="btn ghost push" data-act="receipt" data-id="'+esc(bookingId)+'">Receipt</button>':'')+'<button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="savePay" id="p-save">Save payment</button></div>');
   const upd=(fromUser)=>{
     const rem=Math.min(100,Math.max(0,+$('#p-rem').value||0)),k2=calc(Object.assign({},b,{remise:rem}));
     $('#p-remInfo').textContent=rem!==(+b.remise||0)?'New total: '+fmt(k2.total)+' '+CUR()+' · balance: '+fmt(k2.total-k2.paid)+' '+CUR()+'. The discount is applied to the booking when you save.':(canEdit?'Change the discount here if needed before taking the payment.':'Only a manager can change the discount.');
@@ -1781,6 +1918,22 @@ const ACT={
  savePay(){savePay()},
  async delPay(t){const pp=S.payments[t.dataset.id];if(pp&&payLocked(pp)){toast('This payment is protected. Refund the customer in full first.','bad');return}const l=pp?(IDX.pay[pp.bookingId]||[]):[],both=cfg().lockPay&&pp&&l.length>1;if(!armed(t,both?'Delete with refund':'Confirm'))return;await W(async()=>{if(both){for(const x of l)await col('payments').doc(x.id).delete()}else await col('payments').doc(t.dataset.id).delete()},both?'Payment and refund deleted':'Payment deleted')},
  tabPay(t){ST.payTab=t.dataset.t;V.payments.fill()},
+ receipt(t){openReceipt(t.dataset.id)},
+ remind(t){const b=S.bookings[t.dataset.id];if(!b)return;const c=S.clients[b.clientId]||{};if(!waOk(c.tel))return;window.open(waLink(c.tel,remindMsg(b,c)),'_blank','noopener');if(canWrite&&b.rappelLe!==today())W(()=>col('bookings').doc(b.id).update({rappelLe:today()}),'Marked as reminded')},
+ expNew(){openExpense()},
+ expEdit(t){openExpense(t.dataset.id)},
+ async saveExp(){
+  const amt=rnd(Math.abs(+$('#e-amt').value||0)),date=$('#e-date').value;
+  if(!date){$('#e-err').textContent='Enter the date.';return}
+  if(!amt){$('#e-err').textContent='Enter an amount.';return}
+  const id=MODAL.id,old=id?S.expenses[id]:null;
+  const d=Object.assign({},old||{},{date,categorie:$('#e-cat').value,note:$('#e-note').value.trim(),montant:amt});delete d.id;if(!old)d.by=whoAmI();
+  const ref=id?col('expenses').doc(id):col('expenses').doc();
+  $('#e-save').disabled=true;
+  const ok=await W(()=>ref.set(d),'Expense saved');
+  if(ok)closeModal();else{const x=$('#e-save');if(x)x.disabled=false}
+ },
+ async delExp(t){if(!armed(t))return;const id=MODAL.id;const ok=await W(()=>col('expenses').doc(id).delete(),'Expense deleted');if(ok)closeModal()},
  payRefund(t){if(!canEdit)return;const pp=S.payments[t.dataset.id];if(!pp)return;openPay(pp.bookingId,{type:-1,amount:pp.montant,method:pp.methode,ref:'Refund of payment on '+pp.date})},
  async feePaid(t){await W(()=>col('bookings').doc(t.dataset.id).update({fraisPaye:true,fraisPayeLe:today(),fraisPayePar:whoAmI()}),'Marine fees marked as paid')},
  async feeRefund(t){if(!canEdit)return;if(!armed(t,'Confirm refund'))return;await W(()=>col('bookings').doc(t.dataset.id).update({fraisPaye:false,fraisPayeLe:'',fraisPayePar:'',fraisRembourseLe:today(),fraisRembourseePar:whoAmI()}),'Marine fees refunded: marked as not paid')},
@@ -1882,7 +2035,7 @@ const ACT={
  payXlsx(){
   if(!dl){toast('Export is not available in this view.','bad');return}
   const rows=payRowsAll();
-  dl.save({filename:'dream-divers-payments.xlsx',data:buildXlsx('Payments',rows,[12,22,24,16,14,22,34,16,12,16,10,12,14,24,16,16,20,14])}).catch(e=>{if(!e||e.code!=='declined')toast('Export failed.','bad')});
+  dl.save({filename:'payments-all-history.xlsx',data:buildXlsx('Payments',rows,[12,22,24,16,14,22,34,16,12,16,10,12,14,24,16,16,20,14])}).catch(e=>{if(!e||e.code!=='declined')toast('Export failed.','bad')});
  },
  paySheet(t){pushPaySheet(t)},
  staffNew(){openStaff(null)},
@@ -2657,6 +2810,7 @@ function seedDemo(centre,cur){
   D.declarations={d1:{staffId:'s4',date:day(-2),tarifId:tb('Fun Dive').id,tarifNom:'Fun Dive',categorie:'Fun dives',plongees:1,prixUnit:tb('Fun Dive').prix,qte:2,note:'Walk-in couple',status:'Pending',declaredBy:'Kadek Wirawan',declaredAt:new Date().toISOString()}};
   D.leaves={};D.leaves['s5_'+day(3)]={staffId:'s5',date:day(3),by:'Demo'};D.leaves['s5_'+day(4)]={staffId:'s5',date:day(4),by:'Demo'};
   D.gear={};let gi=0;[['BCD','S',6],['BCD','M',10],['BCD','L',8],['BCD','XL',4],['Wetsuit','S',9],['Wetsuit','M',12],['Wetsuit','L',10],['Fins','EU 38-39',7],['Fins','EU 40-41',9],['Fins','EU 42-43',8],['Lead weights','Total lead',140],['Regulators','Regulators',24],['Masks','Masks',30],['Tanks','Tanks 12L',40]].forEach(g=>{gi++;D.gear['g'+gi]={categorie:g[0],nom:g[1],unite:g[0]==='Lead weights'?'kg':'pcs',qte:g[2],notes:'',ordre:gi,checkedAt:new Date(Date.now()-gi*3600e3*5).toISOString(),checkedBy:'Sam Taylor'}});
+  D.expenses={};[['Fuel & boat',-1,450000,'Boat fuel'],['Tank fills & gas',-2,300000,'Compressor filters'],['Equipment',-3,1200000,'2 masks, 1 regulator hose'],['Marketing',-4,350000,'Instagram ads'],['Rent',-5,5000000,'Shop rent']].forEach((x,i)=>{D.expenses['e'+(i+1)]={categorie:x[0],date:day(x[1]),montant:cv(x[2]),note:x[3],by:'Demo'}});
   D.gearLog={};D.removed={};
   return D;
 }
@@ -2717,7 +2871,7 @@ async function ensureDemo(){
   if(st&&st.expires<=Date.now()){await demoGate(true);return false}
   if(!st||!st.data)await demoGate(false);else DEMO_STATE=st;
   Object.keys(DEMO_STATE.data).forEach(n=>{CACHE[n]=DEMO_STATE.data[n]});
-  ['clients','bookings','payments','staff','tarifs','gear','gearLog','declarations','leaves','removed','config'].forEach(n=>{colOf(n)});
+  ['clients','bookings','payments','expenses','staff','tarifs','gear','gearLog','declarations','leaves','removed','config'].forEach(n=>{colOf(n)});
   STATE.first=true;
   ROLE='manager';MEMBER_NAME=DEMO_STATE.lead.name||'Demo';
   demoBar();
@@ -2802,7 +2956,7 @@ const use=n=>{const c=window.DD_SHIM||window.claude;return(c&&c.use)?c.use(n).ca
   try{const me=await u.me();ME.name=me.name||''}catch(e){}
   ME.level=canEdit?'Manager':(window.__role==='instructor'?'Instructor':(canWrite?'Staff':'Read-only'));
   openApp();
-  ['clients','bookings','payments','staff','tarifs','gear','gearLog','declarations','leaves','removed'].forEach(n=>{
+  ['clients','bookings','payments','expenses','staff','tarifs','gear','gearLog','declarations','leaves','removed'].forEach(n=>{
     col(n).onSnapshot(snap=>{const o={};snap.docs.forEach(x=>{o[x.id]=Object.assign({},x.data(),{id:x.id})});S[n]=o;LOADED[n]=true;schedule()},err=>{console.error(n,err);if(err&&err.code==='revoked')showGate('Access removed','Your access to this workspace was withdrawn. Reload the page or ask the manager.')});
   });
   const t0=setInterval(()=>{if(LOADED.clients){clearInterval(t0);autoSync()}},500);
