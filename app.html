@@ -182,6 +182,7 @@ td.wrapc{white-space:normal;min-width:180px}
 .gsum .row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:.95rem}.gsum .row span:first-child{color:var(--navy-dim)}.gsum .row span:last-child{font-weight:600;text-align:right}
 .gnote{width:100%;max-width:380px;box-sizing:border-box;text-align:left;font-size:.9rem;line-height:1.5;color:var(--navy-dim)}
 @media(prefers-reduced-motion:reduce){.gopt,.gbtn{transition:none}.gopt:active,.gbtn:active{transform:none}}
+#ddGH iframe{color-scheme:normal}
 .gate-card .lock svg{width:22px;height:22px;fill:none;stroke:var(--lime);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:760px){
   .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;border-top:1px solid rgba(255,255,255,.12);border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -325,7 +326,7 @@ main{gap:20px;padding-block:28px 56px}
 </div>
 <div id="toast" class="toast" hidden role="status"></div>
 
-<script>window.DD_CONFIG={gcidLogin:'174193563337-lc1i24pgodd7lhn8sh2vuuvs3oart43h.apps.googleusercontent.com',gcid:'174193563337-kbrmjpg5ttfavlb942psit9cn6o72nso.apps.googleusercontent.com',url:'https://thslialgczmcspirxray.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoc2xpYWxnY3ptY3NwaXJ4cmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzAxNTgsImV4cCI6MjEwOTMwNjE1OH0.O6cGwxnrzA17VP3ggW3eA4BWbRXL1JVURsN-991Ig7M'};</script>
+<script>window.DD_CONFIG={paddle:{env:'sandbox',token:'test_2ea2b05f8c56f4b9bc36afbdad5',prices:{monthly:'pri_01m7q3cc68fks8hq7wfnkwrzvy',yearly:'pri_01m7q3ejsxsnm9w4mg7k1jd56t'}},gcidLogin:'174193563337-lc1i24pgodd7lhn8sh2vuuvs3oart43h.apps.googleusercontent.com',gcid:'174193563337-kbrmjpg5ttfavlb942psit9cn6o72nso.apps.googleusercontent.com',url:'https://thslialgczmcspirxray.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoc2xpYWxnY3ptY3NwaXJ4cmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzAxNTgsImV4cCI6MjEwOTMwNjE1OH0.O6cGwxnrzA17VP3ggW3eA4BWbRXL1JVURsN-991Ig7M'};</script>
 <script>
 (function(){
 'use strict';
@@ -2549,7 +2550,7 @@ async function platformHome(){
      '<h1 style="margin:0 0 4px;font-size:1.5rem">Your companies</h1><p style="margin:0 0 16px;color:#9db3c6">Each company is a separate CRM. Open one to see it exactly as its manager does and act on it if needed. Every opening is logged. Only you can see this page.</p>'+
      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">'+tile('Companies',L.length)+tile('Active',cnt('active'))+tile('Awaiting payment',cnt('pending'))+tile('In trial',cnt('trial'))+tile('Suspended',cnt('suspended'))+tile('Customers',fmtI(sum('clients')))+tile('Bookings',fmtI(sum('bookings')))+tile('Collected (IDR)',fmtI(sum('collected')))+'</div>'+
      '<div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:820px"><thead><tr><th '+th+'>Company</th><th '+th+'>Owner</th><th '+th+'>Team</th><th '+th+'>Customers</th><th '+th+'>Bookings</th><th '+th+'>Collected</th><th '+th+'>Last activity</th><th '+th+'>Status</th><th '+th+'></th></tr></thead><tbody>'+
-     (L.map(c=>'<tr><td '+td+'><strong>'+esc(c.name)+'</strong>'+(c.plan?'<div style="color:#9db3c6;font-size:.8rem">'+(c.plan==='yearly'?'Yearly €854':'Monthly €89')+'</div>':'')+'</td><td '+td+'>'+esc(c.owner)+'</td><td '+td+'>'+c.members+'</td><td '+td+'>'+c.clients+'</td><td '+td+'>'+c.bookings+'</td><td '+td+'>'+fmtI(c.collected)+'</td><td '+td+'>'+esc(day(c.last_activity))+'<div style="color:#9db3c6;font-size:.8rem">opened by you: '+esc(day(c.last_opened))+'</div></td><td '+td+'><select data-st="'+esc(c.id)+'" style="background:#06182b;color:#fff;border:1px solid #1e3f61;border-radius:8px;padding:6px">'+['pending','trial','active','suspended'].map(v=>'<option value="'+v+'"'+(c.status===v?' selected':'')+'>'+(v==='pending'?'awaiting payment':v)+'</option>').join('')+'</select></td><td '+td+'><button type="button" data-open="'+esc(c.id)+'" style="'+btn+'background:#ff7a5c;color:#0a2540">Open CRM</button> <button type="button" data-del="'+esc(c.id)+'" data-name="'+esc(c.name)+'" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete</button></td></tr>').join('')||'<tr><td '+td+' colspan="9">No companies yet.</td></tr>')+
+     (L.map(c=>'<tr><td '+td+'><strong>'+esc(c.name)+'</strong>'+(c.plan?'<div style="color:#9db3c6;font-size:.8rem">'+(c.plan==='yearly'?'Yearly €854':'Monthly €89')+(c.next_bill?' · next '+esc(String(c.next_bill).slice(0,10)):'')+(c.billing_status&&c.billing_status!=='active'?' · '+esc(c.billing_status):'')+'</div>':'')+'</td><td '+td+'>'+esc(c.owner)+'</td><td '+td+'>'+c.members+'</td><td '+td+'>'+c.clients+'</td><td '+td+'>'+c.bookings+'</td><td '+td+'>'+fmtI(c.collected)+'</td><td '+td+'>'+esc(day(c.last_activity))+'<div style="color:#9db3c6;font-size:.8rem">opened by you: '+esc(day(c.last_opened))+'</div></td><td '+td+'><select data-st="'+esc(c.id)+'" style="background:#06182b;color:#fff;border:1px solid #1e3f61;border-radius:8px;padding:6px">'+['pending','trial','active','suspended'].map(v=>'<option value="'+v+'"'+(c.status===v?' selected':'')+'>'+(v==='pending'?'awaiting payment':v)+'</option>').join('')+'</select></td><td '+td+'><button type="button" data-open="'+esc(c.id)+'" style="'+btn+'background:#ff7a5c;color:#0a2540">Open CRM</button> <button type="button" data-del="'+esc(c.id)+'" data-name="'+esc(c.name)+'" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete</button></td></tr>').join('')||'<tr><td '+td+' colspan="9">No companies yet.</td></tr>')+
      '</tbody></table></div>'+
      '<div style="display:flex;align-items:center;gap:12px;margin:26px 0 8px"><h2 style="margin:0;font-size:1.15rem">Requests</h2><div style="flex:1"></div>'+(leads.length?'<button type="button" id="phLeadsAll" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete all</button>':'')+'</div><div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:520px"><thead><tr><th '+th+'>Date</th><th '+th+'>Type</th><th '+th+'>Name</th><th '+th+'>Center</th><th '+th+'>Email</th><th '+th+'></th></tr></thead><tbody>'+
      (leads.map(l=>{const d=l.data||{};return'<tr><td '+td+'>'+esc(day(l.created_at))+'</td><td '+td+'>'+(d.kind==='signup'?'<strong style="color:#ff7a5c">New Dive Center</strong>'+(d.plan?'<div style="color:#9db3c6;font-size:.8rem">'+(d.plan==='yearly'?'Yearly':'Monthly')+'</div>':''):'Demo')+'</td><td '+td+'>'+esc(d.name||'')+'</td><td '+td+'>'+esc(d.centre||'')+'</td><td '+td+'>'+esc(d.email||'')+'</td><td '+td+'><button type="button" data-lead="'+esc(l.id)+'" aria-label="Delete" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a;padding:4px 10px">✕</button></td></tr>'}).join('')||'<tr><td '+td+' colspan="6">No requests yet.</td></tr>')+'</tbody></table></div></div>';
@@ -2687,8 +2688,34 @@ try{const hp=new URLSearchParams(location.hash.slice(1));
 
 try{const h=new URLSearchParams(location.hash.slice(1));if(h.get('type')==='recovery'&&h.get('access_token')){RECOVERY=h.get('access_token');RECOVERY_RT=h.get('refresh_token')||null;history.replaceState(null,'',location.pathname)}}catch(e){}
 const IK='dd-intent';
-const getIntent=()=>{const q=location.search;if(/[?&]join(=|&|$)/.test(q))return 'join';if(/[?&]create(=|&|$)/.test(q))return 'create';return LS.get(IK)||''};
-const setIntent=v=>{if(v)LS.set(IK,v);else LS.del(IK)};
+const getIntent=()=>{const q=location.search;if(/[?&]join(=|&|$)/.test(q))return 'join';if(/[?&]create(=|&|$)/.test(q))return 'create';const v=String(LS.get(IK)||''),p=v.split('|');if(!p[0])return '';if(p[1]&&Date.now()-(+p[1])>2*3600e3){LS.del(IK);return ''}return p[0]};
+const setIntent=v=>{if(v)LS.set(IK,v+'|'+Date.now());else LS.del(IK)};
+const ROLE_NAME={manager:'manager',staff:'staff',instructor:'instructor',viewer:'read-only'};
+function conflictScreen(it,mem,email){
+  return new Promise(resolve=>{
+    const cn=(mem.centres&&mem.centres.name)||'your Dive Center';
+    document.getElementById('gTitle').textContent='You are already in a Dive Center';
+    document.getElementById('gText').textContent=email+' is part of '+cn+' ('+(ROLE_NAME[mem.role]||mem.role)+'). One account belongs to one Dive Center.';
+    let f=document.getElementById('ddLogin');if(f)f.remove();
+    const card=document.querySelector('#gate .gate-card');f=document.createElement('div');f.id='ddLogin';f.style.cssText='display:grid;gap:10px;margin-top:14px;width:100%;max-width:360px';
+    f.innerHTML='<button class="btn" id="cfOther">Use another account</button>'+
+      '<button class="btn ghost" id="cfLeave">Leave '+esc(cn)+' and '+(it==='create'?'create my own':'join another one')+'</button>'+
+      '<button class="btn ghost" id="cfOpen">Open '+esc(cn)+'</button>'+
+      '<div id="cfErr" role="alert" style="color:var(--bad);min-height:1.2em;font-size:.9rem;text-align:left"></div>'+
+      '<p class="hint" style="margin:0;text-align:left;font-size:.85rem">'+(it==='create'?'Tip: to run your own Dive Center and stay in this one, sign in with another email or Google account.':'Leaving removes your access to '+esc(cn)+'. Your manager can add you back at any time.')+'</p>';
+    card.appendChild(f);
+    const done=v=>{f.remove();resolve(v)};
+    document.getElementById('cfOpen').onclick=()=>{setIntent('');done('open')};
+    document.getElementById('cfOther').onclick=()=>{try{google.accounts.id.disableAutoSelect()}catch(x){}done('other')};
+    document.getElementById('cfLeave').onclick=async()=>{
+      const er=document.getElementById('cfErr');er.textContent='';
+      if(!confirm('Leave '+cn+'? You will lose access to its CRM. Its manager can add you back later.'))return;
+      const b=document.getElementById('cfLeave');b.disabled=true;
+      try{await api('/rest/v1/rpc/leave_centre',{method:'POST',body:{}});done('left')}
+      catch(x){const m=(x&&x.message)||'';er.textContent=/owner cannot leave/.test(m)?'You own '+cn+', so you cannot leave it. Use another account to '+(it==='create'?'create a new Dive Center.':'join another one.'):/last manager/.test(m)?'You are the only manager of '+cn+'. Give the manager role to someone else first, or use another account.':'Could not leave. Please try again.';b.disabled=false}
+    };
+  });
+}
 const G_SVG='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
 function gisLoad(){if(window.google&&google.accounts&&google.accounts.id)return Promise.resolve();if(gisLoad.p)return gisLoad.p;
   gisLoad.p=new Promise((res,rej)=>{const x=document.createElement('script');x.src='https://accounts.google.com/gsi/client';x.async=true;x.onload=()=>res();x.onerror=()=>{gisLoad.p=null;rej(new Error('gis'))};document.head.appendChild(x)});return gisLoad.p}
@@ -2784,22 +2811,41 @@ function onboardScreen(email){
   });
 }
 function accessState(c){c=c||{};const st=c.status||'';if(st==='active')return 'ok';if(st==='trial')return (c.trial_ends&&new Date(c.trial_ends).getTime()>Date.now())?'ok':'expired';if(st==='pending')return 'pending';if(st==='suspended')return 'suspended';return 'ok'}
+let PADDLE_READY=null,PAID_AT=0;
+const PAYTEST=()=>{try{if(/[?&]paytest(=|&|$)/.test(location.search))localStorage.setItem('dd-paytest','1');return localStorage.getItem('dd-paytest')==='1'}catch(e){return /[?&]paytest/.test(location.search)}};
+function paddleLoad(){
+  const pc=CFG.paddle;if(!pc||!pc.token)return Promise.reject(new Error('no paddle'));
+  if(PADDLE_READY)return PADDLE_READY;
+  PADDLE_READY=new Promise((res,rej)=>{
+    const go=()=>{try{if(pc.env==='sandbox')Paddle.Environment.set('sandbox');
+      Paddle.Initialize({token:pc.token,eventCallback:ev=>{if(ev&&ev.name==='checkout.completed'){PAID_AT=Date.now();const b=document.getElementById('ddAgain');if(b)b.click()}}});res()}catch(e){PADDLE_READY=null;rej(e)}};
+    if(window.Paddle&&window.Paddle.Initialize)return go();
+    const x=document.createElement('script');x.src='https://cdn.paddle.com/paddle/v2/paddle.js';x.async=true;x.onload=go;x.onerror=()=>{PADDLE_READY=null;rej(new Error('load'))};document.head.appendChild(x)});
+  return PADDLE_READY;
+}
+async function paddleCheckout(plan,email,centreId){
+  await paddleLoad();
+  const pr=(CFG.paddle.prices||{})[plan]||(CFG.paddle.prices||{}).monthly;
+  Paddle.Checkout.open({items:[{priceId:pr,quantity:1}],customer:{email:email},customData:{centre_id:String(centreId||'')},
+    settings:{displayMode:'overlay',theme:'dark',locale:'en',allowLogout:false,showAddDiscounts:false}});
+}
 function payScreen(state,c,role,email){
   return new Promise(resolve=>{
-    const mgr=role==='manager',plan=PLANS[c.plan]||PLANS.monthly,pay=CFG.checkout||'';
+    const mgr=role==='manager',plan=PLANS[c.plan]||PLANS.monthly,pdl=!!(CFG.paddle&&CFG.paddle.token&&(CFG.paddle.env!=='sandbox'||PAYTEST())),pay=pdl?'paddle':(CFG.checkout||''),wait=PAID_AT&&Date.now()-PAID_AT<90000,late=PAID_AT&&!wait;
     document.getElementById('gTitle').textContent=!mgr?'Not active yet':state==='pending'?'One last step':state==='expired'?'Your free trial has ended':'Your subscription is paused';
     document.getElementById('gText').textContent=!mgr?'Your Dive Center needs an active subscription. Please ask your manager.':state==='pending'?'Activate your Dive Center to start using Scubook.':'Renew your subscription to keep using Scubook. Your data is safe.';
     let f=document.getElementById('ddLogin');if(f)f.remove();
     const card=document.querySelector('#gate .gate-card');f=document.createElement('div');f.id='ddLogin';f.style.cssText='display:grid;gap:12px;margin-top:10px;width:100%;max-width:380px;justify-items:center';
-    f.innerHTML=(mgr?'<div class="gsum"><div class="row"><span>Dive Center</span><span>'+esc(c.name||'')+'</span></div><div class="row"><span>Plan</span><span>'+plan[0]+' · '+plan[1]+'</span></div><div class="row"><span>Billing</span><span>'+plan[2]+'</span></div><div class="row"><span>Included</span><span>Everything, unlimited staff</span></div></div>'+
-      (pay?'<button class="btn" id="psPay" style="width:100%">Continue to secure payment</button>':
+    f.innerHTML=(mgr?'<div class="gsum"><div class="row"><span>Dive Center</span><span>'+esc(c.name||'')+'</span></div>'+(pdl&&!wait&&!late?'':'<div class="row"><span>Plan</span><span>'+plan[0]+' · '+plan[1]+'</span></div><div class="row"><span>Billing</span><span>'+plan[2]+'</span></div>')+'<div class="row"><span>Included</span><span>Everything, unlimited staff</span></div></div>'+
+      (wait?'<p class="gnote" role="status"><strong style="color:#fff">Payment received.</strong> Opening your Dive Center…</p>':late?'<p class="gnote" role="status"><strong style="color:#fff">Payment received.</strong> Activation is taking longer than usual. It will open by itself, or email us and we will fix it right away.</p>':pdl?'<div class="gplan" role="radiogroup" aria-label="Plan" style="width:100%;max-width:380px"><label><input type="radio" name="psPlan" value="monthly"'+(c.plan!=='yearly'?' checked':'')+'><b>Monthly</b>€89 / month</label><label><input type="radio" name="psPlan" value="yearly"'+(c.plan==='yearly'?' checked':'')+'><b>Yearly</b>€71 / month<span style="font-size:.78rem">billed €854 / year</span></label></div><button class="btn" id="psPay" style="width:100%">Pay now</button><p class="gnote" style="text-align:center;font-size:.82rem">Secure payment by Paddle · Card, PayPal, Apple Pay or Google Pay · Cancel anytime'+(CFG.paddle.env==='sandbox'?' · <strong style="color:#FF7A5C">Test mode</strong>':'')+'</p><div id="psErr" role="alert" style="color:var(--bad);min-height:1.2em;font-size:.9rem"></div>':pay?'<button class="btn" id="psPay" style="width:100%">Continue to secure payment</button>':
        '<p class="gnote"><strong style="color:#fff">Your request is saved.</strong> Online payment is not open yet. We will email you at <strong style="color:#fff">'+esc(email)+'</strong> within one working day to activate your Dive Center. This page opens by itself once it is active.</p><a class="btn" href="mailto:contact@scubook.app?subject='+encodeURIComponent('Activate '+(c.name||'my Dive Center'))+'" style="width:100%;text-align:center;text-decoration:none;box-sizing:border-box">Email us</a>'):'')+
       '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn ghost" id="ddAgain">Check again</button><button class="btn ghost" id="ddOut">Sign out</button></div>';
     card.appendChild(f);
     const done=v=>{clearInterval(t);f.remove();resolve(v)};
     document.getElementById('ddAgain').onclick=()=>done('again');document.getElementById('ddOut').onclick=()=>done('out');
-    const p=document.getElementById('psPay');if(p)p.onclick=()=>{const u=new URL(pay,location.href);u.searchParams.set('plan',c.plan||'monthly');u.searchParams.set('email',email);location.href=u.toString()};
-    const t=setInterval(()=>done('again'),20000);
+    const p=document.getElementById('psPay');if(p)p.onclick=async()=>{if(pay==='paddle'){const sel=(f.querySelector('input[name=psPlan]:checked')||{}).value||c.plan||'monthly';p.disabled=true;try{await paddleCheckout(sel,email,c.id)}catch(e){const er=document.getElementById('psErr');if(er)er.textContent='Payment could not open. Check your connection and try again.'}p.disabled=false;return}const u=new URL(pay,location.href);u.searchParams.set('plan',c.plan||'monthly');u.searchParams.set('email',email);location.href=u.toString()};
+    const t=setInterval(()=>{if(!wait&&document.querySelector('.paddle-frame'))return;done('again')},wait?2000:20000);
+    if(pay==='paddle'&&!wait&&!late)paddleLoad().catch(()=>{});
   });
 }
 function waitingScreen(email){
@@ -2827,9 +2873,13 @@ async function ensureSession(){
   for(;;){
     try{
       const m=await api('/rest/v1/members?select=email,role,name,centre_id,centres(name,status,trial_ends,plan)&email=ilike.'+encodeURIComponent((SESS.email||'').replace(/[%*_]/g,''))+'&limit=1');
+      const it0=getIntent();
+      if(m&&m[0]&&(it0==='create'||it0==='join')){const w=await conflictScreen(it0,m[0],SESS.email||'');
+        if(w==='left')continue;
+        if(w==='other'){SESS=null;LS.del('dd-session');await authFlow('signup');continue}}
       if(m&&m[0]&&accessState(m[0].centres)!=='ok'){let adm=false;try{adm=(await api('/rest/v1/rpc/is_platform_admin',{method:'POST',body:{}}))===true}catch(x){}
-        if(!adm){const w=await payScreen(accessState(m[0].centres),m[0].centres||{},m[0].role,SESS.email||'');if(w==='out'){SESS=null;LS.del('dd-session');await authFlow('start')}continue}}
-      if(m&&m[0]){ROLE=m[0].role;MEMBER_NAME=m[0].name||'';CENTRE=m[0].centre_id;window.__cid=CENTRE;window.__role=ROLE;window.__email=(SESS.email||'').toLowerCase();CENTRE_NAME=(m[0].centres&&m[0].centres.name)||'';window.__centre=m[0].centres||{};window.__ownCid=CENTRE;await applyView();supportBar();return true}
+        if(!adm){const w=await payScreen(accessState(m[0].centres),Object.assign({id:m[0].centre_id},m[0].centres||{}),m[0].role,SESS.email||'');if(w==='out'){SESS=null;LS.del('dd-session');await authFlow('start')}continue}}
+      if(m&&m[0]){try{if(PAID_AT&&window.Paddle&&Paddle.Checkout)Paddle.Checkout.close()}catch(x){}PAID_AT=0;ROLE=m[0].role;MEMBER_NAME=m[0].name||'';CENTRE=m[0].centre_id;window.__cid=CENTRE;window.__role=ROLE;window.__email=(SESS.email||'').toLowerCase();CENTRE_NAME=(m[0].centres&&m[0].centres.name)||'';window.__centre=m[0].centres||{};window.__ownCid=CENTRE;await applyView();supportBar();return true}
       const w=await onboardScreen(SESS.email||'');
       if(w==='out'){SESS=null;LS.del('dd-session');await authFlow('start')}
     }catch(e){
