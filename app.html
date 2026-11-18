@@ -161,6 +161,27 @@ td.wrapc{white-space:normal;min-width:180px}
 .gate-card img{height:84px;width:auto}
 .gate-card p{margin:0;color:var(--navy-dim)}
 .gate-card .lock{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center}
+.gchoice{display:grid;gap:12px;width:100%;max-width:380px;margin-top:6px}
+.gopt{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:44px 1fr 18px;align-items:center;gap:14px;text-align:left;padding:18px 18px;border-radius:18px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);transition:background .2s,box-shadow .2s,transform .15s cubic-bezier(.2,0,0,1)}
+.gopt:hover{background:rgba(255,255,255,.11);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}.gopt:active{transform:scale(.985)}
+.gopt:focus-visible{outline:3px solid var(--aqua,#8AD9E3);outline-offset:3px}
+.gopt .gi{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(138,217,227,.16)}
+.gopt.cr .gi{background:rgba(255,122,92,.18)}
+.gopt .gi svg{width:22px;height:22px;fill:none;stroke:#8AD9E3;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.gopt.cr .gi svg{stroke:#FF7A5C}
+.gopt b{display:block;font-size:1.05rem;font-weight:700;color:#fff}.gopt small{display:block;margin-top:3px;font-size:.86rem;line-height:1.4;color:var(--navy-dim)}
+.gopt .ga{width:18px;height:18px;fill:none;stroke:rgba(255,255,255,.55);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.glink{all:unset;cursor:pointer;color:#fff;font-weight:600;text-decoration:underline;text-underline-offset:3px;font-size:.92rem}.glink:focus-visible{outline:2px solid var(--aqua,#8AD9E3);outline-offset:3px;border-radius:4px}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;box-sizing:border-box;min-height:46px;border:0;border-radius:99px;background:#fff;color:#1f1f1f;font:600 15px Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;cursor:pointer;transition:background .2s,transform .15s}
+.gbtn:hover{background:#f1f3f4}.gbtn:active{transform:scale(.985)}.gbtn svg{width:18px;height:18px;flex:none}
+.gsep{display:flex;align-items:center;gap:10px;color:var(--navy-dim);font-size:.82rem;margin:2px 0}.gsep::before,.gsep::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.18)}
+.gplan{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gplan label{position:relative;cursor:pointer;display:grid;gap:2px;padding:12px;border-radius:14px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);font-weight:500;font-size:.85rem;color:var(--navy-dim)}
+.gplan label b{color:#fff;font-size:1rem}.gplan input{position:absolute;opacity:0;pointer-events:none}@supports not selector(:has(*)){.gplan input{position:static;opacity:1;pointer-events:auto}}
+.gplan label:has(input:checked){box-shadow:inset 0 0 0 2px var(--lime,#FF7A5C);background:rgba(255,122,92,.1)}
+.gplan label:has(input:focus-visible){outline:3px solid var(--aqua,#8AD9E3);outline-offset:2px}
+.gsum{width:100%;max-width:380px;box-sizing:border-box;text-align:left;padding:18px;border-radius:18px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.gsum .row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:.95rem}.gsum .row span:first-child{color:var(--navy-dim)}.gsum .row span:last-child{font-weight:600;text-align:right}
+.gnote{width:100%;max-width:380px;box-sizing:border-box;text-align:left;font-size:.9rem;line-height:1.5;color:var(--navy-dim)}
+@media(prefers-reduced-motion:reduce){.gopt,.gbtn{transition:none}.gopt:active,.gbtn:active{transform:none}}
 .gate-card .lock svg{width:22px;height:22px;fill:none;stroke:var(--lime);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:760px){
   .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;border-top:1px solid rgba(255,255,255,.12);border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2428,8 +2449,8 @@ async function loadPlatform(){
     $('#platCard').hidden=false;
     const sum=k=>L.reduce((t,c)=>t+(+c[k]||0),0),cnt=st=>L.filter(c=>c.status===st).length,day=x=>x?String(x).slice(0,10):'—';
     const tile=(n,v)=>'<div style="background:var(--surface2,rgba(127,127,127,.12));border-radius:12px;padding:12px"><div class="hint">'+n+'</div><div style="font-size:1.4rem;font-weight:700">'+v+'</div></div>';
-    $('#platTiles').innerHTML=tile('Companies',L.length)+tile('Active',cnt('active'))+tile('In trial',cnt('trial'))+tile('Suspended',cnt('suspended'))+tile('Customers',sum('clients'))+tile('Bookings',sum('bookings'))+tile('Collected (IDR)',fmt(sum('collected')));
-    $('#platRows').innerHTML=L.map(c=>'<tr'+(c.id===CENTRE?' style="outline:2px solid var(--accent,#0B7285)"':'')+'><td><strong>'+esc(c.name)+'</strong>'+(c.id===window.__ownCid?'<br><span class="hint">your own space</span>':'')+'</td><td class="wrapc">'+esc(c.owner)+'</td><td class="n">'+c.members+'</td><td class="n">'+c.clients+'</td><td class="n">'+c.bookings+'</td><td class="n">'+fmt(c.collected)+'</td><td class="wrapc">'+esc(day(c.last_activity))+'<br><span class="hint">opened by you: '+esc(day(c.last_opened))+'</span></td><td><select class="platSt" data-id="'+esc(c.id)+'">'+['trial','active','suspended'].map(v=>'<option value="'+v+'"'+(c.status===v?' selected':'')+'>'+v+'</option>').join('')+'</select></td><td>'+(c.id===CENTRE?'<span class="hint">open now</span>':'<button type="button" class="btn" data-act="platOpen" data-id="'+esc(c.id)+'">Open CRM</button>')+'</td></tr>').join('')||'<tr><td colspan="9" class="hint">No companies yet.</td></tr>';
+    $('#platTiles').innerHTML=tile('Companies',L.length)+tile('Active',cnt('active'))+tile('Awaiting payment',cnt('pending'))+tile('In trial',cnt('trial'))+tile('Suspended',cnt('suspended'))+tile('Customers',sum('clients'))+tile('Bookings',sum('bookings'))+tile('Collected (IDR)',fmt(sum('collected')));
+    $('#platRows').innerHTML=L.map(c=>'<tr'+(c.id===CENTRE?' style="outline:2px solid var(--accent,#0B7285)"':'')+'><td><strong>'+esc(c.name)+'</strong>'+(c.id===window.__ownCid?'<br><span class="hint">your own space</span>':'')+'</td><td class="wrapc">'+esc(c.owner)+'</td><td class="n">'+c.members+'</td><td class="n">'+c.clients+'</td><td class="n">'+c.bookings+'</td><td class="n">'+fmt(c.collected)+'</td><td class="wrapc">'+esc(day(c.last_activity))+'<br><span class="hint">opened by you: '+esc(day(c.last_opened))+'</span></td><td><select class="platSt" data-id="'+esc(c.id)+'">'+['pending','trial','active','suspended'].map(v=>'<option value="'+v+'"'+(c.status===v?' selected':'')+'>'+(v==='pending'?'awaiting payment':v)+'</option>').join('')+'</select></td><td>'+(c.id===CENTRE?'<span class="hint">open now</span>':'<button type="button" class="btn" data-act="platOpen" data-id="'+esc(c.id)+'">Open CRM</button>')+'</td></tr>').join('')||'<tr><td colspan="9" class="hint">No companies yet.</td></tr>';
   }catch(e){}
 }
 document.addEventListener('change',async e=>{
@@ -2526,12 +2547,12 @@ async function platformHome(){
     W.innerHTML='<div style="max-width:1100px;margin:0 auto;padding:20px 16px 60px">'+
      '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px"><div style="font:700 34px Fredoka,system-ui,sans-serif"><span style="color:#ff7a5c">Scub</span>ook</div><div style="color:#9db3c6">Platform · '+esc((SESS&&SESS.email)||'')+'</div><div style="flex:1"></div><button type="button" id="phOut" style="'+btn+'background:#1e3f61;color:#fff">Sign out</button></div>'+
      '<h1 style="margin:0 0 4px;font-size:1.5rem">Your companies</h1><p style="margin:0 0 16px;color:#9db3c6">Each company is a separate CRM. Open one to see it exactly as its manager does and act on it if needed. Every opening is logged. Only you can see this page.</p>'+
-     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">'+tile('Companies',L.length)+tile('Active',cnt('active'))+tile('In trial',cnt('trial'))+tile('Suspended',cnt('suspended'))+tile('Customers',fmtI(sum('clients')))+tile('Bookings',fmtI(sum('bookings')))+tile('Collected (IDR)',fmtI(sum('collected')))+'</div>'+
+     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px">'+tile('Companies',L.length)+tile('Active',cnt('active'))+tile('Awaiting payment',cnt('pending'))+tile('In trial',cnt('trial'))+tile('Suspended',cnt('suspended'))+tile('Customers',fmtI(sum('clients')))+tile('Bookings',fmtI(sum('bookings')))+tile('Collected (IDR)',fmtI(sum('collected')))+'</div>'+
      '<div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:820px"><thead><tr><th '+th+'>Company</th><th '+th+'>Owner</th><th '+th+'>Team</th><th '+th+'>Customers</th><th '+th+'>Bookings</th><th '+th+'>Collected</th><th '+th+'>Last activity</th><th '+th+'>Status</th><th '+th+'></th></tr></thead><tbody>'+
-     (L.map(c=>'<tr><td '+td+'><strong>'+esc(c.name)+'</strong></td><td '+td+'>'+esc(c.owner)+'</td><td '+td+'>'+c.members+'</td><td '+td+'>'+c.clients+'</td><td '+td+'>'+c.bookings+'</td><td '+td+'>'+fmtI(c.collected)+'</td><td '+td+'>'+esc(day(c.last_activity))+'<div style="color:#9db3c6;font-size:.8rem">opened by you: '+esc(day(c.last_opened))+'</div></td><td '+td+'><select data-st="'+esc(c.id)+'" style="background:#06182b;color:#fff;border:1px solid #1e3f61;border-radius:8px;padding:6px">'+['trial','active','suspended'].map(v=>'<option'+(c.status===v?' selected':'')+'>'+v+'</option>').join('')+'</select></td><td '+td+'><button type="button" data-open="'+esc(c.id)+'" style="'+btn+'background:#ff7a5c;color:#0a2540">Open CRM</button> <button type="button" data-del="'+esc(c.id)+'" data-name="'+esc(c.name)+'" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete</button></td></tr>').join('')||'<tr><td '+td+' colspan="9">No companies yet.</td></tr>')+
+     (L.map(c=>'<tr><td '+td+'><strong>'+esc(c.name)+'</strong>'+(c.plan?'<div style="color:#9db3c6;font-size:.8rem">'+(c.plan==='yearly'?'Yearly €854':'Monthly €89')+'</div>':'')+'</td><td '+td+'>'+esc(c.owner)+'</td><td '+td+'>'+c.members+'</td><td '+td+'>'+c.clients+'</td><td '+td+'>'+c.bookings+'</td><td '+td+'>'+fmtI(c.collected)+'</td><td '+td+'>'+esc(day(c.last_activity))+'<div style="color:#9db3c6;font-size:.8rem">opened by you: '+esc(day(c.last_opened))+'</div></td><td '+td+'><select data-st="'+esc(c.id)+'" style="background:#06182b;color:#fff;border:1px solid #1e3f61;border-radius:8px;padding:6px">'+['pending','trial','active','suspended'].map(v=>'<option value="'+v+'"'+(c.status===v?' selected':'')+'>'+(v==='pending'?'awaiting payment':v)+'</option>').join('')+'</select></td><td '+td+'><button type="button" data-open="'+esc(c.id)+'" style="'+btn+'background:#ff7a5c;color:#0a2540">Open CRM</button> <button type="button" data-del="'+esc(c.id)+'" data-name="'+esc(c.name)+'" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete</button></td></tr>').join('')||'<tr><td '+td+' colspan="9">No companies yet.</td></tr>')+
      '</tbody></table></div>'+
-     '<div style="display:flex;align-items:center;gap:12px;margin:26px 0 8px"><h2 style="margin:0;font-size:1.15rem">Demo requests</h2><div style="flex:1"></div>'+(leads.length?'<button type="button" id="phLeadsAll" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete all</button>':'')+'</div><div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:520px"><thead><tr><th '+th+'>Date</th><th '+th+'>Name</th><th '+th+'>Center</th><th '+th+'>Email</th><th '+th+'></th></tr></thead><tbody>'+
-     (leads.map(l=>{const d=l.data||{};return'<tr><td '+td+'>'+esc(day(l.created_at))+'</td><td '+td+'>'+esc(d.name||'')+'</td><td '+td+'>'+esc(d.centre||'')+'</td><td '+td+'>'+esc(d.email||'')+'</td><td '+td+'><button type="button" data-lead="'+esc(l.id)+'" aria-label="Delete" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a;padding:4px 10px">✕</button></td></tr>'}).join('')||'<tr><td '+td+' colspan="5">No demo requests yet.</td></tr>')+'</tbody></table></div></div>';
+     '<div style="display:flex;align-items:center;gap:12px;margin:26px 0 8px"><h2 style="margin:0;font-size:1.15rem">Requests</h2><div style="flex:1"></div>'+(leads.length?'<button type="button" id="phLeadsAll" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a">Delete all</button>':'')+'</div><div style="overflow:auto;background:#0e2a47;border-radius:14px;padding:6px 10px"><table style="width:100%;border-collapse:collapse;min-width:520px"><thead><tr><th '+th+'>Date</th><th '+th+'>Type</th><th '+th+'>Name</th><th '+th+'>Center</th><th '+th+'>Email</th><th '+th+'></th></tr></thead><tbody>'+
+     (leads.map(l=>{const d=l.data||{};return'<tr><td '+td+'>'+esc(day(l.created_at))+'</td><td '+td+'>'+(d.kind==='signup'?'<strong style="color:#ff7a5c">New Dive Center</strong>'+(d.plan?'<div style="color:#9db3c6;font-size:.8rem">'+(d.plan==='yearly'?'Yearly':'Monthly')+'</div>':''):'Demo')+'</td><td '+td+'>'+esc(d.name||'')+'</td><td '+td+'>'+esc(d.centre||'')+'</td><td '+td+'>'+esc(d.email||'')+'</td><td '+td+'><button type="button" data-lead="'+esc(l.id)+'" aria-label="Delete" style="'+btn+'background:transparent;color:#ff9b9b;border:1px solid #7a3a3a;padding:4px 10px">✕</button></td></tr>'}).join('')||'<tr><td '+td+' colspan="6">No requests yet.</td></tr>')+'</tbody></table></div></div>';
     W.querySelectorAll('[data-open]').forEach(b=>b.onclick=async()=>{const id=b.dataset.open;b.disabled=true;try{await api('/rest/v1/rpc/platform_enter',{method:'POST',body:{p_centre:id}})}catch(e){b.disabled=false;return}try{sessionStorage.setItem('sb-view',id)}catch(e){}location.hash='#home';location.reload()});
     W.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
       const id=b.dataset.del,name=b.dataset.name;
@@ -2616,15 +2637,17 @@ function authScreen(mode,msg,notice){
     let f=document.getElementById('ddLogin');if(f)f.remove();
     f=document.createElement('form');f.id='ddLogin';f.style.cssText='display:grid;gap:10px;margin-top:14px;text-align:left;width:100%;max-width:320px';
     const em=LS.get('dd-email')||'';
-    f.innerHTML=(mode==='signup'?fld('ddNm','Your name','text','name','maxlength="60"'):'')+
+    const it=getIntent();if((mode==='signup'||mode==='login')&&!msg){document.getElementById('gText').textContent=mode==='login'?'Welcome back.':it==='join'?'Step 1 of 2 · Create your account, then enter your access code.':it==='create'?'Step 1 of 2 · Create your account, then set up your Dive Center.':'Create your account.'}
+    f.innerHTML=((mode==='signup'||mode==='login')?'<button type="button" class="gbtn" id="ddG">'+G_SVG+'Continue with Google</button><div class="gsep">or with email</div>':'')+(mode==='signup'?fld('ddNm','Your name','text','name','maxlength="60"'):'')+
       (mode!=='newpw'?fld('ddEm','Email','email','username'):'')+
       (mode==='login'||mode==='signup'||mode==='newpw'?fld('ddPw',mode==='newpw'?'New password':'Password','password',mode==='login'?'current-password':'new-password',mode==='login'?'':'minlength="8"')+(mode!=='login'?'<span class="hint" style="font-size:.8rem">At least 8 characters.</span>':''):'')+
       (mode==='login'?'<label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="ddKeep"'+(LS.get('dd-keep')==='0'?'':' checked')+'> Keep me signed in</label>':'')+
       '<button class="btn" type="submit" id="ddGo">'+(mode==='signup'?'Create account':mode==='reset'?'Send reset link':mode==='newpw'?'Save password':'Sign in')+'</button>'+
       '<div id="ddErr" role="alert" style="color:var(--bad);min-height:1.2em;font-size:.9rem"></div>'+
       '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.9rem">'+
-      (mode==='login'?'<a href="#" data-m="signup">Create an account</a><a href="#" data-m="reset">Forgot password?</a>':mode==='newpw'?'':'<a href="#" data-m="login">Back to sign in</a>')+'</div>';
+      (mode==='login'?'<a href="#" data-m="start">New to Scubook?</a><a href="#" data-m="reset">Forgot password?</a>':mode==='signup'?'<a href="#" data-m="start">Back</a><a href="#" data-m="login">I already have an account</a>':mode==='newpw'?'':'<a href="#" data-m="login">Back to sign in</a>')+'</div>';
     card.appendChild(f);
+    const gB=document.getElementById('ddG');if(gB)gB.onclick=()=>{gB.disabled=true;googleSignIn()};
     if(notice){document.getElementById('ddErr').style.color='var(--good)';document.getElementById('ddErr').textContent=notice}
     const E=document.getElementById('ddEm');if(E)E.value=(SESS&&SESS.email)||em;
     f.querySelectorAll('a[data-m]').forEach(a=>a.onclick=ev=>{ev.preventDefault();f.remove();resolve({mode:a.dataset.m})});
@@ -2658,37 +2681,103 @@ function authScreen(mode,msg,notice){
 let RECOVERY=null,RECOVERY_RT=null,HASHNOTE=null,HASHSESS=null;
 try{const hp=new URLSearchParams(location.hash.slice(1));
  if(hp.get('error_code')||hp.get('error')){HASHNOTE=/expired|invalid/i.test(hp.get('error_description')||hp.get('error_code')||'')?'This confirmation link was already used or has expired. Try signing in: your email may already be confirmed.':'Sign-in link problem. Please sign in again.';history.replaceState(null,'',location.pathname+location.search)}
+ else if(hp.get('access_token')&&hp.get('type')!=='recovery'&&hp.get('type')!=='signup'){if(hp.get('refresh_token'))HASHSESS={access_token:hp.get('access_token'),refresh_token:hp.get('refresh_token'),expires_in:+hp.get('expires_in')||3600};history.replaceState(null,'',location.pathname+location.search)}
  else if(hp.get('type')==='signup'&&hp.get('access_token')){HASHNOTE='Email confirmed. You can now sign in.';if(hp.get('refresh_token'))HASHSESS={access_token:hp.get('access_token'),refresh_token:hp.get('refresh_token'),expires_in:+hp.get('expires_in')||3600};history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
 
 try{const h=new URLSearchParams(location.hash.slice(1));if(h.get('type')==='recovery'&&h.get('access_token')){RECOVERY=h.get('access_token');RECOVERY_RT=h.get('refresh_token')||null;history.replaceState(null,'',location.pathname)}}catch(e){}
-async function authFlow(mode,notice,msg){
-  for(;;){const r=await authScreen(mode,msg,notice);if(r.done)return;mode=r.mode;notice=r.notice;msg=null}
-}
-function onboardScreen(email){
+const IK='dd-intent';
+const getIntent=()=>{const q=location.search;if(/[?&]join(=|&|$)/.test(q))return 'join';if(/[?&]create(=|&|$)/.test(q))return 'create';return LS.get(IK)||''};
+const setIntent=v=>{if(v)LS.set(IK,v);else LS.del(IK)};
+const G_SVG='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+function googleSignIn(){location.href=URL_+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+location.pathname)}
+const ARROW='<svg class="ga" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+function startScreen(){
   return new Promise(resolve=>{
     document.getElementById('gTitle').textContent='Welcome to Scubook';
-    document.getElementById('gText').textContent='Signed in as '+email+'. Choose how you want to use Scubook.';
+    document.getElementById('gText').textContent='How do you want to start?';
     let f=document.getElementById('ddLogin');if(f)f.remove();
-    const card=document.querySelector('#gate .gate-card');f=document.createElement('div');f.id='ddLogin';f.style.cssText='display:grid;gap:10px;margin-top:14px;width:100%;max-width:340px;text-align:left';
-    f.innerHTML='<div style="font-weight:700">I manage a company</div><label class="f" style="display:grid;gap:4px">Company or dive center name<input id="ocName" maxlength="80" autocomplete="organization" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><button class="btn" id="ocGo">Create my company space</button><div id="ocErr" role="alert" style="color:var(--bad);min-height:1.2em;font-size:.9rem"></div><hr style="width:100%;border:0;border-top:1px solid var(--line,#ddd)"><div style="font-weight:700">I am an employee</div><p class="hint" style="margin:0">Enter the <strong>access code</strong> your manager gave you to join your company space.</p><input id="ocCode" maxlength="9" autocomplete="off" placeholder="XXXX-XXXX" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px;text-transform:uppercase;letter-spacing:.12em;text-align:center;font-weight:800"><button class="btn lime" id="ocJoin">Join with this code</button><div id="jcErr" role="alert" style="color:var(--bad);min-height:1.2em;font-size:.9rem"></div><p class="hint" style="margin:0">No code? Ask your manager to add <strong>'+esc(email)+'</strong> in Account &gt; Team accounts instead.</p><button class="btn ghost" id="ddAgain">Check again</button><button class="btn ghost" id="ddOut">Sign out</button>';
+    const card=document.querySelector('#gate .gate-card');
+    f=document.createElement('div');f.id='ddLogin';f.className='gchoice';
+    f.innerHTML='<button type="button" class="gopt" data-i="join"><span class="gi"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M17 8v6M14 11h6"/></svg></span><span><b>Join a Dive Center</b><small>For instructors and staff. Use the access code from your manager.</small></span>'+ARROW+'</button>'+
+      '<button type="button" class="gopt cr" data-i="create"><span class="gi"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M10 21v-6h4v6"/></svg></span><span><b>Create my Dive Center</b><small>For owners and managers. One plan, everything included.</small></span>'+ARROW+'</button>'+
+      '<p style="margin-top:8px;font-size:.92rem">Already have an account? <button type="button" class="glink" data-i="login">Sign in</button></p>';
+    card.appendChild(f);
+    f.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const v=b.dataset.i;if(v!=='login')setIntent(v);f.remove();resolve(v)});
+    setTimeout(()=>{const x=f.querySelector('.gopt');x&&x.focus()},50);
+  });
+}
+async function authFlow(mode,notice,msg){
+  for(;;){
+    if(mode==='start'){const v=await startScreen();mode=v==='login'?'login':'signup';notice=null;msg=null;continue}
+    const r=await authScreen(mode,msg,notice);if(r.done)return;mode=r.mode;notice=r.notice;msg=null}
+}
+const PLANS={monthly:['Monthly','€89 / month','€89 billed every month'],yearly:['Yearly','€71 / month','€854 billed once a year (save 20%)']};
+function onboardScreen(email){
+  return new Promise(resolve=>{
+    const it=getIntent();
+    document.getElementById('gTitle').textContent=it==='join'?'Join your Dive Center':it==='create'?'Set up your Dive Center':'Welcome to Scubook';
+    document.getElementById('gText').textContent=it==='join'?'Step 2 of 2 · Signed in as '+email+'.':it==='create'?'Step 2 of 2 · Signed in as '+email+'.':'Signed in as '+email+'. Choose how you want to use Scubook.';
+    let f=document.getElementById('ddLogin');if(f)f.remove();
+    const card=document.querySelector('#gate .gate-card');f=document.createElement('div');f.id='ddLogin';f.style.cssText='display:grid;gap:10px;margin-top:14px;width:100%;max-width:360px;text-align:left';
+    const IN='padding:11px;border:0;border-radius:10px;background:#fff;color:#0A2540;font:inherit;font-size:16px;width:100%;box-sizing:border-box';
+    const curOpts=(typeof DEMO_CURS!=='undefined'?DEMO_CURS:[['IDR','Indonesian rupiah']]).map(c=>'<option value="'+c[0]+'"'+(c[0]===(typeof guessCur==='function'?guessCur():'IDR')?' selected':'')+'>'+c[0]+' · '+c[1]+'</option>').join('');
+    const createH=(it?'':'<div style="font-weight:700;color:#fff">Create my Dive Center</div>')+
+      '<label style="display:grid;gap:5px;font-weight:600;color:#fff">Dive Center name<input id="ocName" maxlength="80" autocomplete="organization" style="'+IN+'"></label>'+
+      '<label style="display:grid;gap:5px;font-weight:600;color:#fff">Currency<select id="ocCur" style="'+IN+'">'+curOpts+'</select></label>'+
+      '<div style="font-weight:600;color:#fff;margin-top:2px">Plan</div><div class="gplan" role="radiogroup" aria-label="Plan">'+
+      '<label><input type="radio" name="ocPlan" value="monthly" checked><b>Monthly</b>€89 / month</label>'+
+      '<label><input type="radio" name="ocPlan" value="yearly"><b>Yearly</b>€71 / month<span style="font-size:.78rem">billed €854 / year</span></label></div>'+
+      '<button class="btn" id="ocGo" style="margin-top:4px">Continue to payment</button><div id="ocErr" role="alert" style="color:var(--bad);min-height:1.2em;font-size:.9rem"></div>';
+    const joinH=(it?'':'<div style="font-weight:700;color:#fff">Join a Dive Center</div>')+'<p class="hint" style="margin:0">Enter the <strong>access code</strong> your manager gave you. You can find it in Settings &gt; Team access code.</p>'+
+      '<input id="ocCode" maxlength="9" autocomplete="off" placeholder="XXXX-XXXX" aria-label="Access code" style="'+IN+';text-transform:uppercase;letter-spacing:.12em;text-align:center;font-weight:800">'+
+      '<button class="btn lime" id="ocJoin">Join with this code</button><div id="jcErr" role="alert" style="color:var(--bad);min-height:1.2em;font-size:.9rem"></div>'+
+      '<p class="hint" style="margin:0">No code? Ask your manager to add <strong>'+esc(email)+'</strong> in Settings &gt; Team and access rights.</p>';
+    const sep='<hr style="width:100%;border:0;border-top:1px solid rgba(255,255,255,.18);margin:6px 0">';
+    f.innerHTML=(it==='join'?joinH+'<button type="button" class="glink" data-sw="create" style="justify-self:start">I want to create a Dive Center instead</button>':
+      it==='create'?createH+'<button type="button" class="glink" data-sw="join" style="justify-self:start">I want to join a Dive Center instead</button>':createH+sep+joinH)+
+      sep+'<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" id="ddAgain">Check again</button><button class="btn ghost" id="ddOut">Sign out</button></div>';
+    card.appendChild(f);
+    const done=v=>{clearInterval(t);f.remove();resolve(v)};
+    document.getElementById('ddAgain').onclick=()=>done('again');document.getElementById('ddOut').onclick=()=>{setIntent('');done('out')};
+    f.querySelectorAll('[data-sw]').forEach(b=>b.onclick=()=>{setIntent(b.dataset.sw);done('again')});
+    const go=document.getElementById('ocGo');
+    if(go)go.onclick=async()=>{
+      const nm=document.getElementById('ocName').value.trim(),er=document.getElementById('ocErr');er.textContent='';
+      if(nm.length<2){er.textContent='Please enter your Dive Center name.';document.getElementById('ocName').focus();return}
+      const pl=(f.querySelector('input[name=ocPlan]:checked')||{}).value||'monthly',cu=document.getElementById('ocCur').value;
+      go.disabled=true;
+      try{await api('/rest/v1/rpc/create_centre',{method:'POST',body:{p_name:nm,p_plan:pl,p_currency:cu}});setIntent('');done('again')}
+      catch(x){er.textContent=(x&&x.message&&/already belongs/.test(x.message))?'This email already belongs to a Dive Center.':'Could not create your Dive Center. Please try again.';go.disabled=false}
+    };
+    const jn=document.getElementById('ocJoin');
+    if(jn)jn.onclick=async()=>{
+      const cd=document.getElementById('ocCode').value.trim(),er=document.getElementById('jcErr');er.textContent='';
+      if(cd.length<8){er.textContent='Please enter the full code.';return}
+      jn.disabled=true;
+      try{await api('/rest/v1/rpc/join_centre',{method:'POST',body:{p_code:cd}});setIntent('');done('again')}
+      catch(x){const m=(x&&x.message)||'';er.textContent=/invalid code/.test(m)?'This code is not valid. Check it with your manager.':/already member/.test(m)?'This email already belongs to a Dive Center.':/suspended/.test(m)?'This Dive Center is currently suspended.':'Could not join. Please try again.';jn.disabled=false}
+    };
+    const t=setInterval(()=>{const a=document.activeElement;if(a&&(a.id==='ocName'||a.id==='ocCode'||a.id==='ocCur'||a.name==='ocPlan'))return;if(document.getElementById('ocName')&&document.getElementById('ocName').value)return;done('again')},15000);
+    setTimeout(()=>{const x=document.getElementById(it==='join'?'ocCode':'ocName')||document.getElementById('ocName');x&&x.focus()},50);
+  });
+}
+function accessState(c){c=c||{};const st=c.status||'';if(st==='active')return 'ok';if(st==='trial')return (c.trial_ends&&new Date(c.trial_ends).getTime()>Date.now())?'ok':'expired';if(st==='pending')return 'pending';if(st==='suspended')return 'suspended';return 'ok'}
+function payScreen(state,c,role,email){
+  return new Promise(resolve=>{
+    const mgr=role==='manager',plan=PLANS[c.plan]||PLANS.monthly,pay=CFG.checkout||'';
+    document.getElementById('gTitle').textContent=!mgr?'Not active yet':state==='pending'?'One last step':state==='expired'?'Your free trial has ended':'Your subscription is paused';
+    document.getElementById('gText').textContent=!mgr?'Your Dive Center needs an active subscription. Please ask your manager.':state==='pending'?'Activate your Dive Center to start using Scubook.':'Renew your subscription to keep using Scubook. Your data is safe.';
+    let f=document.getElementById('ddLogin');if(f)f.remove();
+    const card=document.querySelector('#gate .gate-card');f=document.createElement('div');f.id='ddLogin';f.style.cssText='display:grid;gap:12px;margin-top:10px;width:100%;max-width:380px;justify-items:center';
+    f.innerHTML=(mgr?'<div class="gsum"><div class="row"><span>Dive Center</span><span>'+esc(c.name||'')+'</span></div><div class="row"><span>Plan</span><span>'+plan[0]+' · '+plan[1]+'</span></div><div class="row"><span>Billing</span><span>'+plan[2]+'</span></div><div class="row"><span>Included</span><span>Everything, unlimited staff</span></div></div>'+
+      (pay?'<button class="btn" id="psPay" style="width:100%">Continue to secure payment</button>':
+       '<p class="gnote"><strong style="color:#fff">Your request is saved.</strong> Online payment is not open yet. We will email you at <strong style="color:#fff">'+esc(email)+'</strong> within one working day to activate your Dive Center. This page opens by itself once it is active.</p><a class="btn" href="mailto:contact@scubook.app?subject='+encodeURIComponent('Activate '+(c.name||'my Dive Center'))+'" style="width:100%;text-align:center;text-decoration:none;box-sizing:border-box">Email us</a>'):'')+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn ghost" id="ddAgain">Check again</button><button class="btn ghost" id="ddOut">Sign out</button></div>';
     card.appendChild(f);
     const done=v=>{clearInterval(t);f.remove();resolve(v)};
     document.getElementById('ddAgain').onclick=()=>done('again');document.getElementById('ddOut').onclick=()=>done('out');
-    document.getElementById('ocGo').onclick=async()=>{
-      const nm=document.getElementById('ocName').value.trim(),er=document.getElementById('ocErr');er.textContent='';
-      if(nm.length<2){er.textContent='Please enter your company name.';return}
-      const b=document.getElementById('ocGo');b.disabled=true;
-      try{await api('/rest/v1/rpc/create_centre',{method:'POST',body:{p_name:nm}});done('again')}
-      catch(x){er.textContent=(x&&x.message&&/already belongs/.test(x.message))?'This email already belongs to a company.':'Could not create the space. Please try again.';b.disabled=false}
-    };
-    document.getElementById('ocJoin').onclick=async()=>{
-      const cd=document.getElementById('ocCode').value.trim(),er=document.getElementById('jcErr');er.textContent='';
-      if(cd.length<8){er.textContent='Please enter the full code.';return}
-      const b=document.getElementById('ocJoin');b.disabled=true;
-      try{await api('/rest/v1/rpc/join_centre',{method:'POST',body:{p_code:cd}});done('again')}
-      catch(x){const m=(x&&x.message)||'';er.textContent=/invalid code/.test(m)?'This code is not valid. Check it with your manager.':/already member/.test(m)?'This email already belongs to a company.':/suspended/.test(m)?'This company space is currently suspended.':'Could not join. Please try again.';b.disabled=false}
-    };
-    const t=setInterval(()=>{const a=document.activeElement;if(a&&(a.id==='ocName'||a.id==='ocCode')&&a.value)return;done('again')},15000);
+    const p=document.getElementById('psPay');if(p)p.onclick=()=>{const u=new URL(pay,location.href);u.searchParams.set('plan',c.plan||'monthly');u.searchParams.set('email',email);location.href=u.toString()};
+    const t=setInterval(()=>done('again'),20000);
   });
 }
 function waitingScreen(email){
@@ -2712,13 +2801,15 @@ async function ensureSession(){
   if(HASHSESS&&!RECOVERY){try{const r=await fetch(URL_+'/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+HASHSESS.access_token}});if(r.ok){const u=await r.json();saveSess(Object.assign({},HASHSESS,{user:{email:u.email}}));HASHNOTE=null}}catch(e){}}
   if(RECOVERY){await authFlow('newpw')}
   if(SESS&&SESS.refresh_token){if(Date.now()>SESS.exp-60000){await refresh()}}
-  if(!SESS){try{sessionStorage.removeItem('sb-view')}catch(e){}await authFlow(/[?&]signup/.test(location.search)&&!HASHNOTE?'signup':'login',HASHNOTE)}
+  if(!SESS){try{sessionStorage.removeItem('sb-view')}catch(e){}await authFlow(HASHNOTE?'login':/[?&]signup/.test(location.search)?'signup':/[?&](join|create)(=|&|$)/.test(location.search)?'signup':/[?&]login(=|&|$)/.test(location.search)?'login':'start',HASHNOTE)}
   for(;;){
     try{
-      const m=await api('/rest/v1/members?select=email,role,name,centre_id,centres(name,status,trial_ends)&email=ilike.'+encodeURIComponent((SESS.email||'').replace(/[%*_]/g,''))+'&limit=1');
+      const m=await api('/rest/v1/members?select=email,role,name,centre_id,centres(name,status,trial_ends,plan)&email=ilike.'+encodeURIComponent((SESS.email||'').replace(/[%*_]/g,''))+'&limit=1');
+      if(m&&m[0]&&accessState(m[0].centres)!=='ok'){let adm=false;try{adm=(await api('/rest/v1/rpc/is_platform_admin',{method:'POST',body:{}}))===true}catch(x){}
+        if(!adm){const w=await payScreen(accessState(m[0].centres),m[0].centres||{},m[0].role,SESS.email||'');if(w==='out'){SESS=null;LS.del('dd-session');await authFlow('start')}continue}}
       if(m&&m[0]){ROLE=m[0].role;MEMBER_NAME=m[0].name||'';CENTRE=m[0].centre_id;window.__cid=CENTRE;window.__role=ROLE;window.__email=(SESS.email||'').toLowerCase();CENTRE_NAME=(m[0].centres&&m[0].centres.name)||'';window.__centre=m[0].centres||{};window.__ownCid=CENTRE;await applyView();supportBar();return true}
       const w=await onboardScreen(SESS.email||'');
-      if(w==='out'){SESS=null;LS.del('dd-session');await authFlow('login')}
+      if(w==='out'){SESS=null;LS.del('dd-session');await authFlow('start')}
     }catch(e){
       if(e.status===401||e.status===403){SESS=null;LS.del('dd-session');try{sessionStorage.removeItem('sb-view')}catch(x){}await authFlow('login','Session expired, please sign in again.')}
       else{document.getElementById('gText').textContent='No connection. Retrying…';await new Promise(r=>setTimeout(r,3000))}
