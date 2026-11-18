@@ -325,7 +325,7 @@ main{gap:20px;padding-block:28px 56px}
 </div>
 <div id="toast" class="toast" hidden role="status"></div>
 
-<script>window.DD_CONFIG={gcid:'174193563337-kbrmjpg5ttfavlb942psit9cn6o72nso.apps.googleusercontent.com',url:'https://thslialgczmcspirxray.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoc2xpYWxnY3ptY3NwaXJ4cmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzAxNTgsImV4cCI6MjEwOTMwNjE1OH0.O6cGwxnrzA17VP3ggW3eA4BWbRXL1JVURsN-991Ig7M'};</script>
+<script>window.DD_CONFIG={gcidLogin:'174193563337-lc1i24pgodd7lhn8sh2vuuvs3oart43h.apps.googleusercontent.com',gcid:'174193563337-kbrmjpg5ttfavlb942psit9cn6o72nso.apps.googleusercontent.com',url:'https://thslialgczmcspirxray.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoc2xpYWxnY3ptY3NwaXJ4cmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzAxNTgsImV4cCI6MjEwOTMwNjE1OH0.O6cGwxnrzA17VP3ggW3eA4BWbRXL1JVURsN-991Ig7M'};</script>
 <script>
 (function(){
 'use strict';
@@ -2647,7 +2647,8 @@ function authScreen(mode,msg,notice){
       '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.9rem">'+
       (mode==='login'?'<a href="#" data-m="start">New to Scubook?</a><a href="#" data-m="reset">Forgot password?</a>':mode==='signup'?'<a href="#" data-m="start">Back</a><a href="#" data-m="login">I already have an account</a>':mode==='newpw'?'':'<a href="#" data-m="login">Back to sign in</a>')+'</div>';
     card.appendChild(f);
-    const gB=document.getElementById('ddG');if(gB)gB.onclick=()=>{gB.disabled=true;googleSignIn()};
+    const gB=document.getElementById('ddG');if(gB){gB.onclick=()=>{gB.disabled=true;googleSignIn()};const gH=document.createElement('div');gH.id='ddGH';gH.hidden=true;gH.style.cssText='justify-content:center;min-height:44px;width:100%';gB.parentNode.insertBefore(gH,gB);
+      gisMount(gH,gB,mode,()=>{f.remove();resolve({done:true})},m=>{const e=document.getElementById('ddErr');if(e){e.style.color='var(--bad)';e.textContent=m}})}
     if(notice){document.getElementById('ddErr').style.color='var(--good)';document.getElementById('ddErr').textContent=notice}
     const E=document.getElementById('ddEm');if(E)E.value=(SESS&&SESS.email)||em;
     f.querySelectorAll('a[data-m]').forEach(a=>a.onclick=ev=>{ev.preventDefault();f.remove();resolve({mode:a.dataset.m})});
@@ -2689,6 +2690,27 @@ const IK='dd-intent';
 const getIntent=()=>{const q=location.search;if(/[?&]join(=|&|$)/.test(q))return 'join';if(/[?&]create(=|&|$)/.test(q))return 'create';return LS.get(IK)||''};
 const setIntent=v=>{if(v)LS.set(IK,v);else LS.del(IK)};
 const G_SVG='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+function gisLoad(){if(window.google&&google.accounts&&google.accounts.id)return Promise.resolve();if(gisLoad.p)return gisLoad.p;
+  gisLoad.p=new Promise((res,rej)=>{const x=document.createElement('script');x.src='https://accounts.google.com/gsi/client';x.async=true;x.onload=()=>res();x.onerror=()=>{gisLoad.p=null;rej(new Error('gis'))};document.head.appendChild(x)});return gisLoad.p}
+async function sha256hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('')}
+async function gisMount(host,fallbackBtn,mode,onDone,onErr){
+  const cid=CFG.gcidLogin;if(!cid||!window.crypto||!crypto.subtle)return false;
+  try{await Promise.race([gisLoad(),new Promise((_,j)=>setTimeout(()=>j(new Error('slow')),6000))])}catch(e){return false}
+  if(!document.body.contains(host))return false;
+  const a=new Uint8Array(16);crypto.getRandomValues(a);const raw=Array.from(a,x=>x.toString(16).padStart(2,'0')).join(''),hashed=await sha256hex(raw);
+  try{
+    google.accounts.id.initialize({client_id:cid,nonce:hashed,ux_mode:'popup',auto_select:false,itp_support:true,context:mode==='signup'?'signup':'signin',
+      callback:async r=>{
+        try{const x=await fetch(URL_+'/auth/v1/token?grant_type=id_token',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({provider:'google',id_token:r&&r.credential,nonce:raw})});
+          if(!x.ok)throw new Error('token '+x.status);saveSess(await x.json());onDone()}
+        catch(e){onErr('Google sign-in failed. Please try again.')}
+      }});
+    host.innerHTML='';
+    google.accounts.id.renderButton(host,{type:'standard',theme:'outline',size:'large',shape:'pill',text:mode==='signup'?'signup_with':'continue_with',logo_alignment:'center',width:Math.min(380,Math.max(240,fallbackBtn.offsetWidth||320)),locale:'en'});
+    if(host.firstChild){fallbackBtn.style.display='none';host.hidden=false;host.style.display='flex';return true}
+  }catch(e){}
+  return false;
+}
 function googleSignIn(){location.href=URL_+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+location.pathname)}
 const ARROW='<svg class="ga" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 function startScreen(){
