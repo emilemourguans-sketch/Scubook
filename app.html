@@ -199,7 +199,6 @@ button.lvh{all:unset;cursor:pointer;display:block;width:100%;padding:2px 0;borde
 button.lvh.sel{background:var(--navy);color:var(--on-navy)}
 #newBtn{white-space:nowrap}
 @media(max-width:600px){#setBtn{font-size:0;padding:6px 10px}#setBtn svg{margin:0!important}}
-body.sa [data-act=paySheet],body.sa [data-act=payrollSheet]{display:none!important}
 /* ===== Apple-style skin (clean, neutral, professional) ===== */
 :root{--bg:#F5F5F7;--surface:#fff;--ink:#1D1D1F;--muted:#6E6E73;--line:rgba(0,0,0,.09);--soft:#F2F2F7;--r:20px;
  --f-display:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',system-ui,sans-serif;--f-body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Inter',system-ui,sans-serif;--shadow:0 1px 2px rgba(0,0,0,.04),0 12px 32px rgba(0,0,0,.05)}
@@ -305,7 +304,7 @@ main{gap:20px;padding-block:28px 56px}
 </div>
 <div id="toast" class="toast" hidden role="status"></div>
 
-<script>window.DD_CONFIG={url:'https://thslialgczmcspirxray.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoc2xpYWxnY3ptY3NwaXJ4cmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzAxNTgsImV4cCI6MjEwOTMwNjE1OH0.O6cGwxnrzA17VP3ggW3eA4BWbRXL1JVURsN-991Ig7M'};</script>
+<script>window.DD_CONFIG={gcid:'174193563337-kbrmjpg5ttfavlb942psit9cn6o72nso.apps.googleusercontent.com',url:'https://thslialgczmcspirxray.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoc2xpYWxnY3ptY3NwaXJ4cmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzAxNTgsImV4cCI6MjEwOTMwNjE1OH0.O6cGwxnrzA17VP3ggW3eA4BWbRXL1JVURsN-991Ig7M'};</script>
 <script>
 (function(){
 'use strict';
@@ -569,13 +568,47 @@ const XD={
   return{file:'team',name:'Team',sid:FIN_SHEET,tab:'Team',widths:[24,18,16,18,28,10],rows:[['Name','Role','Languages','Phone','Email','Active']].concat(L.map(x=>[x.nom||'',x.role||'',x.pays||'',x.tel||'',x.email||'',x.actif===false?'No':'Yes']))}},
  prices(){return{file:'prices',name:'Prices',sid:FIN_SHEET,tab:'Prices',widths:[22,40,16,14,30],rows:[['Category','Name','Price ('+CUR()+')','Dives included','Note']].concat(tarifs().list.map(t=>[t.categorie,t.nom,t.prix,t.plongees||0,t.note||'']))}}
 };
-const exBtns=(k,sm)=>['csv|CSV','xlsx|Excel'].concat(window.DD_STANDALONE?[]:['gs|Google Sheet']).map(x=>{const[a,b]=x.split('|');return '<button type="button" class="btn ghost'+(sm?' sm':'')+'" data-act="exOut" data-k="'+k+'" data-f="'+a+'">'+b+'</button>'}).join('');
+const exBtns=(k,sm)=>{GS.warm();return ['csv|CSV','xlsx|Excel','gs|Google Sheet'].map(x=>{const[a,b]=x.split('|');return '<button type="button" class="btn ghost'+(sm?' sm':'')+'" data-act="exOut" data-k="'+k+'" data-f="'+a+'">'+b+'</button>'}).join('')}
+/* ===== Google Sheets: creates a new sheet in the user's own Google Drive (scope drive.file: only files this app creates) ===== */
+const GCID=()=>String((window.DD_CONFIG&&window.DD_CONFIG.gcid)||'');
+const GS={tok:null,exp:0,p:null,
+ load(){if(window.google&&google.accounts&&google.accounts.oauth2)return Promise.resolve();if(GS.p)return GS.p;
+  GS.p=new Promise((res,rej)=>{const x=document.createElement('script');x.src='https://accounts.google.com/gsi/client';x.async=true;x.onload=()=>res();x.onerror=()=>{GS.p=null;rej(Object.assign(new Error('load'),{code:'load'}))};document.head.appendChild(x)});return GS.p},
+ warm(){try{if(GCID()&&window.DD_STANDALONE&&!DEMO_MODE())GS.load().catch(()=>{})}catch(e){}},
+ token(){if(GS.tok&&Date.now()<GS.exp-60000)return Promise.resolve(GS.tok);
+  return new Promise((res,rej)=>{const c=google.accounts.oauth2.initTokenClient({client_id:GCID(),scope:'https://www.googleapis.com/auth/drive.file',
+   callback:r=>{if(r&&r.access_token){GS.tok=r.access_token;GS.exp=Date.now()+(+r.expires_in||3600)*1000;res(GS.tok)}else rej(Object.assign(new Error('denied'),{code:'denied'}))},
+   error_callback:e=>rej(Object.assign(new Error('popup'),{code:(e&&e.type)||'popup'}))});c.requestAccessToken()})},
+ async create(title,sheets){
+  const tk=await GS.token();
+  const cell=v=>(typeof v==='number'&&isFinite(v))?{userEnteredValue:{numberValue:v}}:{userEnteredValue:{stringValue:String(v==null?'':v)}};
+  const body={properties:{title:title.slice(0,180)},sheets:sheets.map((x,i)=>({properties:{sheetId:i,title:(String(x.name||'Sheet '+(i+1)).replace(/[\[\]\\\/?*:]/g,' ').slice(0,90))||('Sheet '+(i+1)),gridProperties:{frozenRowCount:x.freeze==null?1:x.freeze}},data:[{startRow:0,startColumn:0,rowData:x.rows.map(r=>({values:r.map(cell)}))}]}))};
+  const r=await fetch('https://sheets.googleapis.com/v4/spreadsheets',{method:'POST',headers:{Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.status===401||r.status===403){GS.tok=null;throw Object.assign(new Error('auth'),{code:'auth'})}
+  if(!r.ok)throw Object.assign(new Error('http'),{code:'http'});
+  const j=await r.json();return j.spreadsheetUrl||('https://docs.google.com/spreadsheets/d/'+j.spreadsheetId+'/edit')}
+};
+const DEMO_MODE=()=>/[?&]demo(=|&|$)/.test(location.search);
+function gsDone(name,url){openModal('Google Sheet created','<p>“'+esc(name)+'” was created in your Google Drive. Each export creates a new sheet.</p><div class="actions"><a class="btn" href="'+esc(url)+'" target="_blank" rel="noopener">Open the sheet</a><button type="button" class="btn ghost" data-act="closeModal">Close</button></div>')}
+async function gsExport(t,name,sheets){
+  const title=BN()+' · '+name+' · '+today();
+  if(!GCID()||DEMO_MODE()){
+    if(!dl){toast('Export is not available in this view.','bad');return}
+    const file=(name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'export')+'-'+today()+'.xlsx';
+    try{await dl.save({filename:file,data:buildXlsxMulti(sheets.map(x=>({name:x.name,rows:x.rows,widths:x.widths,headerRows:x.headerRows||[0]})))})}catch(e){if(!e||e.code!=='declined')toast('Export failed.','bad');return}
+    openModal('Open in Google Sheets','<p>'+(DEMO_MODE()?'In the demo, the file is downloaded instead of being sent to Google.':'The file “'+esc(file)+'” was downloaded.')+' To open it in Google Sheets:</p><ol style="margin:0 0 12px 20px;line-height:1.7"><li>Open Google Sheets.</li><li>Choose <strong>File → Import → Upload</strong>.</li><li>Select <strong>'+esc(file)+'</strong> from your downloads.</li></ol><div class="actions"><a class="btn" href="https://sheets.new" target="_blank" rel="noopener">Open Google Sheets</a><button type="button" class="btn ghost" data-act="closeModal">Close</button></div>');
+    return}
+  if(t)t.disabled=true;
+  try{await GS.load();const url=await GS.create(title,sheets);gsDone(title,url)}
+  catch(e){const c=e&&e.code;toast(c==='popup_closed'||c==='denied'?'Google access was not allowed.':c==='popup_failed_to_open'||c==='popup'?'Allow pop-ups for this page, then try again.':c==='load'?'Could not reach Google. Check your connection.':c==='auth'?'Google refused the request. Please try again.':'Could not create the Google Sheet. Please try again.','bad')}
+  if(t)t.disabled=false;
+}
 async function exOut(t){
   const k=t.dataset.k,f=t.dataset.f;if(k==='com'&&!payOk())return;
   const d=XD[k]();
   if(f==='csv'){csvDownload(d.file+'.csv',d.rows);return}
   if(f==='xlsx'){if(!dl){toast('Export is not available in this view.','bad');return}dl.save({filename:d.file+'.xlsx',data:buildXlsxMulti([{name:d.name,rows:d.rows,widths:d.widths,headerRows:[0]}])}).catch(e=>{if(!e||e.code!=='declined')toast('Export failed.','bad')});return}
-  if(!mcp){toast('Google Sheets is not available in this view. Use Excel instead.','bad');return}
+  if(!mcp||window.DD_STANDALONE){await gsExport(t,d.name,[{name:d.name,rows:d.rows,widths:d.widths}]);return}
   t.disabled=true;
   try{
     await mcp.callTool('Google Sheets','batch_clear_values',{spreadsheetId:d.sid,ranges:[d.tab+'!A:Z']});
@@ -1798,7 +1831,7 @@ function stmtFill(){
    '<div class="chips" style="margin:4px 0 10px"><span class="pill st-confirmed">'+pl(co.length?sum(co,x=>x.qty):0,'course')+' · '+fmt(sum(co,x=>x.comm))+' '+CUR()+'</span><span class="pill st-completed">'+pl(sum(fu,x=>x.qty),'fun dive')+' · '+fmt(sum(fu,x=>x.comm))+' '+CUR()+'</span><span class="pill st-pending"><b>'+(poolCfg().on&&S.staff[ST.stmtId].payMode!=='commission'?'Individual (ref.) ':'Total ')+fmt(sum(ok,x=>x.comm))+' '+CUR()+'</b></span>'+(poolCfg().on&&S.staff[ST.stmtId].payMode!=='commission'?'<span class="pill st-completed"><b>Pool share '+fmt(((poolCalc(m).rows.find(x=>x.id===ST.stmtId))||{amt:0}).amt)+' '+CUR()+'</b></span>':'')+'</div>'+
    (L.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Activity</th><th class="n">Qty</th><th class="n">Commission</th><th></th></tr></thead><tbody>'+L.map(x=>'<tr><td>'+esc(fmtShort(x.date))+'</td><td>'+esc(x.activity)+'<div class="hint">'+esc(x.who)+(x.decl?' · declared':'')+'</div></td><td class="n">'+x.qty+(x.type==='Fun dive'?' dives':'')+'</td><td class="n">'+(x.status==='Counted'?fmt(x.comm):'<span class="hint">'+fmt(x.comm)+'</span>')+'</td><td>'+(x.status==='Counted'?(x.decl&&canEdit?'<button type="button" class="btn ghost sm" data-act="declDel" data-id="'+esc(x.id)+'">✕</button>':''):(canEdit?'<button type="button" class="btn sm" data-act="declOk" data-id="'+esc(x.id)+'">Approve</button> <button type="button" class="btn ghost sm" data-act="declNo" data-id="'+esc(x.id)+'">Reject</button>':'<span class="pill st-pending">Pending</span>'))+'</td></tr>').join('')+'</tbody></table></div>':emptyBox('Nothing this month','No confirmed bookings or declared activities for this instructor.'))+
    '<p class="hint">Pending activities were declared by the instructor and are not counted until a manager approves them.</p>'+
-   '<div class="actions" style="flex-wrap:wrap"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button><button type="button" class="btn ghost" data-act="stmtXlsx">Excel (this instructor)</button><button type="button" class="btn ghost" data-act="payrollXlsx">Excel (everyone)</button><button type="button" class="btn ghost" data-act="payrollSheet">Google Sheet (everyone)</button></div>';
+   '<div class="actions" style="flex-wrap:wrap"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button><button type="button" class="btn ghost" data-act="stmtXlsx">Excel (this instructor)</button><button type="button" class="btn ghost" data-act="payrollXlsx">Excel (everyone)</button><button type="button" class="btn ghost" data-act="stmtSheet">Google Sheet (this instructor)</button><button type="button" class="btn ghost" data-act="payrollSheet">Google Sheet (everyone)</button></div>';
   $('#stmtSel').onchange=e=>{ST.stmtId=e.target.value;stmtFill()};
 }
 function openDecl(){
@@ -2027,7 +2060,8 @@ const ACT={
   const A=allSheets();
   dl.save({filename:'payroll-'+perTag()+'.xlsx',data:buildXlsxMulti([{name:'Summary',rows:[[BN()+' · Payroll · '+monthLabel()],[]].concat(A.summary),widths:[22,14,24,14,24,20,20],headerRows:[0,2]},{name:'Details',rows:A.details,widths:[18,12,28,36,10,10,14,16,18,24,18],headerRows:[0]}])}).catch(e=>{if(!e||e.code!=='declined')toast('Export failed.','bad')});
  },
- payrollSheet(t){if(!payOk())return;pushPayroll(t)},
+ payrollSheet(t){if(!payOk())return;if(mcp&&!window.DD_STANDALONE){pushPayroll(t);return}const A=allSheets();gsExport(t,'Payroll '+monthLabel(),[{name:'Summary',rows:[[BN()+' · Payroll · '+monthLabel()],[]].concat(A.summary),widths:[22,14,24,14,24,20,20],headerRows:[0,2],freeze:0},{name:'Details',rows:A.details,widths:[18,12,28,36,10,10,14,16,18,24,18]}])},
+ stmtSheet(t){if(!payOk())return;const s=S.staff[ST.stmtId];if(!s)return;gsExport(t,'Payroll '+s.nom+' '+monthLabel(),stmtSheets(ST.stmtId,PER.from).map(x=>Object.assign({},x,{freeze:0})))},
  staffAddDone(t){const id=t.dataset.id,d=(inPer(today())?today():PER.from);openBooking(null,{instructeurId:id,date:d})},
 
  commSrc(t){openCommSrc(t.dataset.k)},
@@ -2037,7 +2071,7 @@ const ACT={
   const rows=payRowsAll();
   dl.save({filename:'payments-all-history.xlsx',data:buildXlsx('Payments',rows,[12,22,24,16,14,22,34,16,12,16,10,12,14,24,16,16,20,14])}).catch(e=>{if(!e||e.code!=='declined')toast('Export failed.','bad')});
  },
- paySheet(t){pushPaySheet(t)},
+ paySheet(t){if(mcp&&!window.DD_STANDALONE){pushPaySheet(t);return}gsExport(t,'Payments, all history',[{name:'Payments',rows:payRowsAll(),widths:[12,22,24,16,14,22,34,16,12,16,10,12,14,24,16,16,20,14]}])},
  staffNew(){openStaff(null)},
  staffEdit(t){openStaff(t.dataset.id)},
  async saveStaff(){
