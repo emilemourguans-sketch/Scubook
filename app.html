@@ -83,6 +83,21 @@ button{font:inherit;color:inherit}
   .bulk .fld select,.bulk .fld input{min-height:44px;width:100%}
   .bulk .btn:not([data-act=bulkClear]){grid-column:2;min-width:96px;justify-content:center}
 }
+
+.gs{gap:12px}
+.gs-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.gs-bar{height:6px;border-radius:99px;background:var(--soft);overflow:hidden}.gs-bar i{display:block;height:100%;border-radius:99px;background:var(--lime);transition:width .4s}
+.gs-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.gs-list button{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:32px 1fr 18px;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--soft)}
+.gs-list button:hover{outline:1px solid var(--line)}
+.gs-list button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.gs-n{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.gs-list li.ok .gs-n{background:var(--lime);color:var(--on-lime);box-shadow:none}
+.gs-list li.ok b{text-decoration:line-through;opacity:.6}
+.gs-t b{display:block;font-size:.95rem}.gs-t small{display:block;color:var(--muted);font-size:.82rem;margin-top:2px}
+.gs-a{width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media(prefers-reduced-motion:reduce){.gs-bar i{transition:none}}
+.subg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.subg>div{background:var(--soft);border-radius:14px;padding:12px 14px;display:grid;gap:3px}.subg b{font-size:.98rem}
 /* ===== Phone layout ===== */
 .tabMore{display:none}
 .exw>.exT{display:none}.exw{display:contents}
@@ -844,9 +859,29 @@ function bookingRow(b,withSel){
 /* ---------- views ---------- */
 const V={};
 
+function gsSteps(){
+  const br=(S.config&&S.config.brand)||{};
+  return [
+    ['prices','Set your prices','Your courses, fun dives and packages.',!tarifs().isDefault,'go'],
+    ['team','Add your team','Instructors and divemasters, with their commission.',Object.keys(S.staff).length>0,'go'],
+    ['settings','Add your logo and colours','Your brand on the CRM and the check-in form.',!!(br.logo||br.lime||br.accent),'go'],
+    ['checkin','Put your QR code at the counter','Divers fill in their details on their own phone.',Object.values(S.clients).some(c=>c&&c.source==='check-in')||!!(S.config&&S.config.qrShared),'qr'],
+    ['booking','Add your first booking','Use the + Booking button at the top.',Object.keys(S.bookings).length>0,'book']];
+}
+function gsRender(){
+  const el=document.getElementById('gsCard');if(!el)return;
+  if(!canEdit||/[?&]demo/.test(location.search)||(S.config&&S.config.onboardDone)){el.hidden=true;return}
+  const st=gsSteps(),done=st.filter(x=>x[3]).length;
+  if(done===st.length){el.hidden=true;return}
+  el.hidden=false;
+  el.innerHTML='<div class="gs-h"><div><h2>Get started</h2><p class="hint" style="margin:2px 0 0">'+done+' of '+st.length+' done · about 10 minutes</p></div><button type="button" class="btn ghost sm" data-act="gsHide">Hide</button></div>'+
+    '<div class="gs-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+st.length+'" aria-valuenow="'+done+'"><i style="width:'+Math.round(done/st.length*100)+'%"></i></div>'+
+    '<ol class="gs-list">'+st.map((x,i)=>'<li class="'+(x[3]?'ok':'')+'"><button type="button" data-act="gsGo" data-k="'+x[0]+'" data-a="'+x[4]+'"'+(x[3]?' aria-label="'+esc(x[1])+' (done)"':'')+'><span class="gs-n" aria-hidden="true">'+(x[3]?'✓':(i+1))+'</span><span class="gs-t"><b>'+esc(x[1])+'</b><small>'+esc(x[2])+'</small></span><svg class="gs-a" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></li>').join('')+'</ol>';
+}
 V.home={
  shell(m){
   m.innerHTML='<div class="head"><div><h1 id="hTitleOut">Today</h1><p class="sub" id="hDate"></p><p class="sub" id="hWelcome" style="font-weight:700;color:var(--ink)"></p></div></div>'+
+   '<section class="card gs" id="gsCard" hidden></section>'+
    '<div class="kpis" id="kpis"></div>'+
    '<div class="grid2"><section class="card"><h2>On the schedule</h2><div id="todayList"></div></section>'+
    '<section class="card"><h2>To collect</h2><div id="dueList"></div></section></div>'+
@@ -860,6 +895,7 @@ V.home={
    $('#kpis').hidden=!!hd.kpis;$('#todayList').closest('section').hidden=!!hd.today;$('#dueList').closest('section').hidden=!!hd.due;$('#ciList').closest('section').hidden=!!hd.ci;$('#remList').closest('section').hidden=!!hd.rem;$('#week').closest('section').hidden=!!hd.week;
    const g=$('#todayList').closest('.grid2');if(g)g.hidden=!!(hd.today&&hd.due)}
   if(loading()){$('#kpis').innerHTML='';$('#todayList').innerHTML=emptyBox('Loading…','Fetching the shared data.');return}
+  gsRender();
   const B=Object.values(S.bookings).filter(b=>b.statut!=='Cancelled');
   const tod=B.filter(b=>b.date===t);
   const enc=sum(Object.values(S.payments).filter(p=>p.date===t),p=>p.montant);
@@ -1318,9 +1354,21 @@ function openCommSrc(k){
    '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Close</button></div>');
 }
 
+function subRender(){
+  const el=document.getElementById('subCard');if(!el)return;
+  const c=window.__centre||{},b=c.billing||{};
+  if(!window.DD_STANDALONE||/[?&]demo/.test(location.search)||!canEdit||window.__viewC){el.hidden=true;return}
+  const plan=c.plan==='yearly'?'Yearly · €854 per year':'Monthly · €89 per month';
+  const st=c.status==='active'?(b.status==='past_due'?'Payment overdue':'Active'):c.status==='trial'?'Free trial':c.status==='suspended'?'Paused':'Awaiting payment';
+  const nb=b.cancel_at?'Ends on '+fmtLong(String(b.cancel_at).slice(0,10)):b.next_bill?'Next payment on '+fmtLong(String(b.next_bill).slice(0,10)):'';
+  el.hidden=false;
+  el.innerHTML='<h2>Subscription</h2><div class="subg"><div><span class="hint">Plan</span><b>'+esc(plan)+'</b></div><div><span class="hint">Status</span><b>'+esc(st)+'</b></div>'+(nb?'<div><span class="hint">Billing</span><b>'+esc(nb)+'</b></div>':'')+'</div>'+
+    (b.customer_id?'<div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="subPortal">Manage subscription</button></div><p class="hint" style="margin:0">Change your card, see your invoices or cancel. Opens our secure payment partner, Paddle.</p>':'<p class="hint" style="margin:0">Questions about billing? Write to <a href="mailto:contact@scubook.app">contact@scubook.app</a>.</p>');
+}
 V.settings={
  shell(m){
   m.innerHTML='<div class="head"><div><h1>Settings</h1><p class="sub">Branding, home page, access and business rules. Managers only.</p></div></div>'+
+   '<section class="card" id="subCard" hidden></section>'+
    '<section class="card" id="teamAcc"><h2>Team and access rights</h2><p class="hint">Everyone who can open <strong>your company space</strong>, with their role and last sign-in. Employees join with your access code (above) or by email below. Nobody outside your company can see your data.</p><form id="addPerson" style="display:grid;grid-template-columns:2fr 1.4fr 1fr auto;gap:8px;align-items:end;margin:12px 0"><label class="f" style="display:grid;gap:4px">Employee email<input id="apEmail" type="email" required autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Name<input id="apName" maxlength="60" autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Role<select id="apRole" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"><option value="staff">Staff</option><option value="instructor">Instructor</option><option value="viewer">Read-only</option><option value="manager">Manager</option></select></label><button class="btn" type="submit">Add</button></form><p class="hint">Or add someone by email: when they create their account with this same email, they land directly in your company space.</p><div id="accPending"></div><div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th>Last sign-in</th><th></th></tr></thead><tbody id="accRows"></tbody></table></div></section>'+
    '<section class="card" id="joinCard" hidden></section>'+
    '<section class="card" id="brandCard"><h2>Branding</h2><p class="hint">Your center name, logo and colours. Applied to the whole app for everyone on your team.</p><div class="gf">'+
@@ -1374,7 +1422,7 @@ V.settings={
     $('#cLock').checked=c.lockPay;V.settings.cfgLoaded=true;
     const br=(S.config&&S.config.brand)||{};$('#bName').value=br.name||'';$('#bNavy').value=br.navy||'#0A2540';$('#bAcc').value=br.lime||((br.accent&&!['#0b7285','#2e799e','#8ad9e3'].includes(String(br.accent).toLowerCase()))?br.accent:'#FF7A5C');$('#bPrevImg').src=br.logo||LOGO0;V.settings.pendLogo=undefined;
   }
-  ciFill();
+  ciFill();subRender();
   $$('#bName,#bNavy,#bAcc,#bFile').forEach(e=>e.disabled=!canEdit);$('#brandCard').hidden=!canEdit;joinRender();{const ta=document.getElementById('teamAcc');if(ta){const ok=!!(window.DD_STANDALONE&&canEdit&&(window.DD_SHIM||window.claude).admin&&!/[?&]demo/.test(location.search));ta.hidden=!ok;if(ok&&!ta.dataset.loaded){ta.dataset.loaded='1';loadAccounts()}}}
   $$('#cCp,#cCf,#cEco,#cPe,#cPl,#cSites,#cAgents,#cNiv,#cLock').forEach(e=>e.disabled=!canEdit);
   $('#cSave').hidden=!canEdit;
@@ -2097,6 +2145,11 @@ function openTarif(id){
 const armed=(t,label)=>{if(t.dataset.arm==='1')return true;t.dataset.arm='1';t.dataset.label=t.textContent;t.textContent=label||'Confirm deletion';setTimeout(()=>{if(t.isConnected){t.dataset.arm='';t.textContent=t.dataset.label}},4000);return false};
 const ACT={
  go(t){go(t.dataset.v)},
+ async subPortal(t){t.disabled=true;const w=window.open('about:blank','_blank');
+   try{const r=await window.__fn('billing-portal',{});const u=r.ok&&r.j.url;if(!u)throw new Error(r.j.error||'x');if(w)w.location.href=u;else location.href=u}
+   catch(e){if(w)w.close();toast('Could not open the subscription page. Please try again or write to contact@scubook.app.','bad')}t.disabled=false},
+ gsGo(t){const a=t.dataset.a,k=t.dataset.k;if(a==='book'){openBooking(null);return}if(a==='qr'){go('settings');setTimeout(()=>{const c=document.getElementById('ciSet');if(c&&!c.hidden)c.scrollIntoView({behavior:'smooth',block:'start'})},300);if(db&&S.config&&!S.config.qrShared)db.doc('config/main').update({qrShared:true}).catch(()=>{});return}go(k)},
+ async gsHide(){await W(()=>S.config?db.doc('config/main').update({onboardDone:true}):db.doc('config/main').set({onboardDone:true}),'Hidden. You can find everything in the menus.')},
  navMore(){
    const tm=document.querySelector('#navIn .tabMore'),hid=((tm&&tm.dataset.h)||'').split(',').filter(Boolean);
    const items=NAV.filter(n=>hid.includes(n[0])).map(n=>[n[0],n[1],IC[n[0]]]);
@@ -2702,6 +2755,7 @@ const DEMO_KEY='dd-demo-v1';
 const URL_=String(CFG.url||'').replace(/\/+$/,''),KEY=CFG.key||'';
 const LS={get(k){try{return localStorage.getItem(k)||(k==='dd-session'?sessionStorage.getItem(k):null)}catch(e){return null}},set(k,v){try{(k==='dd-session'&&localStorage.getItem('dd-keep')==='0'?sessionStorage:localStorage).setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}try{sessionStorage.removeItem(k)}catch(e){}}};
 let SESS=null,ROLE=null,MEMBER_NAME='',CENTRE=null,CENTRE_NAME='';window.__api=(...a)=>api(...a);
+window.__fn=async(name,body)=>{const r=await fetch(URL_+'/functions/v1/'+name,{method:'POST',headers:H(),body:JSON.stringify(body||{})});let j=null;try{j=await r.json()}catch(e){}return{ok:r.ok,status:r.status,j:j||{}}};
 try{SESS=JSON.parse(LS.get('dd-session')||'null')}catch(e){}
 const H=(extra)=>Object.assign({apikey:KEY,Authorization:'Bearer '+((SESS&&SESS.access_token)||KEY),'Content-Type':'application/json'},window.__viewC?{'x-client-info':'scubook-view:'+window.__viewC}:{},extra||{});
 async function applyView(){
@@ -2981,7 +3035,7 @@ function onboardScreen(email){
       if(nm.length<2){er.textContent='Please enter your Dive Center name.';document.getElementById('ocName').focus();return}
       const pl=(f.querySelector('input[name=ocPlan]:checked')||{}).value||'monthly',cu=document.getElementById('ocCur').value;
       go.disabled=true;
-      try{await api('/rest/v1/rpc/create_centre',{method:'POST',body:{p_name:nm,p_plan:pl,p_currency:cu}});setIntent('');done('again')}
+      try{await api('/rest/v1/rpc/create_centre',{method:'POST',body:{p_name:nm,p_plan:pl,p_currency:cu}});try{window.__fn('notify',{}).catch(()=>{})}catch(x){}setIntent('');done('again')}
       catch(x){er.textContent=(x&&x.message&&/already belongs/.test(x.message))?'This email already belongs to a Dive Center.':'Could not create your Dive Center. Please try again.';go.disabled=false}
     };
     const jn=document.getElementById('ocJoin');
@@ -3080,7 +3134,7 @@ async function ensureSession(){
   if(!SESS){try{sessionStorage.removeItem('sb-view')}catch(e){}await authFlow(HASHNOTE?'login':/[?&]signup/.test(location.search)?'signup':/[?&](join|create)(=|&|$)/.test(location.search)?'signup':/[?&]login(=|&|$)/.test(location.search)?'login':'start',HASHNOTE)}
   for(;;){
     try{
-      const m=await api('/rest/v1/members?select=email,role,name,centre_id,centres(name,status,trial_ends,plan)&email=ilike.'+encodeURIComponent((SESS.email||'').replace(/[%*_]/g,''))+'&limit=1');
+      const m=await api('/rest/v1/members?select=email,role,name,centre_id,centres(name,status,trial_ends,plan,billing)&email=ilike.'+encodeURIComponent((SESS.email||'').replace(/[%*_]/g,''))+'&limit=1');
       const it0=getIntent();
       let adm0=false;if(m&&m[0]&&(it0==='create'||it0==='join')){try{adm0=(await api('/rest/v1/rpc/is_platform_admin',{method:'POST',body:{}}))===true}catch(x){}if(adm0)setIntent('')}
       if(!adm0&&m&&m[0]&&(it0==='create'||it0==='join')){const w=await conflictScreen(it0,m[0],SESS.email||'');
