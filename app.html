@@ -484,6 +484,12 @@ main{gap:20px;padding-block:28px 56px}
 @media(max-width:900px){.actgrid{grid-template-columns:1fr;justify-items:center}.alg{width:100%}.bars{width:100%}}
 #demoBar{background:#fff!important;color:var(--ink)!important;border-bottom:1px solid var(--line);font-weight:500!important;font-size:.85rem!important}
 #demoBar a{background:var(--ink)!important;color:#fff!important}
+/* phone bottom menu: pinned, own compositing layer, no blur (iOS Safari moves blurred fixed bars while scrolling) */
+@media(max-width:760px){
+  #nav.tabs{position:fixed;top:auto;bottom:0;left:0;right:0;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);-webkit-backface-visibility:hidden;backface-visibility:hidden;background:var(--navy);-webkit-backdrop-filter:none;backdrop-filter:none}
+  #nav .tabs-in{-webkit-overflow-scrolling:auto}
+  #main{padding-bottom:calc(var(--navh) + 40px + env(safe-area-inset-bottom,0px))}
+}
 </style>
 
 <div id="gate" class="gate"><div class="gbub" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="gate-card">
