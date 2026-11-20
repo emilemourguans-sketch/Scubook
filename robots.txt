@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /checkin.html
+Disallow: /book.html
 
 Sitemap: https://scubook.app/sitemap.xml
