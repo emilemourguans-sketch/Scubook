@@ -503,11 +503,14 @@ main{gap:20px;padding-block:28px 56px}
 /* Scubook wordmark: same lettering as the website (Fredoka, 'ook' bolder) */
 .wm{font-family:Fredoka,Inter,system-ui,sans-serif;letter-spacing:normal}.wm i{font-weight:700;letter-spacing:-.05em}
 .wm.plain,.wm.plain i{font-family:var(--f-display);font-weight:600;letter-spacing:-.01em}
-/* phone bottom menu: pinned, own compositing layer, no blur (iOS Safari moves blurred fixed bars while scrolling) */
+/* phone: the app is its own scrolling frame and the menu is part of that frame, so iOS Safari cannot move it */
 @media(max-width:760px){
-  #nav.tabs{position:fixed;top:auto;bottom:0;left:0;right:0;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);-webkit-backface-visibility:hidden;backface-visibility:hidden;background:var(--navy);-webkit-backdrop-filter:none;backdrop-filter:none}
+  html:has(#app:not([hidden])),html:has(#app:not([hidden])) body{height:100%;overflow:hidden;overscroll-behavior:none}
+  #app:not([hidden]){position:fixed;inset:0;display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+  #app>.banner,#app>header{flex:none}
+  #app>#main{flex:1 0 auto;width:100%;box-sizing:border-box;padding-bottom:40px}
+  #nav.tabs{order:9;flex:none;position:sticky;top:auto;bottom:0;left:auto;right:auto;transform:none;background:var(--navy);-webkit-backdrop-filter:none;backdrop-filter:none;padding-bottom:env(safe-area-inset-bottom,0px)}
   #nav .tabs-in{-webkit-overflow-scrolling:auto}
-  #main{padding-bottom:calc(var(--navh) + 40px + env(safe-area-inset-bottom,0px))}
 }
 </style>
 
@@ -1501,7 +1504,7 @@ function go(v){
   {const tm=document.querySelector('#navIn .tabMore');if(tm){if((tm.dataset.h||'').split(',').includes(v)||v==='settings')tm.setAttribute('aria-current','page');else tm.removeAttribute('aria-current')}}
   V[v].shell($('#main'));V[v].fill();
   const at=$('#navIn .tab[aria-current="page"]');if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}
-  window.scrollTo(0,0);
+  window.scrollTo(0,0);{const ap=document.getElementById('app');if(ap)ap.scrollTop=0}
   if(location.hash!=='#'+v){try{history.replaceState(null,'','#'+v)}catch(e){}}
 }
 function refresh(){reindex();if(V[ST.view])V[ST.view].fill()}
