@@ -543,6 +543,34 @@ main{gap:20px;padding-block:28px 56px}
 .fl-ic{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--soft)}.fl-ic svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .fl-del{all:unset;box-sizing:border-box;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;cursor:pointer;color:var(--muted)}.fl-del:hover{background:var(--soft);color:var(--bad,#C0392B)}.fl-del:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.fl-del svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 @media(max-width:480px){.fl-row{grid-template-columns:28px minmax(0,1fr) 64px 40px;gap:6px}.fl-del{width:40px}}
+.fgroup{margin:6px 0 -4px!important;font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:14px;background:var(--soft);margin-top:4px}
+.seg2 label{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:11px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg2 input{position:absolute;opacity:0;width:1px;height:1px}
+.seg2 svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.seg2 label:has(input:checked){background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.seg2 label:has(input:checked) svg{stroke:var(--accent)}
+.seg2 label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.set-group{margin:10px 2px -6px!important;font-size:.78rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.ftabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--soft)}
+.ftab{all:unset;box-sizing:border-box;text-align:center;min-height:42px;display:grid;place-items:center;border-radius:11px;cursor:pointer;font-weight:600;color:var(--muted)}
+.ftab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.ftab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fpanel{display:grid;gap:10px}
+.site-chips{display:flex;flex-wrap:wrap;gap:8px}
+.site-chip{display:inline-flex;align-items:center;gap:2px;padding:4px 4px 4px 12px;border-radius:99px;background:var(--soft);font-weight:600;font-size:.9rem}
+.sc-del{all:unset;box-sizing:border-box;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;cursor:pointer;color:var(--muted)}
+.sc-del:hover{color:var(--bad,#C0392B);background:var(--surface)}.sc-del:focus-visible{outline:2px solid var(--accent)}
+.sc-del svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.site-add{display:flex;gap:8px}.site-add input{flex:1 1 auto;min-width:0}
+.fl-boat{display:grid;gap:6px;padding:10px;border-radius:14px;background:var(--soft)}
+.fl-boat .fl-ic{background:var(--surface)}
+.fl-bsites{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-left:38px}
+.fl-bsites>.hint{width:100%;font-size:.78rem}
+.bs-chip{all:unset;box-sizing:border-box;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-size:.84rem;font-weight:600;cursor:pointer;color:var(--muted)}
+.bs-chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.bs-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:480px){.fl-bsites{padding-left:0}}
 .trip-sum{display:grid;gap:12px;padding:12px 14px;border-radius:16px;background:var(--soft)}
 .ts-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 .ts-count{font-family:var(--f-display);font-weight:600;font-size:1.5rem;font-variant-numeric:tabular-nums}.ts-count small{font-family:var(--f-body);font-size:.85rem;font-weight:600;color:var(--muted)}
@@ -1463,7 +1491,7 @@ function subRender(){
 V.settings={
  shell(m){
   m.innerHTML='<div class="head"><div><h1>Settings</h1><p class="sub">Branding, home page, access and business rules. Managers only.</p></div></div>'+
-   '<section class="card" id="subCard" hidden></section>'+'<section class="card" id="fleetCard" hidden><h2>Boats and pool</h2><p class="hint">Add your boats and pools with their places. Each booking goes on a boat or in the pool, and the Schedule shows who goes where, trip by trip.</p><p class="fl-h">Boats</p><div id="flBoats" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="boat">+ Add a boat</button><p class="fl-h">Pools</p><div id="flPools" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="pool">+ Add a pool</button><p class="hint" style="margin:10px 0 0">Activities with “pool” in their name go to the pool automatically. Everything else goes on the first boat with space. You can always move someone.</p><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="flSave">Save boats and pool</button></div></section>'+'<section class="card" id="slotCard" hidden><h2>Trip times</h2><p class="hint">Your departure times, in order. Rename them to match your day (for example “Morning 8:30”), add or remove some. Bookings follow a renamed time.</p><div id="slotList" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="slotAdd">+ Add a time</button><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="slotSave">Save trip times</button></div></section>'+'<section class="card" id="capCard" hidden><h2>Limit per time slot</h2><p class="hint">Optional: the most customers per time slot, all boats and pools together. Leave empty for no limit.</p><div class="gf3" id="capGrid"></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="capSave">Save places</button></div></section>'+'<section class="card" id="bkoCard" hidden><h2>Online booking</h2><p class="hint">Customers request a booking from your own page. Requests appear on Home, ready to confirm in one tap.</p><label class="fld check"><input type="checkbox" id="bko-on"> Accept booking requests online</label><div id="bko-body" hidden><div class="gf"><label class="fld">Earliest date<select id="bko-notice"><option value="0">Same day</option><option value="1">From tomorrow</option><option value="2">2 days ahead</option><option value="3">3 days ahead</option></select></label><label class="fld">Latest date<select id="bko-ahead"><option value="30">1 month ahead</option><option value="60">2 months ahead</option><option value="90">3 months ahead</option><option value="180">6 months ahead</option><option value="365">1 year ahead</option></select></label><label class="fld full">Message on your booking page (optional)<textarea id="bko-msg" maxlength="400" rows="2" placeholder="For example: we reply within a few hours on WhatsApp."></textarea></label></div><p class="hint" style="margin:10px 0 4px">Activities customers can choose</p><div id="bko-acts" class="bko-acts"></div><div class="bko-link"><input id="bko-url" readonly aria-label="Your booking page link"><button type="button" class="btn ghost sm" data-act="bkoCopy">Copy link</button><a class="btn ghost sm" id="bko-open" target="_blank" rel="noopener">Open page</a></div><p class="hint" style="margin:6px 0 0">Share this link on your website, Instagram, Google profile or WhatsApp.</p></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="bkoSave">Save online booking</button></div></section>'+
+   '<section class="card" id="subCard" hidden></section>'+'<p class="set-group">Trips and boats</p>'+'<section class="card" id="fleetCard" hidden><h2>Boats, pool and dive sites</h2><p class="hint">Where your customers go. Everything here is saved together.</p><div class="ftabs" role="tablist" aria-label="Boats, pool and dive sites"><button type="button" role="tab" class="ftab" data-act="ftab" data-p="sites" aria-selected="true">Dive sites</button><button type="button" role="tab" class="ftab" data-act="ftab" data-p="boats" aria-selected="false">Boats</button><button type="button" role="tab" class="ftab" data-act="ftab" data-p="pools" aria-selected="false">Pool</button></div><div class="fpanel" data-p="sites"><div class="site-chips" id="flSites"></div><div class="site-add"><input id="flSiteNew" maxlength="40" placeholder="Add a dive site, e.g. Blue Corner" aria-label="New dive site"><button type="button" class="btn ghost sm" data-act="flSiteAdd">Add</button></div><p class="hint" style="margin:0">Used for bookings, boats and the Schedule.</p></div><div class="fpanel" data-p="boats" hidden><div id="flBoats" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="boat">+ Add a boat</button><p class="hint" style="margin:0">Tap the dive sites each boat usually goes to. They are suggested first when you book.</p></div><div class="fpanel" data-p="pools" hidden><div id="flPools" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="pool">+ Add a pool</button><p class="hint" style="margin:0">Activities with “pool” in their name go to the pool automatically. You can always change it when you book.</p></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="flSave">Save</button></div></section>'+'<section class="card" id="slotCard" hidden><h2>Trip times</h2><p class="hint">Your departure times, in order. Rename them to match your day (for example “Morning 8:30”), add or remove some. Bookings follow a renamed time.</p><div id="slotList" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="slotAdd">+ Add a time</button><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="slotSave">Save trip times</button></div></section>'+'<section class="card" id="capCard" hidden><h2>Limit per time slot</h2><p class="hint">Optional: the most customers per time slot, all boats and pools together. Leave empty for no limit.</p><div class="gf3" id="capGrid"></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="capSave">Save places</button></div></section>'+'<section class="card" id="bkoCard" hidden><h2>Online booking</h2><p class="hint">Customers request a booking from your own page. Requests appear on Home, ready to confirm in one tap.</p><label class="fld check"><input type="checkbox" id="bko-on"> Accept booking requests online</label><div id="bko-body" hidden><div class="gf"><label class="fld">Earliest date<select id="bko-notice"><option value="0">Same day</option><option value="1">From tomorrow</option><option value="2">2 days ahead</option><option value="3">3 days ahead</option></select></label><label class="fld">Latest date<select id="bko-ahead"><option value="30">1 month ahead</option><option value="60">2 months ahead</option><option value="90">3 months ahead</option><option value="180">6 months ahead</option><option value="365">1 year ahead</option></select></label><label class="fld full">Message on your booking page (optional)<textarea id="bko-msg" maxlength="400" rows="2" placeholder="For example: we reply within a few hours on WhatsApp."></textarea></label></div><p class="hint" style="margin:10px 0 4px">Activities customers can choose</p><div id="bko-acts" class="bko-acts"></div><div class="bko-link"><input id="bko-url" readonly aria-label="Your booking page link"><button type="button" class="btn ghost sm" data-act="bkoCopy">Copy link</button><a class="btn ghost sm" id="bko-open" target="_blank" rel="noopener">Open page</a></div><p class="hint" style="margin:6px 0 0">Share this link on your website, Instagram, Google profile or WhatsApp.</p></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="bkoSave">Save online booking</button></div></section>'+
    '<section class="card" id="teamAcc"><h2>Team and access rights</h2><p class="hint">Everyone who can open <strong>your company space</strong>, with their role and last sign-in. Employees join with your access code (above) or by email below. Nobody outside your company can see your data.</p><form id="addPerson" style="display:grid;grid-template-columns:2fr 1.4fr 1fr auto;gap:8px;align-items:end;margin:12px 0"><label class="f" style="display:grid;gap:4px">Employee email<input id="apEmail" type="email" required autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Name<input id="apName" maxlength="60" autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Role<select id="apRole" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"><option value="staff">Staff</option><option value="instructor">Instructor</option><option value="viewer">Read-only</option><option value="manager">Manager</option></select></label><button class="btn" type="submit">Add</button></form><p class="hint">Or add someone by email: when they create their account with this same email, they land directly in your company space.</p><div id="accPending"></div><div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th>Last sign-in</th><th></th></tr></thead><tbody id="accRows"></tbody></table></div></section>'+
    '<section class="card" id="joinCard" hidden></section>'+
    '<section class="card" id="brandCard"><h2>Branding</h2><p class="hint">Your center name, logo and colours. Applied to the whole app for everyone on your team.</p><div class="gf">'+
@@ -1502,7 +1530,7 @@ V.settings={
    '<label class="fld">Marine Park fee, local ('+CUR()+')<input type="number" id="cPl" min="0" step="'+STEP()+'"></label><span></span>'+
    '<label class="fld">Commission on courses (%)<input type="number" id="cCp" min="0" max="100" step="0.5"></label>'+
    '<label class="fld">Commission per fun dive ('+CUR()+')<input type="number" id="cCf" min="0" step="'+STEP()+'"></label>'+
-   '<label class="fld">Dive sites (one per line)<textarea id="cSites" rows="6"></textarea></label>'+
+   '<p class="hint fld" style="align-self:center">Dive sites, boats and pool are in “Boats, pool and dive sites” at the top of Settings.</p>'+
    '<label class="fld">Agents and hotels (one per line)<textarea id="cAgents" rows="6"></textarea></label>'+
    '<label class="fld full">Certification levels (one per line)<textarea id="cNiv" rows="6"></textarea></label></div>'+
    '<label class="fld check full"><input type="checkbox" id="cLock"><span>Protect payments: a collected payment cannot be deleted, and neither can a paid booking, unless the customer was refunded in full first. Deleting a fully refunded payment removes the payment and its refund together.</span></label>'+
@@ -1513,7 +1541,7 @@ V.settings={
   if(!V.settings.cfgLoaded&&(LOADED.config||!db)){
     const c=cfg();
     $('#cCur').value=CUR();$('#cCp').value=c.commission.coursePct;$('#cCf').value=c.commission.funPerDive;$('#cEco').value=c.frais.eco;$('#cPe').value=c.frais.parcEtranger;$('#cPl').value=c.frais.parcLocal;
-    $('#cSites').value=c.sites.join('\n');$('#cAgents').value=c.agents.join('\n');$('#cNiv').value=c.niveaux.join('\n');
+    $('#cAgents').value=c.agents.join('\n');$('#cNiv').value=c.niveaux.join('\n');
     $('#cLock').checked=c.lockPay;V.settings.cfgLoaded=true;
     const br=(S.config&&S.config.brand)||{};$('#bName').value=br.name||'';$('#bNavy').value=br.navy||'#0A2540';$('#bAcc').value=br.lime||((br.accent&&!['#0b7285','#2e799e','#8ad9e3'].includes(String(br.accent).toLowerCase()))?br.accent:'#FF7A5C');$('#bPrevImg').src=br.logo||LOGO0;V.settings.pendLogo=undefined;
   }
@@ -1648,22 +1676,47 @@ function tripMap(date,cr,skipId){
   auto.forEach(b=>{const x=autoSpot(sp,b);if(x)x.list.push(b);else none.push(b)});
   return{spots:sp,none:none};
 }
-function autoSpot(sp,b){const want=isPoolAct(b)?'pool':'boat';const c=sp.filter(x=>x.type===want);return c.find(x=>!x.cap||x.list.length<x.cap)||null}
+function autoSpot(sp,b,w){const want=w==='pool'||w==='boat'?w:w==='sea'?'boat':(isPoolAct(b)?'pool':'boat');const c=sp.filter(x=>x.type===want);return c.find(x=>!x.cap||x.list.length<x.cap)||null}
 function autoPins(tm){const P=[];tm.spots.forEach(x=>x.list.forEach(b=>{if(b.spot!==x.k)P.push([b.id,x.k])}));return P}
 function spotName(k){const x=SPOTS().find(y=>y.k===k);return x?x.name:''}
-function spotOpts(date,cr,cur,skipId){const tm=tripMap(date,cr,skipId);
-  return opt('','Automatic (first place free)',!cur)+tm.spots.map(x=>{const left=x.cap?x.cap-x.list.length:null;return opt(x.k,(x.type==='pool'?'Pool · ':'Boat · ')+x.name+(left===null?'':left>0?' ('+left+' left)':' (full)'),x.k===cur)}).join('')}
-function spotRefresh(){const sel=document.getElementById('f-spot');if(!sel)return;const d=($('#f-date')||{}).value,cr=($('#f-creneau')||{}).value;const v=sel.value;sel.innerHTML=spotOpts(d,cr,v,MODAL.bookingId);sel.value=v}
+function spotOpts(date,cr,cur,skipId,type){const tm=tripMap(date,cr,skipId);
+  return opt('','Automatic (first '+(type==='pool'?'pool':type==='boat'?'boat':'place')+' with space)',!cur)+tm.spots.filter(x=>!type||x.type===type).map(x=>{const left=x.cap?x.cap-x.list.length:null;return opt(x.k,(type?'':(x.type==='pool'?'Pool · ':'Boat · '))+x.name+(left===null?'':left>0?' ('+left+' left)':' (full)'),x.k===cur)}).join('')}
+function spotRefresh(){tripSync()}
 function spotHint(){const e=document.getElementById('f-spotinfo');if(!e)return;const sel=document.getElementById('f-spot');if(!sel){e.textContent='';return}
   const d=($('#f-date')||{}).value,cr=($('#f-creneau')||{}).value;if(!d){e.textContent='';return}
   const tm=tripMap(d,cr,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value);
-  if(!x){const t=tarifs().list.find(y=>y.id===($('#f-tarif')||{}).value);x=autoSpot(tm.spots,{tarifNom:t?t.nom:'',categorie:t?t.categorie:''});
-    if(!x){e.className='hint full capinfo is-full';e.textContent=tm.spots.length?'No free place left on this trip: every boat or pool is full.':'';return}}
+  if(!x){const t=tarifs().list.find(y=>y.id===($('#f-tarif')||{}).value);const w=whereVal()||'',typ=w==='pool'?'pool':w==='sea'?'boat':'';x=autoSpot(tm.spots,{tarifNom:t?t.nom:'',categorie:t?t.categorie:''},w);
+    if(!x){const has=tm.spots.some(y=>!typ||y.type===typ);e.className='hint full capinfo'+(has?' is-full':'');e.textContent=has?'No free place left on this trip: every '+(typ==='pool'?'pool':typ==='boat'?'boat':'boat or pool')+' is full.':'';return}}
   const n=x.list.length;e.className='hint full capinfo'+(x.cap&&n>=x.cap?' is-full':x.cap&&n>=Math.ceil(x.cap*0.8)?' is-near':'');
   e.textContent=(sel.value?'':'Goes to ')+x.name+': '+(x.cap?(n>=x.cap?'full ('+n+' of '+x.cap+')':(x.cap-n)+' of '+x.cap+' places left'):n+' booked')+'.'}
 document.addEventListener('change',e=>{const t=e.target;if(!t||MODAL.kind!=='bk')return;
-  if(t.id==='f-date'||t.id==='f-creneau'){MODAL.spotOk=false;spotRefresh();spotHint()}
-  if(t.id==='f-spot'||t.id==='f-tarif'){MODAL.spotOk=false;spotHint()}});
+  if(t.name==='f-where'){MODAL.whereManual=true;MODAL.spotOk=false;tripSync('where');return}
+  if(t.id==='f-date'||t.id==='f-creneau'||t.id==='f-spot'){MODAL.spotOk=false;tripSync(t.id);return}
+  if(t.id==='f-tarif'){MODAL.spotOk=false;if(!MODAL.whereManual&&!MODAL.bookingId){const r=document.querySelector('input[name="f-where"][value="'+(tripWhereFor(t.value)==='pool'?'pool':'sea')+'"]');if(r&&!r.checked){r.checked=true;tripSync('where');return}}spotHint()}});
+const SEA_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M3 20c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M5 12h14l-2.5-4h-9z"/></svg>';
+const POOL_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M3 21c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M8 14V5a2 2 0 0 1 4 0M16 14V5a2 2 0 0 0-4 0M8 8h8M8 11h8"/></svg>';
+function boatSites(k){if(!k||String(k).indexOf('b:')!==0)return[];const f=FLEET().boats.find(x=>'b:'+x.id===k);return f&&Array.isArray(f.sites)?f.sites.filter(Boolean):[]}
+function siteOpts(k,cur,sites,ph){const us=boatSites(k),all=sites.slice();if(cur&&!all.includes(cur))all.push(cur);const rest=all.filter(x=>!us.includes(x));
+  return opt('',ph||'—',!cur)+(us.length?'<optgroup label="'+esc(spotName(k))+' usually goes to">'+us.map(x=>opt(x,x,x===cur)).join('')+'</optgroup>'+(rest.length?'<optgroup label="Other dive sites">'+rest.map(x=>opt(x,x,x===cur)).join('')+'</optgroup>':''):all.map(x=>opt(x,x,x===cur)).join(''))}
+function whereVal(){const r=document.querySelector('#mBody input[name="f-where"]:checked');return r?r.value:''}
+function tripWhereFor(tid){const t=tarifs().list.find(x=>x.id===tid);return isPoolAct({tarifNom:t?t.nom:'',categorie:t?t.categorie:''})?'pool':'sea'}
+function tripBlock(b,id,sites){const sp=SPOTS(),pools=sp.filter(x=>x.type==='pool'),boats=sp.filter(x=>x.type==='boat'),cur=b.spot||'';
+  let w=cur?(cur.indexOf('p:')===0?'pool':'sea'):(b.tarifId?tripWhereFor(b.tarifId):'sea');if(!pools.length)w='sea';if(!boats.length&&pools.length&&!cur&&w==='sea'&&!sites.length)w='pool';
+  let h='';
+  if(pools.length)h+='<div class="fld full"><span>Where</span><div class="seg2" role="radiogroup" aria-label="Where"><label><input type="radio" name="f-where" value="sea"'+(w==='sea'?' checked':'')+'>'+SEA_SVG+'<span>Sea</span></label><label><input type="radio" name="f-where" value="pool"'+(w==='pool'?' checked':'')+'>'+POOL_SVG+'<span>Pool</span></label></div></div>';
+  if(sp.length)h+='<label class="fld" id="f-spotwrap"'+(w==='sea'&&!boats.length?' hidden':'')+'><span id="f-spotlbl">'+(w==='pool'?'Pool':'Boat')+'</span><select id="f-spot">'+spotOpts(b.date,slotNorm(b.creneau),cur,id||'',w==='pool'?'pool':'boat')+'</select></label>';
+  h+='<label class="fld" id="f-sitewrap"'+(w==='pool'?' hidden':'')+'>Dive site<select id="f-site">'+siteOpts(cur,b.site||'',sites)+'</select></label>';
+  return h+'<p class="hint full capinfo" id="f-spotinfo" aria-live="polite"></p>'}
+function tripAutoKey(d,cr,w){const tm=tripMap(d,cr,MODAL.bookingId),t=tarifs().list.find(x=>x.id===($('#f-tarif')||{}).value);const x=autoSpot(tm.spots,{tarifNom:t?t.nom:'',categorie:t?t.categorie:''},w);return x?x.k:''}
+function tripSync(why){const w=whereVal()||'sea',sel=document.getElementById('f-spot'),lbl=document.getElementById('f-spotlbl'),sw=document.getElementById('f-sitewrap'),pw=document.getElementById('f-spotwrap'),site=document.getElementById('f-site');
+  const d=($('#f-date')||{}).value,cr=($('#f-creneau')||{}).value,typ=w==='pool'?'pool':'boat';
+  if(sel){const keep=sel.value&&((typ==='pool')===(sel.value.indexOf('p:')===0))?sel.value:'';sel.innerHTML=spotOpts(d,cr,keep,MODAL.bookingId,typ);sel.value=keep;if(lbl)lbl.textContent=typ==='pool'?'Pool':'Boat';
+    if(pw)pw.hidden=!SPOTS().some(x=>x.type===typ)}
+  if(sw)sw.hidden=w==='pool';
+  if(site&&w!=='pool'){const k=(sel&&sel.value)||tripAutoKey(d,cr,w),cur=site.value;site.innerHTML=siteOpts(k,cur,cfg().sites.slice());site.value=cur;
+    if(!site.value&&k){const tm=tripMap(d,cr,MODAL.bookingId),x=tm.spots.find(y=>y.k===k),ts=x?tripSite(x.list):'',us=boatSites(k),sug=ts||(us.length===1?us[0]:'');if(sug)site.value=sug}}
+  spotHint()}
+
 /* 3D drawings */
 const SEAT_ON='#FF7A5C';
 function boatSVG(n,cap,full){
@@ -1716,7 +1769,7 @@ function fleetBoard(date){
         return '<button type="button" class="tripcard'+(full?' is-full':near?' is-near':'')+'" data-act="tripOpen" data-k="'+esc(x.k)+'" data-cr="'+esc(cr)+'" aria-label="'+esc(x.name+', '+n+(x.cap?' of '+x.cap:'')+' places, '+cr)+'">'+
           (x.type==='pool'?poolSVG(n,x.cap,full):boatSVG(n,x.cap,full))+
           '<span class="tc-meta"><span class="tc-name">'+esc(x.name)+'</span><span class="tc-n">'+n+(x.cap?' / '+x.cap:'')+'</span></span>'+
-          (x.type==='boat'?'<span class="tc-site'+(tripSite(x.list)?'':' none')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>'+esc(tripSite(x.list)||(x.list.some(b=>b.site)?'Several sites':'No dive site yet'))+'</span>':'')+(function(){const I=Array.from(new Set(x.list.map(b=>b.instructeurId).filter(Boolean)));return I.length?'<span class="tc-inst">'+esc(I.map(i=>firstName(staffName(i))).join(', '))+'</span>':''})()+'<span class="tc-sub">'+(x.type==='pool'?'Pool':'Boat')+(full?' · Full':x.cap?' · '+(x.cap-n)+' left':'')+'</span></button>'}).join('')+'</div></div>'}).join('')}
+          (x.type==='boat'?'<span class="tc-site'+(tripSite(x.list)?'':' none')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>'+esc(tripSite(x.list)||(x.list.some(b=>b.site)?'Several sites':(boatSites(x.k).length===1?boatSites(x.k)[0]+' (usual)':'No dive site yet')))+'</span>':'')+(function(){const I=Array.from(new Set(x.list.map(b=>b.instructeurId).filter(Boolean)));return I.length?'<span class="tc-inst">'+esc(I.map(i=>firstName(staffName(i))).join(', '))+'</span>':''})()+'<span class="tc-sub">'+(x.type==='pool'?'Pool':'Boat')+(full?' · Full':x.cap?' · '+(x.cap-n)+' left':'')+'</span></button>'}).join('')+'</div></div>'}).join('')}
 function tripSite(L){const set=new Set(L.map(b=>String(b.site||'').trim()).filter(Boolean));return set.size===1?[...set][0]:''}
 function openTrip(k,cr){
   const date=ST.date,tm=tripMap(date,cr),x=k==='none'?null:tm.spots.find(y=>y.k===k),L=x?x.list:tm.none;
@@ -1728,7 +1781,7 @@ function openTrip(k,cr){
   const isBoat=x&&x.type==='boat',full=x&&x.cap&&L.length>=x.cap;
   const head='<div class="trip-sum">'+
     '<div class="ts-top"><span class="hint">'+esc(fmtLong(date))+'</span><span class="ts-count'+(full?' is-full':'')+'">'+L.length+(x&&x.cap?' / '+x.cap:'')+'<small>'+(x?(x.type==='pool'?' in the pool':' on board'):' waiting')+'</small></span></div>'+
-    (isBoat?'<label class="fld">Dive site<select class="trip-site"'+(canWrite&&L.length?'':' disabled')+'>'+opt('',mixed?'Several sites (choose one for everyone)':'Choose a dive site',!cur)+sites.map(v=>opt(v,v,v===cur)).join('')+'</select></label>':'')+
+    (isBoat?'<label class="fld">Dive site<select class="trip-site"'+(canWrite&&L.length?'':' disabled')+'>'+siteOpts(x.k,cur,sites,mixed?'Several sites (choose one for everyone)':'Choose a dive site')+'</select></label>':'')+
     '<div><p class="ts-h">'+(inst.length===1&&inst[0]?'Instructor':'Instructors')+'</p><div class="ts-chips">'+(inst.length?inst.map(i=>'<span class="ts-chip'+(i?'':' warn')+'">'+(i?sFlag(i)+esc(staffName(i)):'No instructor yet')+' <b>'+byI[i].length+'</b></span>').join(''):'<span class="hint">Nobody yet</span>')+'</div></div></div>';
   const rows=L.length?'<p class="ts-h" style="margin-top:4px">Customers</p><div class="trip-list">'+L.map(b=>{const c=S.clients[b.clientId]||{},t=c.tailles||{},here=x?x.k:'';
       const det=[c.niveau,t.bcd&&('BCD '+t.bcd),t.combi&&('Wetsuit '+t.combi),t.palmes&&('Fins '+t.palmes),t.plombs&&('Weights '+t.plombs)].filter(Boolean);
@@ -1753,10 +1806,16 @@ function fleetMini(date,cr){const sp=SPOTS();if(!sp.length)return '';const tm=tr
 const CLOCK_SVG='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
 function slotRow(v){return '<div class="sl-row" data-orig="'+esc(v||'')+'"><span class="fl-ic" aria-hidden="true">'+CLOCK_SVG+'</span><input class="fl-name" maxlength="30" value="'+esc(v||'')+'" placeholder="For example: Morning 8:30" aria-label="Trip time"><button type="button" class="fl-del" data-act="slotDel" aria-label="Remove '+esc(v||'this time')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'}
 function slotFill(){const c=document.getElementById('slotCard');if(!c)return;if(!canEdit){c.hidden=true;return}c.hidden=false;document.getElementById('slotList').innerHTML=CRENEAUX.map(slotRow).join('')}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='flSiteNew'){e.preventDefault();ACT_FL_ADD()}});
+function ACT_FL_ADD(){const b=document.querySelector('[data-act=flSiteAdd]');if(b)b.click()}
+function siteChip(v){return '<span class="site-chip" data-v="'+esc(v)+'">'+esc(v)+'<button type="button" class="sc-del" data-act="flSiteDel" aria-label="Remove '+esc(v)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button></span>'}
+function flSitesNow(){return [...document.querySelectorAll('#flSites .site-chip')].map(x=>x.dataset.v)}
+function flBoatSites(){const L=flSitesNow();document.querySelectorAll('#flBoats .fl-boat').forEach(bx=>{let sel;const p=bx.querySelectorAll('.bs-chip');if(p.length||bx.dataset.done)sel=new Set([...bx.querySelectorAll('.bs-chip[aria-pressed="true"]')].map(x=>x.dataset.v));else{try{sel=new Set(JSON.parse(bx.dataset.sites||'[]'))}catch(e){sel=new Set()}}bx.dataset.done='1';const w=bx.querySelector('.fl-bsites');w.innerHTML=L.length?'<span class="hint">Usually goes to</span>'+L.map(v=>'<button type="button" class="bs-chip" data-act="bsToggle" data-v="'+esc(v)+'" aria-pressed="'+(sel.has(v)?'true':'false')+'">'+esc(v)+'</button>').join(''):'<span class="hint">Add dive sites in the first tab to link them to this boat.</span>'})}
 function fleetFill(){const c=document.getElementById('fleetCard');if(!c)return;if(!canEdit){c.hidden=true;return}c.hidden=false;const f=FLEET();
-  document.getElementById('flBoats').innerHTML=f.boats.map(x=>fleetRow('boat',x.id,x.name,x.seats)).join('')||'<p class="hint fl-empty">No boat yet.</p>';
-  document.getElementById('flPools').innerHTML=f.pools.map(x=>fleetRow('pool',x.id,x.name,x.places)).join('')||'<p class="hint fl-empty">No pool yet.</p>'}
-function fleetRow(t,id,name,cap){return '<div class="fl-row" data-t="'+t+'" data-id="'+esc(id)+'"><span class="fl-ic" aria-hidden="true">'+(t==='pool'?'<svg viewBox="0 0 24 24"><path d="M3 17c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M3 21c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M8 14V5a2 2 0 0 1 4 0M16 14V5a2 2 0 0 0-4 0M8 8h8M8 11h8"/></svg>':'<svg viewBox="0 0 24 24"><path d="M3 15h18l-3 4H6zM6 15V9h7l3 6M9 9V5M9 5l4 2-4 2"/></svg>')+'</span><input class="fl-name" maxlength="40" value="'+esc(name||'')+'" placeholder="'+(t==='pool'?'Pool name':'Boat name')+'" aria-label="'+(t==='pool'?'Pool name':'Boat name')+'"><input class="fl-cap" type="number" min="1" max="200" step="1" inputmode="numeric" value="'+esc(cap||'')+'" placeholder="Places" aria-label="Places"><button type="button" class="fl-del" data-act="flDel" aria-label="Remove '+esc(name||(t==='pool'?'pool':'boat'))+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'}
+  document.getElementById('flSites').innerHTML=cfg().sites.map(siteChip).join('')||'<p class="hint fl-empty">No dive site yet.</p>';
+  document.getElementById('flBoats').innerHTML=f.boats.map(x=>fleetRow('boat',x.id,x.name,x.seats,x.sites)).join('')||'<p class="hint fl-empty">No boat yet.</p>';
+  document.getElementById('flPools').innerHTML=f.pools.map(x=>fleetRow('pool',x.id,x.name,x.places)).join('')||'<p class="hint fl-empty">No pool yet.</p>';flBoatSites()}
+function fleetRow(t,id,name,cap,bs){const row='<div class="fl-row" data-t="'+t+'" data-id="'+esc(id)+'"><span class="fl-ic" aria-hidden="true">'+(t==='pool'?'<svg viewBox="0 0 24 24"><path d="M3 17c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M3 21c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M8 14V5a2 2 0 0 1 4 0M16 14V5a2 2 0 0 0-4 0M8 8h8M8 11h8"/></svg>':'<svg viewBox="0 0 24 24"><path d="M3 15h18l-3 4H6zM6 15V9h7l3 6M9 9V5M9 5l4 2-4 2"/></svg>')+'</span><input class="fl-name" maxlength="40" value="'+esc(name||'')+'" placeholder="'+(t==='pool'?'Pool name':'Boat name')+'" aria-label="'+(t==='pool'?'Pool name':'Boat name')+'"><input class="fl-cap" type="number" min="1" max="200" step="1" inputmode="numeric" value="'+esc(cap||'')+'" placeholder="Places" aria-label="Places"><button type="button" class="fl-del" data-act="flDel" aria-label="Remove '+esc(name||(t==='pool'?'pool':'boat'))+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';return t==='boat'?'<div class="fl-boat" data-sites="'+esc(JSON.stringify(Array.isArray(bs)?bs:[]))+'">'+row+'<div class="fl-bsites"></div></div>':row}
 function openBooking(id,draft){
   if(!canWrite){toast('You have read-only access.','bad');return}
   const old=id?S.bookings[id]:null;
@@ -1777,14 +1836,15 @@ function openBooking(id,draft){
    '<div class="gf">'+
    '<div class="fld full">Customer (existing)<input id="f-client" autocomplete="off" placeholder="Search by name or phone" value="'+esc(cl?clientLabel(cl):'')+'"'+(cl?' readonly':'')+'><span class="hint" id="f-chint"></span><div id="f-matches" style="display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:4px"></div></div>'+
    '<div class="full"><button type="button" class="btn ghost sm" data-act="newClientFromBooking">+ New customer</button></div>'+
-   '<label class="fld">Date<input type="date" id="f-date" value="'+esc(b.date)+'"></label>'+
-   '<label class="fld">Slot<select id="f-creneau">'+CRENEAUX.map(x=>opt(x,x,x===slotNorm(b.creneau))).join('')+'</select></label>'+'<p class="hint full capinfo" id="f-cap" aria-live="polite"></p>'+(SPOTS().length?'<label class="fld full">Boat or pool<select id="f-spot">'+spotOpts(b.date,slotNorm(b.creneau),b.spot||'',id||'')+'</select></label><p class="hint full capinfo" id="f-spotinfo" aria-live="polite"></p>':'')+
    '<label class="fld full">Activity<select id="f-tarif">'+tOpts+'</select></label>'+
+   '<p class="fgroup full">Trip</p>'+'<label class="fld">Date<input type="date" id="f-date" value="'+esc(b.date)+'"></label>'+
+   '<label class="fld">Trip time<select id="f-creneau">'+CRENEAUX.map(x=>opt(x,x,x===slotNorm(b.creneau))).join('')+'</select></label>'+'<p class="hint full capinfo" id="f-cap" aria-live="polite"></p>'+tripBlock(b,id,sites)+
+   '<p class="fgroup full">Price and team</p>'+
    '<label class="fld">Unit price ('+CUR()+')<input type="number" id="f-prix" min="0" step="'+STEP()+'" value="'+esc(b.prixUnit||'')+'"></label>'+
    '<label class="fld">Quantity<input type="number" id="f-qte" min="1" step="1" value="'+esc(b.qte||1)+'"></label>'+
    '<label class="fld">Discount (%)<input type="number" id="f-remise" min="0" max="100" step="1" value="'+esc(b.remise||0)+'"></label>'+
    '<label class="fld">Status<select id="f-statut">'+STATUTS.map(x=>opt(x,x,x===b.statut)).join('')+'</select></label>'+
-   '<label class="fld">Dive site<select id="f-site">'+opt('','—',!b.site)+sites.map(x=>opt(x,x,x===b.site)).join('')+'</select></label>'+
+   
    '<label class="fld">Instructor<select id="f-instr">'+opt('','To assign',!b.instructeurId)+gl.map(s=>opt(s.id,s.nom,s.id===b.instructeurId)).join('')+'</select></label>'+
    '<div class="err full" id="f-leave" role="status" style="margin:-4px 0 0"></div>'+
    '<label class="fld full">Agent or hotel<input id="f-agent" list="dl-agents" autocomplete="off" value="'+esc(b.agent||'')+'"><datalist id="dl-agents">'+agents+'</datalist></label>'+
@@ -1794,7 +1854,7 @@ function openBooking(id,draft){
    '<div class="sum" id="f-sum"></div><div class="err" id="f-err" role="alert"></div>'+
    '<div class="actions">'+(id?(bkLocked(id)?'<span class="hint push">🔒 Paid: protected</span>':'<button type="button" class="btn danger push" data-act="delBk">Delete</button>')+'<button type="button" class="btn ghost" data-act="payBooking" data-id="'+esc(id)+'">Collect</button>':'')+
    '<button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="saveBk" id="f-save">Save</button></div>');
-  const body=$('#mBody');capHint();spotHint();
+  const body=$('#mBody');MODAL.whereManual=!!b.spot;capHint();tripSync('open');
   body.oninput=body.onchange=e=>{
     if(e.target.id==='f-client'){if(e.type==='input'){MODAL.clientId='';selClientHint();renderPick()}return}
     if(e.target.id==='f-tarif'){const t=tarifs().list.find(x=>x.id===e.target.value);if(t){$('#f-prix').value=t.prix}}
@@ -1830,8 +1890,7 @@ async function saveBk(){
   if(!r.date){err.textContent='Enter the date.';return}
   err.textContent='';
  {const cap=capOf(r.creneau),was=MODAL.bookingId&&S.bookings[MODAL.bookingId],same=was&&was.date===r.date&&slotNorm(was.creneau)===r.creneau&&was.statut!=='Cancelled';if(cap&&!same&&r.statut!=='Cancelled'){const n=slotLoad(r.date,r.creneau,MODAL.bookingId);if(n>=cap&&!MODAL.capOk){MODAL.capOk=true;err.textContent='This trip is full ('+n+' of '+cap+' places). Press Save again to add this booking anyway.';return}}}
- {const sel=$('#f-spot');r.spot='';if(sel&&SPOTS().length){const tm=tripMap(r.date,r.creneau,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value);if(!x&&r.statut!=='Cancelled')x=autoSpot(tm.spots,r);if(r.statut!=='Cancelled'&&!MODAL.spotOk){if(!x){MODAL.spotOk=true;err.textContent='Every boat and pool is full on this trip. Press Save again to add this booking without a place.';return}if(x.cap&&x.list.length>=x.cap){MODAL.spotOk=true;err.textContent=x.name+' is full ('+x.list.length+' of '+x.cap+'). Press Save again to add this booking anyway.';return}}MODAL.pins=r.statut!=='Cancelled'?autoPins(tm):[];r.spot=x?x.k:''}}
- if(!r.site&&r.spot){const o=Object.values(S.bookings).find(b=>b.id!==MODAL.bookingId&&b.date===r.date&&slotNorm(b.creneau)===r.creneau&&b.spot===r.spot&&b.site);if(o)r.site=o.site}
+ {const sel=$('#f-spot'),w=whereVal(),want=w==='pool'?'pool':w==='sea'?'boat':'';r.spot='';if(sel&&SPOTS().length){const tm=tripMap(r.date,r.creneau,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value)||null;if(!x&&r.statut!=='Cancelled')x=autoSpot(tm.spots,r,want);const typ=want||(isPoolAct(r)?'pool':'boat'),has=tm.spots.some(y=>y.type===typ);if(r.statut!=='Cancelled'&&!MODAL.spotOk){if(!x&&has){MODAL.spotOk=true;err.textContent=(typ==='pool'?'Every pool':'Every boat')+' is full on this trip. Press Save again to add this booking without a place.';return}if(x&&x.cap&&x.list.length>=x.cap){MODAL.spotOk=true;err.textContent=x.name+' is full ('+x.list.length+' of '+x.cap+'). Press Save again to add this booking anyway.';return}}MODAL.pins=r.statut!=='Cancelled'?autoPins(tm):[];r.spot=x?x.k:''}if(w==='pool')r.site='';else if(!r.site&&r.spot){const o=Object.values(S.bookings).find(b=>b.id!==MODAL.bookingId&&b.date===r.date&&slotNorm(b.creneau)===r.creneau&&b.spot===r.spot&&b.site);if(o)r.site=o.site;else{const us=boatSites(r.spot);if(us.length===1)r.site=us[0]}}}
   const id=MODAL.bookingId,old=id?S.bookings[id]:null,cl=S.clients[r.clientId];
   if(cfg().lockPay&&old&&old.fraisPaye){r.feeOn=true;r.feePaid=true}
   const d={clientId:r.clientId,date:r.date,creneau:r.creneau,tarifId:r.tarifId,tarifNom:r.tarifNom||'',categorie:r.categorie||'',plongees:r.plongees||0,
@@ -2418,14 +2477,19 @@ const ACT={
    if(ok&&window.__pubPublic)setTimeout(window.__pubPublic,700)},
  tripOpen(t){openTrip(t.dataset.k,t.dataset.cr)},
  flAdd(t){const tp=t.dataset.t,box=document.getElementById(tp==='pool'?'flPools':'flBoats');const e=box.querySelector('.fl-empty');if(e)e.remove();
-   const n=box.querySelectorAll('.fl-row').length+1;box.insertAdjacentHTML('beforeend',fleetRow(tp,(tp==='pool'?'p':'b')+Date.now().toString(36)+n,tp==='pool'?(n>1?'Pool '+n:'Pool'):'Boat '+n,tp==='pool'?8:12));
+   const n=box.querySelectorAll('.fl-row').length+1;box.insertAdjacentHTML('beforeend',fleetRow(tp,(tp==='pool'?'p':'b')+Date.now().toString(36)+n,tp==='pool'?(n>1?'Pool '+n:'Pool'):'Boat '+n,tp==='pool'?8:12,[]));if(tp==='boat')flBoatSites();
    const r=box.lastElementChild;if(r){const i=r.querySelector('.fl-name');if(i){i.focus();i.select()}}},
- flDel(t){const r=t.closest('.fl-row');if(r)r.remove()},
+ flDel(t){const r=t.closest('.fl-boat')||t.closest('.fl-row');if(r)r.remove()},
+ ftab(t){document.querySelectorAll('#fleetCard .ftab').forEach(b=>b.setAttribute('aria-selected',String(b===t)));document.querySelectorAll('#fleetCard .fpanel').forEach(p=>{p.hidden=p.dataset.p!==t.dataset.p})},
+ flSiteAdd(){const i=document.getElementById('flSiteNew'),v=i.value.trim().replace(/\s+/g,' ');if(!v)return;if(flSitesNow().some(x=>x.toLowerCase()===v.toLowerCase())){toast('“'+v+'” is already in the list.','bad');return}
+   const box=document.getElementById('flSites'),e=box.querySelector('.fl-empty');if(e)e.remove();box.insertAdjacentHTML('beforeend',siteChip(v));i.value='';i.focus();flBoatSites()},
+ flSiteDel(t){const c=t.closest('.site-chip');if(c)c.remove();flBoatSites()},
+ bsToggle(t){t.setAttribute('aria-pressed',t.getAttribute('aria-pressed')==='true'?'false':'true')},
  async flSave(){const rows=[...document.querySelectorAll('#fleetCard .fl-row')];const boats=[],pools=[];let bad=false;
-   rows.forEach(r=>{const name=r.querySelector('.fl-name').value.trim(),cap=Math.round(+r.querySelector('.fl-cap').value);if(!name||!(cap>0)){bad=true;return}
-     if(r.dataset.t==='pool')pools.push({id:r.dataset.id,name:name,places:cap});else boats.push({id:r.dataset.id,name:name,seats:cap})});
+   const sites=flSitesNow();rows.forEach(r=>{const name=r.querySelector('.fl-name').value.trim(),cap=Math.round(+r.querySelector('.fl-cap').value);if(!name||!(cap>0)){bad=true;return}
+     if(r.dataset.t==='pool')pools.push({id:r.dataset.id,name:name,places:cap});else{const bx=r.closest('.fl-boat');const bs=bx?[...bx.querySelectorAll('.bs-chip[aria-pressed="true"]')].map(x=>x.dataset.v).filter(v=>sites.includes(v)):[];boats.push({id:r.dataset.id,name:name,seats:cap,sites:bs})}});
    if(bad){toast('Give each boat and pool a name and a number of places.','bad');return}
-   await W(()=>db.doc('config/main').update({fleet:{boats:boats,pools:pools}}),'Boats and pool saved')},
+   await W(()=>db.doc('config/main').update({sites:sites,fleet:{boats:boats,pools:pools}}),'Boats, pool and dive sites saved')},
  async capSave(){const o={};document.querySelectorAll('#capGrid input[data-cr]').forEach(i=>{const v=Math.round(+i.value);if(v>0)o[i.dataset.cr]=v});await W(()=>db.doc('config/main').update({capacity:o}),'Places saved')},
  async bkoSave(){const off=[];document.querySelectorAll('#bko-acts input[data-tid]').forEach(i=>{if(!i.checked)off.push(i.dataset.tid)});
    const o={on:document.getElementById('bko-on').checked,notice:+document.getElementById('bko-notice').value||0,ahead:+document.getElementById('bko-ahead').value||60,msg:document.getElementById('bko-msg').value.trim().slice(0,400),off:off};
@@ -2698,7 +2762,7 @@ const ACT={
  },
  async saveCfg(){
   const lines=id=>$('#'+id).value.split('\n').map(x=>x.trim()).filter(Boolean);
-  const d={sites:lines('cSites'),agents:lines('cAgents'),niveaux:lines('cNiv'),frais:{eco:Math.max(0,+$('#cEco').value||0),parcEtranger:Math.max(0,+$('#cPe').value||0),parcLocal:Math.max(0,+$('#cPl').value||0)},commission:{coursePct:Math.min(100,Math.max(0,+$('#cCp').value||0)),funPerDive:Math.max(0,+$('#cCf').value||0)}};
+  const d={agents:lines('cAgents'),niveaux:lines('cNiv'),frais:{eco:Math.max(0,+$('#cEco').value||0),parcEtranger:Math.max(0,+$('#cPe').value||0),parcLocal:Math.max(0,+$('#cPl').value||0)},commission:{coursePct:Math.min(100,Math.max(0,+$('#cCp').value||0)),funPerDive:Math.max(0,+$('#cCf').value||0)}};
   d.lockPay=$('#cLock').checked;
   if(S.config&&S.config.payPin)d.payPin=S.config.payPin;
   ['brand','home','access','pool','checkinForm','currency'].forEach(k=>{if(S.config&&S.config[k])d[k]=S.config[k]});
