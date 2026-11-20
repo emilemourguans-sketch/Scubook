@@ -563,6 +563,7 @@ button.ts-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .trip-pick{width:22px;height:22px;margin:0 10px 0 2px;accent-color:var(--accent);flex:none}
 .trip-bulk{position:sticky;bottom:0;z-index:2;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--navy);color:var(--on-navy);box-shadow:0 10px 24px -10px rgba(0,0,0,.5)}
 .trip-bulk #tbN{font-weight:700;margin-right:auto}.trip-bulk select{flex:1 1 150px;min-width:0}
+.siteline{margin:-2px 0 0;font-size:.9rem;color:var(--ink)}.siteline b{font-weight:700}
 .legs{display:grid;gap:10px}.legs:empty{display:none}
 .leg{display:grid;gap:6px;padding:10px 12px;border-radius:16px;background:var(--soft);border-left:3px solid var(--accent)}
 .leg-h{display:flex;justify-content:space-between;align-items:center}
@@ -1736,11 +1737,14 @@ function siteOpts(k,cur,sites,ph){const us=boatSites(k),all=sites.slice();if(cur
   return opt('',ph||'—',!cur)+(us.length?'<optgroup label="'+esc(spotName(k))+' usually goes to">'+us.map(x=>opt(x,x,x===cur)).join('')+'</optgroup>'+(rest.length?'<optgroup label="Other dive sites">'+rest.map(x=>opt(x,x,x===cur)).join('')+'</optgroup>':''):all.map(x=>opt(x,x,x===cur)).join(''))}
 function whereVal(){const r=document.querySelector('#mBody input[name="f-where"]:checked');return r?r.value:''}
 function tripWhereFor(tid){const t=tarifs().list.find(x=>x.id===tid);return isPoolAct({tarifNom:t?t.nom:'',categorie:t?t.categorie:''})?'pool':'sea'}
+const hasBoats=()=>SPOTS().some(x=>x.type==='boat');
+function siteOfSpot(d,cr,k,skipId){if(!k||String(k).indexOf('b:')!==0)return '';const tm=tripMap(d,cr,skipId),x=tm.spots.find(y=>y.k===k);const td=(S.trips||{})[tripKey(d,cr,k)];return (td&&td.site)||(x?tripSite(x.list):'')||(boatSites(k).length===1?boatSites(k)[0]:'')}
 function tripBlock(b,id,sites){const sp=SPOTS(),pools=sp.filter(x=>x.type==='pool'),boats=sp.filter(x=>x.type==='boat'),cur=b.spot||'';
   let w=cur?(cur.indexOf('p:')===0?'pool':'sea'):(b.tarifId?tripWhereFor(b.tarifId):'sea');if(!pools.length)w='sea';if(!boats.length&&pools.length&&!cur&&w==='sea'&&!sites.length)w='pool';
   let h='';
   if(pools.length)h+='<div class="fld full"><span>Where</span><div class="seg2" role="radiogroup" aria-label="Where"><label><input type="radio" name="f-where" value="sea"'+(w==='sea'?' checked':'')+'>'+SEA_SVG+'<span>Sea</span></label><label><input type="radio" name="f-where" value="pool"'+(w==='pool'?' checked':'')+'>'+POOL_SVG+'<span>Pool</span></label></div></div>';
   if(sp.length)h+='<label class="fld" id="f-spotwrap"'+(w==='sea'&&!boats.length?' hidden':'')+'><span id="f-spotlbl">'+(w==='pool'?'Pool':'Boat')+'</span><select id="f-spot">'+spotOpts(b.date,slotNorm(b.creneau),cur,id||'',w==='pool'?'pool':'boat')+'</select></label>';
+  if(hasBoats())h+='<p class="hint full siteline" id="f-siteinfo" aria-live="polite"></p>';
   h+='<label class="fld" id="f-sitewrap"'+(w==='pool'?' hidden':'')+'>Dive site<select id="f-site">'+siteOpts(cur,b.site||'',sites)+'</select></label>';
   h+='<p class="hint full capinfo" id="f-spotinfo" aria-live="polite"></p>';
   h+='<div class="full legs" id="f-legs">'+(Array.isArray(b.steps)&&b.steps.length>1?b.steps.slice(1).map(legRow).join(''):'')+'</div>'+
@@ -1751,8 +1755,11 @@ function tripSync(why){const w=whereVal()||'sea',sel=document.getElementById('f-
   const d=($('#f-date')||{}).value,cr=($('#f-creneau')||{}).value,typ=w==='pool'?'pool':'boat';
   if(sel){const keep=sel.value&&((typ==='pool')===(sel.value.indexOf('p:')===0))?sel.value:'';sel.innerHTML=spotOpts(d,cr,keep,MODAL.bookingId,typ);sel.value=keep;if(lbl)lbl.textContent=typ==='pool'?'Pool':'Boat';
     if(pw)pw.hidden=!SPOTS().some(x=>x.type===typ)}
-  if(sw)sw.hidden=w==='pool';
-  if(site&&w!=='pool'){const k=(sel&&sel.value)||tripAutoKey(d,cr,w),cur=site.value;site.innerHTML=siteOpts(k,cur,cfg().sites.slice());site.value=cur;
+  if(sw)sw.hidden=w==='pool'||hasBoats();
+  const si=document.getElementById('f-siteinfo');
+  if(site&&hasBoats()){const k=w==='pool'?'':((sel&&sel.value)||tripAutoKey(d,cr,w)),v=k?siteOfSpot(d,cr,k,MODAL.bookingId):'';site.innerHTML=opt(v,v||'—',true);site.value=v;
+    if(si){si.hidden=w==='pool';si.innerHTML=w==='pool'?'':(v?'<b>Dive site:</b> '+esc(v)+' <span class="hint">(set on '+esc(spotName(k))+')</span>':(k?'<b>Dive site:</b> not chosen yet. Tap '+esc(spotName(k))+' in Schedule to choose it.':''))}}
+  else if(site&&w!=='pool'){const k=(sel&&sel.value)||tripAutoKey(d,cr,w),cur=site.value;site.innerHTML=siteOpts(k,cur,cfg().sites.slice());site.value=cur;
     if(!site.value&&k){const tm=tripMap(d,cr,MODAL.bookingId),x=tm.spots.find(y=>y.k===k),ts=x?tripSiteOf(d,cr,x):'',us=boatSites(k),sug=ts||(us.length===1?us[0]:'');if(sug)site.value=sug}}
   spotHint()}
 
@@ -1799,7 +1806,7 @@ function poolSVG(n,cap,full){
 function fleetBoard(date){
   const el=document.getElementById('pFleet');if(!el)return;const sp=SPOTS();
   if(!sp.length){el.hidden=true;el.innerHTML='';return}
-  const crs=CRENEAUX.filter(cr=>Object.values(S.bookings).some(b=>b.date===date&&slotNorm(b.creneau)===cr&&b.statut!=='Cancelled'));
+  const crs=CRENEAUX.filter(cr=>Object.values(S.bookings).some(b=>b.date===date&&b.statut!=='Cancelled'&&legsOf(b).some(l=>slotNorm(l.c)===cr)));
   el.hidden=false;
   if(!crs.length){el.innerHTML='<div class="fleet-empty"><b>Boats and pool</b><span class="hint">No trips this day yet. Bookings fill your boats and pool here.</span></div>';return}
   el.innerHTML='<h2 class="fleet-t">Who goes where</h2>'+crs.map(cr=>{const tm=tripMap(date,cr);
@@ -1842,7 +1849,7 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.classLis
   if(ok)setTimeout(()=>{if(MODAL.kind==='trip')openTrip(k,cr)},250)});
 document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('trip-move')||MODAL.kind!=='trip')return;
   const id=t.dataset.id,leg=t.dataset.leg,v=t.value;if(!v)return;const k=MODAL.k,cr=MODAL.cr;const pins=autoPins(tripMap(ST.date,cr)).filter(p=>p[0]!==id);
-  const ok=await W(async()=>{for(const p of pins)await setLeg(p[0],p[2],{spot:p[1]});await setLeg(id,leg,{spot:v})},'Moved to '+spotName(v));
+  const ok=await W(async()=>{for(const p of pins)await setLeg(p[0],p[2],{spot:p[1]});await setLeg(id,leg,{spot:v,site:String(v).indexOf('b:')===0?siteOfSpot(ST.date,cr,v,''):''})},'Moved to '+spotName(v));
   if(ok){setTimeout(()=>{if(MODAL.kind==='trip')openTrip(k,cr)},250)}});
 function fleetMini(date,cr){const sp=SPOTS();if(!sp.length)return '';const tm=tripMap(date,cr);
   return '<span class="fleet-mini">'+tm.spots.filter(x=>x.list.length).map(x=>esc(x.name)+' '+x.list.length+(x.cap?'/'+x.cap:'')).join(' · ')+(tm.none.length?' · <b>'+tm.none.length+' without a place</b>':'')+'</span>'}
@@ -1875,20 +1882,22 @@ function legRow(l){const n=++LEG_N,sp=SPOTS(),pools=sp.some(x=>x.type==='pool'),
     '<label class="fld">Trip time<select class="leg-c">'+CRENEAUX.map(x=>opt(x,x,x===slotNorm(l.c))).join('')+'</select></label>'+
     (pools?'<div class="fld"><span>Where</span><div class="seg2 sm" role="radiogroup" aria-label="Where"><label><input type="radio" name="leg-w-'+n+'" value="sea"'+(w==='sea'?' checked':'')+'>'+SEA_SVG+'<span>Sea</span></label><label><input type="radio" name="leg-w-'+n+'" value="pool"'+(w==='pool'?' checked':'')+'>'+POOL_SVG+'<span>Pool</span></label></div></div>':'')+
     (sp.length?'<label class="fld leg-spotw"><span class="leg-sl">'+(w==='pool'?'Pool':'Boat')+'</span><select class="leg-spot" data-cur="'+esc(l.spot||'')+'"></select></label>':'')+
-    '<label class="fld leg-sitew"'+(w==='pool'?' hidden':'')+'>Dive site<select class="leg-site" data-cur="'+esc(l.site||'')+'"></select></label>'+
+    '<label class="fld leg-sitew"'+(w==='pool'||hasBoats()?' hidden':'')+'>Dive site<select class="leg-site" data-cur="'+esc(l.site||'')+'"></select></label>'+
     '<p class="hint full capinfo leg-info" aria-live="polite"></p></div></div>'}
 function legW(row){const r=row.querySelector('input[type=radio]:checked');return r?r.value:'sea'}
 function legSync(row){const w=legW(row),typ=w==='pool'?'pool':'boat',d=($('#f-date')||{}).value,c=row.querySelector('.leg-c').value,sel=row.querySelector('.leg-spot'),site=row.querySelector('.leg-site'),sw=row.querySelector('.leg-sitew'),sl=row.querySelector('.leg-sl'),pw=row.querySelector('.leg-spotw');
   if(sel){const cur=sel.options.length?sel.value:(sel.dataset.cur||'');const keep=cur&&((typ==='pool')===(cur.indexOf('p:')===0))?cur:'';sel.innerHTML=spotOpts(d,c,keep,MODAL.bookingId,typ);sel.value=keep;if(sl)sl.textContent=typ==='pool'?'Pool':'Boat';if(pw)pw.hidden=!SPOTS().some(x=>x.type===typ)}
-  if(sw)sw.hidden=w==='pool';
-  if(site&&w!=='pool'){const k=(sel&&sel.value)||tripAutoKey(d,c,w),cur=site.options.length?site.value:(site.dataset.cur||'');site.innerHTML=siteOpts(k,cur,cfg().sites.slice());site.value=cur;
+  if(sw)sw.hidden=w==='pool'||hasBoats();
+  if(site&&hasBoats()){const k=w==='pool'?'':((sel&&sel.value)||tripAutoKey(d,c,w)),v=k?siteOfSpot(d,c,k,MODAL.bookingId):'';site.innerHTML=opt(v,v||'—',true);site.value=v}
+  else if(site&&w!=='pool'){const k=(sel&&sel.value)||tripAutoKey(d,c,w),cur=site.options.length?site.value:(site.dataset.cur||'');site.innerHTML=siteOpts(k,cur,cfg().sites.slice());site.value=cur;
     if(!site.value&&k){const tm=tripMap(d,c,MODAL.bookingId),x=tm.spots.find(y=>y.k===k),ts=x?tripSiteOf(d,c,x):'',us=boatSites(k),sug=ts||(us.length===1?us[0]:'');if(sug)site.value=sug}}
   legHint(row)}
 function legHint(row){const e=row.querySelector('.leg-info');if(!e)return;const sel=row.querySelector('.leg-spot');if(!sel){e.textContent='';return}
   const d=($('#f-date')||{}).value,c=row.querySelector('.leg-c').value,w=legW(row),tm=tripMap(d,c,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value);
   if(!x){x=autoSpot(tm.spots,{},w);if(!x){const has=tm.spots.some(y=>y.type===(w==='pool'?'pool':'boat'));e.className='hint full capinfo leg-info'+(has?' is-full':'');e.textContent=has?'No free place left: every '+(w==='pool'?'pool':'boat')+' is full.':'';return}}
   const n=x.list.length;e.className='hint full capinfo leg-info'+(x.cap&&n>=x.cap?' is-full':x.cap&&n>=Math.ceil(x.cap*0.8)?' is-near':'');
-  e.textContent=(sel.value?'':'Goes to ')+x.name+': '+(x.cap?(n>=x.cap?'full ('+n+' of '+x.cap+')':(x.cap-n)+' of '+x.cap+' places left'):n+' booked')+'.'}
+  const st=x.type==='boat'&&hasBoats()?siteOfSpot(d,c,x.k,MODAL.bookingId):'';
+  e.textContent=(sel.value?'':'Goes to ')+x.name+': '+(x.cap?(n>=x.cap?'full ('+n+' of '+x.cap+')':(x.cap-n)+' of '+x.cap+' places left'):n+' booked')+'.'+(x.type==='boat'&&hasBoats()?(st?' Dive site: '+st+'.':' Dive site not chosen yet.'):'')}
 function legSuggest(){const e=document.getElementById('f-legsug');if(!e)return;const sp=SPOTS(),t=tarifs().list.find(x=>x.id===($('#f-tarif')||{}).value);
   const ok=sp.some(x=>x.type==='pool')&&sp.some(x=>x.type==='boat')&&t&&/discover|try|intro|bapt|dsd|scuba diver|open water|refresh|tune|bubble/i.test(String(t.nom)+' '+String(t.categorie||''))&&!document.querySelector('#f-legs .leg');
   e.innerHTML=ok?'<button type="button" class="legsug" data-act="legSuggest">'+POOL_SVG+'<span>Pool first, then sea</span>'+SEA_SVG+'</button>':''}
@@ -1919,14 +1928,14 @@ function openBooking(id,draft){
    '<label class="fld full">Activity<select id="f-tarif">'+tOpts+'</select></label>'+
    '<p class="fgroup full">Trip</p>'+'<label class="fld">Date<input type="date" id="f-date" value="'+esc(b.date)+'"></label>'+
    '<label class="fld">Trip time<select id="f-creneau">'+CRENEAUX.map(x=>opt(x,x,x===slotNorm(b.creneau))).join('')+'</select></label>'+'<p class="hint full capinfo" id="f-cap" aria-live="polite"></p>'+tripBlock(b,id,sites)+
-   '<p class="fgroup full">Price and team</p>'+
+   '<p class="fgroup full">Instructor and status</p>'+
+   '<label class="fld">Instructor<select id="f-instr">'+opt('','To assign',!b.instructeurId)+gl.map(s=>opt(s.id,s.nom,s.id===b.instructeurId)).join('')+'</select></label>'+
+   '<label class="fld">Status<select id="f-statut">'+STATUTS.map(x=>opt(x,x,x===b.statut)).join('')+'</select></label>'+
+   '<div class="err full" id="f-leave" role="status" style="margin:-4px 0 0"></div>'+
+   '<p class="fgroup full">Price</p>'+
    '<label class="fld">Unit price ('+CUR()+')<input type="number" id="f-prix" min="0" step="'+STEP()+'" value="'+esc(b.prixUnit||'')+'"></label>'+
    '<label class="fld">Quantity<input type="number" id="f-qte" min="1" step="1" value="'+esc(b.qte||1)+'"></label>'+
    '<label class="fld">Discount (%)<input type="number" id="f-remise" min="0" max="100" step="1" value="'+esc(b.remise||0)+'"></label>'+
-   '<label class="fld">Status<select id="f-statut">'+STATUTS.map(x=>opt(x,x,x===b.statut)).join('')+'</select></label>'+
-   
-   '<label class="fld">Instructor<select id="f-instr">'+opt('','To assign',!b.instructeurId)+gl.map(s=>opt(s.id,s.nom,s.id===b.instructeurId)).join('')+'</select></label>'+
-   '<div class="err full" id="f-leave" role="status" style="margin:-4px 0 0"></div>'+
    '<label class="fld full">Agent or hotel<input id="f-agent" list="dl-agents" autocomplete="off" value="'+esc(b.agent||'')+'"><datalist id="dl-agents">'+agents+'</datalist></label>'+
    '<label class="fld check full"><input type="checkbox" id="f-fee"'+(feeOn?' checked':'')+'><span>Marine fees: Eco Trust + Marine Park (<span id="f-feeamt">0</span> '+CUR()+'). Paid in cash, kept separate from the dive price.</span></label>'+
    '<label class="fld check full" id="f-feepaidrow"><input type="checkbox" id="f-feepaid"'+(b.fraisPaye?' checked':'')+'><span>Marine fees paid in cash by the customer</span></label>'+
@@ -1970,7 +1979,8 @@ async function saveBk(){
   if(!r.date){err.textContent='Enter the date.';return}
   err.textContent='';
  {const cap=capOf(r.creneau),was=MODAL.bookingId&&S.bookings[MODAL.bookingId],same=was&&was.date===r.date&&slotNorm(was.creneau)===r.creneau&&was.statut!=='Cancelled';if(cap&&!same&&r.statut!=='Cancelled'){const n=slotLoad(r.date,r.creneau,MODAL.bookingId);if(n>=cap&&!MODAL.capOk){MODAL.capOk=true;err.textContent='This trip is full ('+n+' of '+cap+' places). Press Save again to add this booking anyway.';return}}}
- {const sel=$('#f-spot'),w=whereVal(),want=w==='pool'?'pool':w==='sea'?'boat':'';r.spot='';if(sel&&SPOTS().length){const tm=tripMap(r.date,r.creneau,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value)||null;if(!x&&r.statut!=='Cancelled')x=autoSpot(tm.spots,r,want);const typ=want||(isPoolAct(r)?'pool':'boat'),has=tm.spots.some(y=>y.type===typ);if(r.statut!=='Cancelled'&&!MODAL.spotOk){if(!x&&has){MODAL.spotOk=true;err.textContent=(typ==='pool'?'Every pool':'Every boat')+' is full on this trip. Press Save again to add this booking without a place.';return}if(x&&x.cap&&x.list.length>=x.cap){MODAL.spotOk=true;err.textContent=x.name+' is full ('+x.list.length+' of '+x.cap+'). Press Save again to add this booking anyway.';return}}MODAL.pins=r.statut!=='Cancelled'?autoPins(tm):[];r.spot=x?x.k:''}if(w==='pool')r.site='';else if(!r.site&&r.spot){const td=(S.trips||{})[tripKey(r.date,r.creneau,r.spot)];if(td&&td.site)r.site=td.site;else{const o=Object.values(S.bookings).find(b=>b.id!==MODAL.bookingId&&b.date===r.date&&slotNorm(b.creneau)===r.creneau&&b.spot===r.spot&&b.site);if(o)r.site=o.site;else{const us=boatSites(r.spot);if(us.length===1)r.site=us[0]}}}
+ {const sel=$('#f-spot'),w=whereVal(),want=w==='pool'?'pool':w==='sea'?'boat':'';r.spot='';if(sel&&SPOTS().length){const tm=tripMap(r.date,r.creneau,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value)||null;if(!x&&r.statut!=='Cancelled')x=autoSpot(tm.spots,r,want);const typ=want||(isPoolAct(r)?'pool':'boat'),has=tm.spots.some(y=>y.type===typ);if(r.statut!=='Cancelled'&&!MODAL.spotOk){if(!x&&has){MODAL.spotOk=true;err.textContent=(typ==='pool'?'Every pool':'Every boat')+' is full on this trip. Press Save again to add this booking without a place.';return}if(x&&x.cap&&x.list.length>=x.cap){MODAL.spotOk=true;err.textContent=x.name+' is full ('+x.list.length+' of '+x.cap+'). Press Save again to add this booking anyway.';return}}MODAL.pins=r.statut!=='Cancelled'?autoPins(tm):[];r.spot=x?x.k:''}if(hasBoats()&&w!=='pool')r.site=r.spot?siteOfSpot(r.date,r.creneau,r.spot,MODAL.bookingId):'';
+ if(w==='pool')r.site='';else if(!r.site&&r.spot){const td=(S.trips||{})[tripKey(r.date,r.creneau,r.spot)];if(td&&td.site)r.site=td.site;else{const o=Object.values(S.bookings).find(b=>b.id!==MODAL.bookingId&&b.date===r.date&&slotNorm(b.creneau)===r.creneau&&b.spot===r.spot&&b.site);if(o)r.site=o.site;else{const us=boatSites(r.spot);if(us.length===1)r.site=us[0]}}}
  const legRows=[...document.querySelectorAll('#f-legs .leg')];r.steps=[];
  if(legRows.length){const steps=[{c:r.creneau,w:w||(String(r.spot).indexOf('p:')===0?'pool':'sea'),spot:r.spot||'',site:r.site||''}],seen=new Set([r.creneau]);
   for(const row of legRows){const c=row.querySelector('.leg-c').value,lw=legW(row);if(seen.has(c)){err.textContent='Two parts of the day are at '+c+'. Choose another time.';return}seen.add(c);
@@ -1978,7 +1988,7 @@ async function saveBk(){
    const typ2=lw==='pool'?'pool':'boat',has2=tm2.spots.some(y=>y.type===typ2);
    if(r.statut!=='Cancelled'&&!MODAL.spotOk){if(!x2&&has2){MODAL.spotOk=true;err.textContent='At '+c+', every '+typ2+' is full. Press Save again to add it without a place.';return}if(x2&&x2.cap&&x2.list.length>=x2.cap){MODAL.spotOk=true;err.textContent='At '+c+', '+x2.name+' is full ('+x2.list.length+' of '+x2.cap+'). Press Save again to add it anyway.';return}}
    if(r.statut!=='Cancelled')MODAL.pins=(MODAL.pins||[]).concat(autoPins(tm2));
-   let st2='';if(lw!=='pool'){const ss=row.querySelector('.leg-site');st2=ss?ss.value:'';if(!st2&&x2){const td2=(S.trips||{})[tripKey(r.date,c,x2.k)];st2=(td2&&td2.site)||tripSite(x2.list)||(boatSites(x2.k).length===1?boatSites(x2.k)[0]:'')}}
+   let st2='';if(lw!=='pool'&&hasBoats()){st2=x2?siteOfSpot(r.date,c,x2.k,MODAL.bookingId):''}else if(lw!=='pool'){const ss=row.querySelector('.leg-site');st2=ss?ss.value:'';if(!st2&&x2){const td2=(S.trips||{})[tripKey(r.date,c,x2.k)];st2=(td2&&td2.site)||tripSite(x2.list)||(boatSites(x2.k).length===1?boatSites(x2.k)[0]:'')}}
    steps.push({c:c,w:lw,spot:x2?x2.k:'',site:st2})}
   steps.sort((p,q)=>CRENEAUX.indexOf(slotNorm(p.c))-CRENEAUX.indexOf(slotNorm(q.c)));r.steps=steps;r.creneau=steps[0].c;r.spot=steps[0].spot;r.site=steps[0].site}}
   const id=MODAL.bookingId,old=id?S.bookings[id]:null,cl=S.clients[r.clientId];
@@ -2557,7 +2567,7 @@ const ACT={
  async tripBulkMove(t){const P=[...document.querySelectorAll('.trip-pick:checked')],to=(document.getElementById('tbTo')||{}).value;if(!P.length||!to)return;const k=MODAL.k,cr=MODAL.cr,tm=tripMap(ST.date,cr),dest=tm.spots.find(y=>y.k===to);
    if(dest&&dest.cap&&dest.list.length+P.length>dest.cap&&!MODAL.bulkOk){MODAL.bulkOk=true;toast(dest.name+' would have '+(dest.list.length+P.length)+' of '+dest.cap+' places. Tap Move again to move them anyway.','bad');return}
    const ids=new Set(P.map(x=>x.dataset.id+'|'+x.dataset.leg)),pins=autoPins(tm).filter(p=>!ids.has(p[0]+'|'+(p[2]==null?'':p[2])));t.disabled=true;
-   const ok=await W(async()=>{for(const p of pins)await setLeg(p[0],p[2],{spot:p[1]});for(const x of P)await setLeg(x.dataset.id,x.dataset.leg,{spot:to})},pl(P.length,'customer')+' moved to '+spotName(to));
+   const ok=await W(async()=>{for(const p of pins)await setLeg(p[0],p[2],{spot:p[1]});const ns=String(to).indexOf('b:')===0?siteOfSpot(ST.date,cr,to,''):'';for(const x of P)await setLeg(x.dataset.id,x.dataset.leg,{spot:to,site:ns})},pl(P.length,'customer')+' moved to '+spotName(to));
    t.disabled=false;if(ok)setTimeout(()=>{if(MODAL.kind==='trip')openTrip(k,cr)},250)},
  legAdd(){legAddRow(Object.assign({spot:'',site:''},legNextDefaults()))},
  legDel(t){const r=t.closest('.leg');if(r)r.remove();legSuggest()},
