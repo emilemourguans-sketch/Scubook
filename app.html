@@ -543,6 +543,37 @@ main{gap:20px;padding-block:28px 56px}
 .fl-ic{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--soft)}.fl-ic svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .fl-del{all:unset;box-sizing:border-box;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;cursor:pointer;color:var(--muted)}.fl-del:hover{background:var(--soft);color:var(--bad,#C0392B)}.fl-del:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.fl-del svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 @media(max-width:480px){.fl-row{grid-template-columns:28px minmax(0,1fr) 64px 40px;gap:6px}.fl-del{width:40px}}
+.exw{position:relative;display:inline-flex}
+.exw>.exT{display:inline-flex;align-items:center;gap:6px}
+.exT svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.exw.open .exT svg{transform:rotate(180deg)}
+.exL{display:none;position:absolute;z-index:40;top:calc(100% + 6px);left:0;min-width:220px;flex-direction:column;gap:2px;padding:8px;border-radius:16px;background:var(--surface);box-shadow:0 18px 40px -12px rgba(0,0,0,.45),0 0 0 1px var(--line)}
+.exw.open .exL{display:flex}
+.exL .btn{width:100%;justify-content:flex-start;border-color:transparent}
+.exL .btn:hover{background:var(--soft)}
+.exH{padding:8px 10px 2px;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.exL .exH:not(:first-child){margin-top:4px;border-top:1px solid var(--line);padding-top:10px}
+@media(min-width:761px){.toolbar .exL{left:auto;right:0}}
+@media(prefers-reduced-motion:reduce){.exT svg{transition:none}}
+button.ts-chip{cursor:pointer;font:inherit;font-size:.86rem;font-weight:600;color:inherit}
+button.ts-chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#0A2540}button.ts-chip[aria-pressed="true"] b{color:#0A2540}
+.bs-chip[aria-pressed="true"]{color:#0A2540!important}
+button.ts-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.trip-row{align-items:center}
+.trip-pick{width:22px;height:22px;margin:0 10px 0 2px;accent-color:var(--accent);flex:none}
+.trip-bulk{position:sticky;bottom:0;z-index:2;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--navy);color:var(--on-navy);box-shadow:0 10px 24px -10px rgba(0,0,0,.5)}
+.trip-bulk #tbN{font-weight:700;margin-right:auto}.trip-bulk select{flex:1 1 150px;min-width:0}
+.legs{display:grid;gap:10px}.legs:empty{display:none}
+.leg{display:grid;gap:6px;padding:10px 12px;border-radius:16px;background:var(--soft);border-left:3px solid var(--accent)}
+.leg-h{display:flex;justify-content:space-between;align-items:center}
+.leg-t{font-size:.74rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.leg .gf{gap:10px}.leg .seg2{background:var(--surface)}
+.seg2.sm label{min-height:40px}
+.legs-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.legsug{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:99px;border:1px dashed var(--accent);color:var(--accent);font-weight:600;font-size:.88rem;cursor:pointer}
+.legsug svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.legsug:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.legmini{display:block;font-size:.76rem;color:var(--muted)}
 .fgroup{margin:6px 0 -4px!important;font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .seg2{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:14px;background:var(--soft);margin-top:4px}
 .seg2 label{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:11px;cursor:pointer;font-weight:600;color:var(--muted)}
@@ -774,7 +805,7 @@ function buildNav(){
 /* ---------- state ---------- */
 let db=null,dl=null,canEdit=false,canWrite=true;
 const ME={name:'',level:''};
-const S={clients:{},bookings:{},payments:{},expenses:{},staff:{},tarifs:{},gear:{},gearLog:{},declarations:{},leaves:{},removed:{},config:null};
+const S={clients:{},bookings:{},payments:{},expenses:{},staff:{},tarifs:{},gear:{},gearLog:{},declarations:{},leaves:{},removed:{},trips:{},config:null};
 const LOADED={};
 const IDX={pay:{},byClient:{}};
 const ST={view:'home',date:today(),sel:new Set(),month:monthNow(),payTab:'due'};
@@ -901,6 +932,8 @@ const XD={
   return{file:'team',name:'Team',sid:FIN_SHEET,tab:'Team',widths:[24,18,16,18,28,10],rows:[['Name','Role','Languages','Phone','Email','Active']].concat(L.map(x=>[x.nom||'',x.role||'',x.pays||'',x.tel||'',x.email||'',x.actif===false?'No':'Yes']))}},
  prices(){return{file:'prices',name:'Prices',sid:FIN_SHEET,tab:'Prices',widths:[22,40,16,14,30],rows:[['Category','Name','Price ('+CUR()+')','Dives included','Note']].concat(tarifs().list.map(t=>[t.categorie,t.nom,t.prix,t.plongees||0,t.note||'']))}}
 };
+const exItems=k=>[{act:'exOut',k:k,f:'csv',label:'CSV'},{act:'exOut',k:k,f:'xlsx',label:'Excel'},{act:'exOut',k:k,f:'gs',label:'Google Sheet'}];
+const ddMenu=(label,groups,sm)=>{GS.warm();return '<span class="exw"><button type="button" class="btn ghost exT'+(sm?' sm':'')+'" data-act="exToggle" aria-expanded="false" aria-haspopup="true">'+esc(label)+'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><span class="exL" role="menu">'+groups.map(g=>(g.h?'<span class="exH">'+esc(g.h)+'</span>':'')+g.items.map(it=>'<button type="button" role="menuitem" class="btn ghost'+(sm?' sm':'')+'"'+(it.id?' id="'+it.id+'"':'')+' data-act="'+it.act+'"'+(it.k?' data-k="'+it.k+'"':'')+(it.f?' data-f="'+it.f+'"':'')+'>'+esc(it.label)+'</button>').join('')).join('')+'</span></span>'};
 const exBtns=(k,sm)=>{GS.warm();return '<span class="exw"><button type="button" class="btn ghost exT'+(sm?' sm':'')+'" data-act="exToggle" aria-expanded="false">Export<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><span class="exL">'+['csv|CSV','xlsx|Excel','gs|Google Sheet'].map(x=>{const[a,b]=x.split('|');return '<button type="button" class="btn ghost'+(sm?' sm':'')+'" data-act="exOut" data-k="'+k+'" data-f="'+a+'">'+b+'</button>'}).join('')+'</span></span>'};
 document.addEventListener('click',e=>{if(!e.target.closest)return;if(e.target.closest('.exw')&&!e.target.closest('.exL'))return;document.querySelectorAll('.exw.open').forEach(x=>{x.classList.remove('open');const t=x.querySelector('.exT');if(t)t.setAttribute('aria-expanded','false')})});
 /* ===== Google Sheets: creates a new sheet in the user's own Google Drive (scope drive.file: only files this app creates) ===== */
@@ -974,7 +1007,7 @@ function bookingRow(b,withSel){
     (withSel?'<input type="checkbox" class="sel" data-id="'+esc(b.id)+'"'+(on?' checked':'')+' aria-label="Select '+esc(c.nom||'')+'">':'')+
     '<button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'">'+
       '<span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(b.statut)+'</span>'+
-      '<span class="r2">'+esc(b.tarifNom||'')+(b.qte>1?' ×'+esc(b.qte):'')+' · '+esc(slotNorm(b.creneau))+(b.site?' · '+esc(b.site):'')+'</span>'+
+      '<span class="r2">'+esc(b.tarifNom||'')+(b.qte>1?' ×'+esc(b.qte):'')+(legsOf(b).length>1?' · '+esc(legLine(b)):' · '+esc(slotNorm(b.creneau))+(b.site?' · '+esc(b.site):''))+'</span>'+
       (chips.length?'<span class="chips">'+chips.map(x=>'<span class="chip">'+esc(x)+'</span>').join('')+'</span>':'')+
     '</button><div class="r-side">'+money+'</div></div>';
 }
@@ -1035,11 +1068,11 @@ V.home={
    (feeOpen?'<div class="kpi warn"><span>Marine fees unpaid</span><b>'+feeOpen+'</b></div>':'');
   let h='';
   CRENEAUX.forEach(cr=>{
-    const l=tod.filter(b=>slotNorm(b.creneau)===cr);
+    const l=tod.filter(b=>legsOf(b).some(x=>slotNorm(x.c)===cr));
     if(!l.length)return;
     h+='<div class="ghead" style="margin:6px -16px 0;padding-inline:16px"><span>'+esc(cr)+'</span><small>'+l.length+(capOf(cr)?' / '+capOf(cr)+(l.length>=capOf(cr)?' · Full':''):'')+'</small></div>'+fleetMini(t,cr);
     l.forEach(b=>{const c=S.clients[b.clientId]||{};
-      h+='<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(b.statut)+'</span><span class="r2">'+esc(b.tarifNom||'')+'</span></button><div class="r-side">'+(b.instructeurId?esc(staffName(b.instructeurId)):'<span class="pill st-none">To assign</span>')+'</div></div>';
+      h+='<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(b.statut)+'</span><span class="r2">'+esc(b.tarifNom||'')+(legsOf(b).length>1?' · '+esc(legWhere(legsOf(b).find(x=>slotNorm(x.c)===cr)||{}))+' <span class="legmini">'+esc(legLine(b))+'</span>':'')+'</span></button><div class="r-side">'+(b.instructeurId?esc(staffName(b.instructeurId)):'<span class="pill st-none">To assign</span>')+'</div></div>';
     });
   });
   $('#todayList').innerHTML=h||emptyBox('Nothing scheduled today','Add a booking with the button at the top.');
@@ -1163,7 +1196,7 @@ V.schedule={
 
 V.customers={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Customers</h1><p class="sub" id="cSub"></p></div><div class="toolbar">'+exBtns('cust')+'<button type="button" class="btn ghost" data-act="syncOpen" id="syncBtn">Sync check-ins</button><button type="button" class="btn ghost" data-act="importOpen" id="impBtn">Import CSV</button><button type="button" class="btn" data-act="newClient">+ New customer</button></div></div>'+
+  m.innerHTML='<div class="head"><div><h1>Customers</h1><p class="sub" id="cSub"></p></div><div class="toolbar">'+ddMenu('Import / Export',[{h:'Export customers',items:exItems('cust')},{h:'Import',items:[{act:'importOpen',id:'impBtn',label:'Import a CSV file'},{act:'syncOpen',id:'syncBtn',label:'Sync check-ins'}]}])+'<button type="button" class="btn" data-act="newClient">+ New customer</button></div></div>'+
  '<p class="hint" id="syncNote" style="margin:-6px 0 10px"></p>'+
    '<div class="toolbar"><input type="search" id="cQ" style="flex:1 1 240px;width:auto" placeholder="Name, phone, email, nationality" aria-label="Search customers"><label class="fld check" style="flex:none"><input type="checkbox" id="cToday"><span>Checked in today</span></label></div>'+
    '<div class="group" id="cList"></div>';
@@ -1193,7 +1226,7 @@ V.payments={
  shell(m){
   m.innerHTML='<div class="head"><div><h1>Payments</h1><p class="sub" id="payTotal"></p></div>'+
    '<div class="toolbar"><button type="button" class="btn" data-act="payAdd" id="payAdd">+ Add a dive or item</button><div class="seg" role="group" aria-label="View"><button type="button" data-act="tabPay" data-t="due" id="tbDue">To collect</button><button type="button" data-act="tabPay" data-t="fees" id="tbFees">Marine fees</button><button type="button" data-act="tabPay" data-t="hist" id="tbHist">History</button><button type="button" data-act="tabPay" data-t="exp" id="tbExp">Expenses</button></div></div></div>'+
-   '<div id="payTools" hidden>'+perBar()+'<div class="actions"><span class="hint" style="align-self:center">This period:</span>'+exBtns('pay')+'<button type="button" class="btn ghost" data-act="payXlsx">Excel (all history)</button><button type="button" class="btn ghost" data-act="paySheet">Google Sheet (all history)</button></div></div>'+
+   '<div id="payTools" hidden>'+perBar()+'<div class="actions"><span class="hint" style="align-self:center">This period:</span>'+ddMenu('Export',[{h:'This period',items:exItems('pay')},{h:'All history',items:[{act:'payXlsx',label:'Excel'},{act:'paySheet',label:'Google Sheet'}]}])+'</div></div>'+
    '<div class="group" id="payList"></div>';
   perBind(m,()=>V.payments.fill());
   $('#payAdd').hidden=!canWrite;
@@ -1279,7 +1312,7 @@ V.team={
 
 V.prices={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Prices 2026</h1><p class="sub">Prices fill in automatically on bookings.</p></div><div class="toolbar">'+exBtns('prices')+'<button type="button" class="btn ghost" data-act="tarifImportOpen" id="tImp">Import CSV</button><button type="button" class="btn" data-act="tarifNew" id="tNew">+ Price</button></div></div>'+
+  m.innerHTML='<div class="head"><div><h1>Prices 2026</h1><p class="sub">Prices fill in automatically on bookings.</p></div><div class="toolbar">'+ddMenu('Import / Export',[{h:'Export prices',items:exItems('prices')},{h:'Import',items:[{act:'tarifImportOpen',id:'tImp',label:'Import a CSV file'}]}])+'<button type="button" class="btn" data-act="tarifNew" id="tNew">+ Price</button></div></div>'+
    '<div id="tNote"></div><div id="tList" style="display:flex;flex-direction:column;gap:14px"></div>';
 
  },
@@ -1627,14 +1660,14 @@ function clientLabel(c){return c.nom+(c.tel?' · '+c.tel:(c.email?' · '+c.email
 /* ---- places per trip ---- */
 const CAP=()=>((S.config&&S.config.capacity)||{});
 function capOf(cr){const v=+CAP()[cr];return v>0?Math.round(v):0}
-function slotLoad(date,cr,exceptId){return Object.values(S.bookings).filter(b=>b.date===date&&slotNorm(b.creneau)===cr&&b.statut!=='Cancelled'&&b.id!==exceptId).length}
+function slotLoad(date,cr,exceptId){return Object.values(S.bookings).reduce((n,b)=>n+(b.date===date&&b.statut!=='Cancelled'&&b.id!==exceptId?legsOf(b).filter(l=>slotNorm(l.c)===cr).length:0),0)}
 function capHint(){const e=document.getElementById('f-cap');if(!e)return;const d=($('#f-date')||{}).value,cr=($('#f-creneau')||{}).value,cap=capOf(cr);
   if(!d||!cap){e.textContent='';e.className='hint full capinfo';return}
   const n=slotLoad(d,cr,MODAL.bookingId);
   e.className='hint full capinfo'+(n>=cap?' is-full':n>=Math.ceil(cap*0.8)?' is-near':'');
   e.textContent=n>=cap?'This trip is full: '+n+' of '+cap+' places booked.':(cap-n)+' of '+cap+' places left on this trip.'}
 function capStrip(act){const el=document.getElementById('pCap');if(!el)return;
-  const L=CRENEAUX.map(cr=>({cr,n:act.filter(b=>slotNorm(b.creneau)===cr).length,cap:capOf(cr)})).filter(x=>x.n||x.cap);
+  const L=CRENEAUX.map(cr=>({cr,n:act.reduce((m,b)=>m+legsOf(b).filter(l=>slotNorm(l.c)===cr).length,0),cap:capOf(cr)})).filter(x=>x.n||x.cap);
   if(!L.length||!L.some(x=>x.cap)){el.hidden=true;el.innerHTML='';return}
   el.hidden=false;el.innerHTML=L.map(x=>'<span class="capchip'+(x.cap&&x.n>=x.cap?' is-full':x.cap&&x.n>=Math.ceil(x.cap*0.8)?' is-near':'')+'"><b>'+esc(x.cr)+'</b> '+x.n+(x.cap?' / '+x.cap:'')+(x.cap&&x.n>=x.cap?' · Full':'')+'</span>').join('')}
 document.addEventListener('change',e=>{const t=e.target;if(!t)return;
@@ -1669,15 +1702,15 @@ const SPOTS=()=>{const f=FLEET();return f.boats.map(x=>({k:'b:'+x.id,type:'boat'
 const isPoolAct=b=>/pool|piscine|confined/i.test(String((b&&b.tarifNom)||'')+' '+String((b&&b.categorie)||''));
 function tripMap(date,cr,skipId){
   const sp=SPOTS().map(x=>Object.assign({},x,{list:[]})),by={};sp.forEach(x=>{by[x.k]=x});
-  const L=Object.values(S.bookings).filter(b=>b.date===date&&slotNorm(b.creneau)===cr&&b.statut!=='Cancelled'&&b.id!==skipId)
-    .sort((a,b)=>String(a.creeLe||'').localeCompare(String(b.creeLe||''))||String(a.id).localeCompare(String(b.id)));
+  const L=[];Object.values(S.bookings).forEach(b=>{if(b.date!==date||b.statut==='Cancelled'||b.id===skipId)return;const ls=legsOf(b);ls.forEach((l,i)=>{if(slotNorm(l.c)===cr)L.push(legView(b,l,i,ls.length))})});
+  L.sort((a,b)=>String(a.creeLe||'').localeCompare(String(b.creeLe||''))||String(a.id).localeCompare(String(b.id))||((a.__leg||0)-(b.__leg||0)));
   const none=[],auto=[];
   L.forEach(b=>{if(b.spot&&by[b.spot])by[b.spot].list.push(b);else auto.push(b)});
-  auto.forEach(b=>{const x=autoSpot(sp,b);if(x)x.list.push(b);else none.push(b)});
+  auto.forEach(b=>{const x=autoSpot(sp,b,b.__w);if(x)x.list.push(b);else none.push(b)});
   return{spots:sp,none:none};
 }
 function autoSpot(sp,b,w){const want=w==='pool'||w==='boat'?w:w==='sea'?'boat':(isPoolAct(b)?'pool':'boat');const c=sp.filter(x=>x.type===want);return c.find(x=>!x.cap||x.list.length<x.cap)||null}
-function autoPins(tm){const P=[];tm.spots.forEach(x=>x.list.forEach(b=>{if(b.spot!==x.k)P.push([b.id,x.k])}));return P}
+function autoPins(tm){const P=[];tm.spots.forEach(x=>x.list.forEach(b=>{if(b.spot!==x.k)P.push([b.id,x.k,b.__leg])}));return P}
 function spotName(k){const x=SPOTS().find(y=>y.k===k);return x?x.name:''}
 function spotOpts(date,cr,cur,skipId,type){const tm=tripMap(date,cr,skipId);
   return opt('','Automatic (first '+(type==='pool'?'pool':type==='boat'?'boat':'place')+' with space)',!cur)+tm.spots.filter(x=>!type||x.type===type).map(x=>{const left=x.cap?x.cap-x.list.length:null;return opt(x.k,(type?'':(x.type==='pool'?'Pool · ':'Boat · '))+x.name+(left===null?'':left>0?' ('+left+' left)':' (full)'),x.k===cur)}).join('')}
@@ -1690,6 +1723,9 @@ function spotHint(){const e=document.getElementById('f-spotinfo');if(!e)return;c
   const n=x.list.length;e.className='hint full capinfo'+(x.cap&&n>=x.cap?' is-full':x.cap&&n>=Math.ceil(x.cap*0.8)?' is-near':'');
   e.textContent=(sel.value?'':'Goes to ')+x.name+': '+(x.cap?(n>=x.cap?'full ('+n+' of '+x.cap+')':(x.cap-n)+' of '+x.cap+' places left'):n+' booked')+'.'}
 document.addEventListener('change',e=>{const t=e.target;if(!t||MODAL.kind!=='bk')return;
+  const lr=t.closest&&t.closest('#f-legs .leg');if(lr){MODAL.spotOk=false;legSync(lr);return}
+  if(t.id==='f-date')setTimeout(()=>document.querySelectorAll('#f-legs .leg').forEach(legSync),0);
+  if(t.id==='f-tarif')setTimeout(legSuggest,0);
   if(t.name==='f-where'){MODAL.whereManual=true;MODAL.spotOk=false;tripSync('where');return}
   if(t.id==='f-date'||t.id==='f-creneau'||t.id==='f-spot'){MODAL.spotOk=false;tripSync(t.id);return}
   if(t.id==='f-tarif'){MODAL.spotOk=false;if(!MODAL.whereManual&&!MODAL.bookingId){const r=document.querySelector('input[name="f-where"][value="'+(tripWhereFor(t.value)==='pool'?'pool':'sea')+'"]');if(r&&!r.checked){r.checked=true;tripSync('where');return}}spotHint()}});
@@ -1706,7 +1742,10 @@ function tripBlock(b,id,sites){const sp=SPOTS(),pools=sp.filter(x=>x.type==='poo
   if(pools.length)h+='<div class="fld full"><span>Where</span><div class="seg2" role="radiogroup" aria-label="Where"><label><input type="radio" name="f-where" value="sea"'+(w==='sea'?' checked':'')+'>'+SEA_SVG+'<span>Sea</span></label><label><input type="radio" name="f-where" value="pool"'+(w==='pool'?' checked':'')+'>'+POOL_SVG+'<span>Pool</span></label></div></div>';
   if(sp.length)h+='<label class="fld" id="f-spotwrap"'+(w==='sea'&&!boats.length?' hidden':'')+'><span id="f-spotlbl">'+(w==='pool'?'Pool':'Boat')+'</span><select id="f-spot">'+spotOpts(b.date,slotNorm(b.creneau),cur,id||'',w==='pool'?'pool':'boat')+'</select></label>';
   h+='<label class="fld" id="f-sitewrap"'+(w==='pool'?' hidden':'')+'>Dive site<select id="f-site">'+siteOpts(cur,b.site||'',sites)+'</select></label>';
-  return h+'<p class="hint full capinfo" id="f-spotinfo" aria-live="polite"></p>'}
+  h+='<p class="hint full capinfo" id="f-spotinfo" aria-live="polite"></p>';
+  h+='<div class="full legs" id="f-legs">'+(Array.isArray(b.steps)&&b.steps.length>1?b.steps.slice(1).map(legRow).join(''):'')+'</div>'+
+    '<div class="full legs-add"><button type="button" class="btn ghost sm" data-act="legAdd">+ Add another part of the day</button><span id="f-legsug"></span></div>';
+  return h}
 function tripAutoKey(d,cr,w){const tm=tripMap(d,cr,MODAL.bookingId),t=tarifs().list.find(x=>x.id===($('#f-tarif')||{}).value);const x=autoSpot(tm.spots,{tarifNom:t?t.nom:'',categorie:t?t.categorie:''},w);return x?x.k:''}
 function tripSync(why){const w=whereVal()||'sea',sel=document.getElementById('f-spot'),lbl=document.getElementById('f-spotlbl'),sw=document.getElementById('f-sitewrap'),pw=document.getElementById('f-spotwrap'),site=document.getElementById('f-site');
   const d=($('#f-date')||{}).value,cr=($('#f-creneau')||{}).value,typ=w==='pool'?'pool':'boat';
@@ -1714,7 +1753,7 @@ function tripSync(why){const w=whereVal()||'sea',sel=document.getElementById('f-
     if(pw)pw.hidden=!SPOTS().some(x=>x.type===typ)}
   if(sw)sw.hidden=w==='pool';
   if(site&&w!=='pool'){const k=(sel&&sel.value)||tripAutoKey(d,cr,w),cur=site.value;site.innerHTML=siteOpts(k,cur,cfg().sites.slice());site.value=cur;
-    if(!site.value&&k){const tm=tripMap(d,cr,MODAL.bookingId),x=tm.spots.find(y=>y.k===k),ts=x?tripSite(x.list):'',us=boatSites(k),sug=ts||(us.length===1?us[0]:'');if(sug)site.value=sug}}
+    if(!site.value&&k){const tm=tripMap(d,cr,MODAL.bookingId),x=tm.spots.find(y=>y.k===k),ts=x?tripSiteOf(d,cr,x):'',us=boatSites(k),sug=ts||(us.length===1?us[0]:'');if(sug)site.value=sug}}
   spotHint()}
 
 /* 3D drawings */
@@ -1769,37 +1808,41 @@ function fleetBoard(date){
         return '<button type="button" class="tripcard'+(full?' is-full':near?' is-near':'')+'" data-act="tripOpen" data-k="'+esc(x.k)+'" data-cr="'+esc(cr)+'" aria-label="'+esc(x.name+', '+n+(x.cap?' of '+x.cap:'')+' places, '+cr)+'">'+
           (x.type==='pool'?poolSVG(n,x.cap,full):boatSVG(n,x.cap,full))+
           '<span class="tc-meta"><span class="tc-name">'+esc(x.name)+'</span><span class="tc-n">'+n+(x.cap?' / '+x.cap:'')+'</span></span>'+
-          (x.type==='boat'?'<span class="tc-site'+(tripSite(x.list)?'':' none')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>'+esc(tripSite(x.list)||(x.list.some(b=>b.site)?'Several sites':(boatSites(x.k).length===1?boatSites(x.k)[0]+' (usual)':'No dive site yet')))+'</span>':'')+(function(){const I=Array.from(new Set(x.list.map(b=>b.instructeurId).filter(Boolean)));return I.length?'<span class="tc-inst">'+esc(I.map(i=>firstName(staffName(i))).join(', '))+'</span>':''})()+'<span class="tc-sub">'+(x.type==='pool'?'Pool':'Boat')+(full?' · Full':x.cap?' · '+(x.cap-n)+' left':'')+'</span></button>'}).join('')+'</div></div>'}).join('')}
+          (x.type==='boat'?'<span class="tc-site'+(tripSiteOf(date,cr,x)?'':' none')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>'+esc(tripSiteOf(date,cr,x)||(x.list.some(b=>b.site)?'Several sites':(boatSites(x.k).length===1?boatSites(x.k)[0]+' (usual)':'No dive site yet')))+'</span>':'')+(function(){const I=Array.from(new Set(x.list.map(b=>b.instructeurId).filter(Boolean)));return I.length?'<span class="tc-inst">'+esc(I.map(i=>firstName(staffName(i))).join(', '))+'</span>':''})()+'<span class="tc-sub">'+(x.type==='pool'?'Pool':'Boat')+(full?' · Full':x.cap?' · '+(x.cap-n)+' left':'')+'</span></button>'}).join('')+'</div></div>'}).join('')}
+function tripBulkUpdate(){const P=[...document.querySelectorAll('.trip-pick:checked')],bar=document.getElementById('tripBulk');if(!bar)return;MODAL.bulkOk=false;bar.hidden=!P.length;const n=document.getElementById('tbN');if(n)n.textContent=P.length+' selected';
+  document.querySelectorAll('[data-act=tripPickInst]').forEach(c=>{const all=[...document.querySelectorAll('.trip-pick')].filter(x=>x.dataset.i===c.dataset.i);c.setAttribute('aria-pressed',String(all.length>0&&all.every(x=>x.checked)))})}
+document.addEventListener('change',e=>{if(e.target&&e.target.classList&&e.target.classList.contains('trip-pick'))tripBulkUpdate()});
 function tripSite(L){const set=new Set(L.map(b=>String(b.site||'').trim()).filter(Boolean));return set.size===1?[...set][0]:''}
 function openTrip(k,cr){
   const date=ST.date,tm=tripMap(date,cr),x=k==='none'?null:tm.spots.find(y=>y.k===k),L=x?x.list:tm.none;
   MODAL={kind:'trip',k:k,cr:cr};
   const moveOpts=cur=>tm.spots.map(y=>opt(y.k,y.name+(y.cap?' '+y.list.length+'/'+y.cap:''),y.k===cur)).join('');
-  const cur=tripSite(L),mixed=!cur&&L.some(b=>b.site),sites=cfg().sites.slice();L.forEach(b=>{if(b.site&&!sites.includes(b.site))sites.push(b.site)});
+  const cur=x?tripSiteOf(date,cr,x):tripSite(L),mixed=!cur&&L.some(b=>b.site),sites=cfg().sites.slice();L.forEach(b=>{if(b.site&&!sites.includes(b.site))sites.push(b.site)});
   const byI={};L.forEach(b=>{const i=b.instructeurId||'';(byI[i]=byI[i]||[]).push(b)});
   const inst=Object.keys(byI).sort((p,q)=>p===''?1:q===''?-1:staffName(p).localeCompare(staffName(q),'en'));
   const isBoat=x&&x.type==='boat',full=x&&x.cap&&L.length>=x.cap;
   const head='<div class="trip-sum">'+
     '<div class="ts-top"><span class="hint">'+esc(fmtLong(date))+'</span><span class="ts-count'+(full?' is-full':'')+'">'+L.length+(x&&x.cap?' / '+x.cap:'')+'<small>'+(x?(x.type==='pool'?' in the pool':' on board'):' waiting')+'</small></span></div>'+
-    (isBoat?'<label class="fld">Dive site<select class="trip-site"'+(canWrite&&L.length?'':' disabled')+'>'+siteOpts(x.k,cur,sites,mixed?'Several sites (choose one for everyone)':'Choose a dive site')+'</select></label>':'')+
-    '<div><p class="ts-h">'+(inst.length===1&&inst[0]?'Instructor':'Instructors')+'</p><div class="ts-chips">'+(inst.length?inst.map(i=>'<span class="ts-chip'+(i?'':' warn')+'">'+(i?sFlag(i)+esc(staffName(i)):'No instructor yet')+' <b>'+byI[i].length+'</b></span>').join(''):'<span class="hint">Nobody yet</span>')+'</div></div></div>';
+    (isBoat?'<label class="fld">Dive site<select class="trip-site"'+(canWrite?'':' disabled')+'>'+siteOpts(x.k,cur,sites,mixed?'Several sites (choose one for everyone)':'Choose a dive site')+'</select></label>':'')+
+    '<div><p class="ts-h">'+(inst.length===1&&inst[0]?'Instructor':'Instructors')+'</p><div class="ts-chips">'+(inst.length?inst.map(i=>(canWrite&&L.length?'<button type="button" class="ts-chip'+(i?'':' warn')+'" data-act="tripPickInst" data-i="'+esc(i)+'" aria-pressed="false" title="Select all of this group">':'<span class="ts-chip'+(i?'':' warn')+'">')+(i?sFlag(i)+esc(staffName(i)):'No instructor yet')+' <b>'+byI[i].length+'</b>'+(canWrite&&L.length?'</button>':'</span>')).join(''):'<span class="hint">Nobody yet</span>')+'</div>'+(canWrite&&L.length>1?'<p class="hint" style="margin:6px 0 0">Tap an instructor to select their whole group.</p>':'')+'</div></div>';
   const rows=L.length?'<p class="ts-h" style="margin-top:4px">Customers</p><div class="trip-list">'+L.map(b=>{const c=S.clients[b.clientId]||{},t=c.tailles||{},here=x?x.k:'';
       const det=[c.niveau,t.bcd&&('BCD '+t.bcd),t.combi&&('Wetsuit '+t.combi),t.palmes&&('Fins '+t.palmes),t.plombs&&('Weights '+t.plombs)].filter(Boolean);
-      return '<div class="row trip-row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(b.statut)+'</span>'+
+      return '<div class="row trip-row" style="padding-inline:0">'+(canWrite?'<input type="checkbox" class="trip-pick" data-id="'+esc(b.id)+'" data-leg="'+(b.__leg==null?'':b.__leg)+'" data-i="'+esc(b.instructeurId||'')+'" aria-label="Select '+esc(c.nom||'customer')+'">':'')+'<button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(b.statut)+'</span>'+
         '<span class="r2">'+esc(b.tarifNom||'')+' · '+(b.instructeurId?esc(staffName(b.instructeurId)):'<span class="pill st-none">To assign</span>')+(isBoat&&b.site&&b.site!==cur?' · '+esc(b.site):'')+'</span>'+
         (det.length?'<span class="trip-det">'+det.map(v=>'<span>'+esc(v)+'</span>').join('')+'</span>':'')+'</button>'+
-        '<div class="r-side">'+(canWrite?'<select class="trip-move" data-id="'+esc(b.id)+'" aria-label="Move '+esc(c.nom||'customer')+'">'+(here?'':'<option value="" selected>Place…</option>')+moveOpts(here)+'</select>':'')+'</div></div>'}).join('')+'</div>'
+        '<div class="r-side">'+(canWrite?'<select class="trip-move" data-id="'+esc(b.id)+'" data-leg="'+(b.__leg==null?'':b.__leg)+'" aria-label="Move '+esc(c.nom||'customer')+'">'+(here?'':'<option value="" selected>Place…</option>')+moveOpts(here)+'</select>':'')+'</div></div>'}).join('')+'</div>'
     :emptyBox('Nobody here yet','Bookings for this trip appear here.');
-  openModal((x?x.name:'Without a place')+' · '+cr, head+rows+'<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Close</button></div>');
+  const bulk=canWrite&&L.length?'<div class="trip-bulk" id="tripBulk" hidden><span id="tbN"></span><select id="tbTo" aria-label="Move the selected customers to">'+tm.spots.filter(y=>!x||y.k!==x.k).map(y=>opt(y.k,(y.type==='pool'?'Pool · ':'Boat · ')+y.name+(y.cap?' '+y.list.length+'/'+y.cap:''))).join('')+'</select><button type="button" class="btn sm" data-act="tripBulkMove">Move</button></div>':'';
+  openModal((x?x.name:'Without a place')+' · '+cr, head+rows+bulk+'<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Close</button></div>');
 }
 document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('trip-site')||MODAL.kind!=='trip')return;
   const v=t.value;if(!v)return;const k=MODAL.k,cr=MODAL.cr,tm=tripMap(ST.date,cr),x=tm.spots.find(y=>y.k===k);if(!x)return;
   const pins=autoPins(tm);
-  const ok=await W(async()=>{for(const p of pins)await col('bookings').doc(p[0]).update({spot:p[1]});for(const b of x.list)if(b.site!==v)await col('bookings').doc(b.id).update({site:v})},x.name+' goes to '+v);
+  const ok=await W(async()=>{await col('trips').doc(tripKey(ST.date,cr,k)).set({date:ST.date,cr:cr,k:k,site:v});for(const p of pins)await setLeg(p[0],p[2],{spot:p[1]});for(const b of x.list)if(b.site!==v)await setLeg(b.id,b.__leg,{site:v})},x.name+' goes to '+v);
   if(ok)setTimeout(()=>{if(MODAL.kind==='trip')openTrip(k,cr)},250)});
 document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('trip-move')||MODAL.kind!=='trip')return;
-  const id=t.dataset.id,v=t.value;if(!v)return;const k=MODAL.k,cr=MODAL.cr;const pins=autoPins(tripMap(ST.date,cr)).filter(p=>p[0]!==id);
-  const ok=await W(async()=>{for(const p of pins)await col('bookings').doc(p[0]).update({spot:p[1]});await col('bookings').doc(id).update({spot:v})},'Moved to '+spotName(v));
+  const id=t.dataset.id,leg=t.dataset.leg,v=t.value;if(!v)return;const k=MODAL.k,cr=MODAL.cr;const pins=autoPins(tripMap(ST.date,cr)).filter(p=>p[0]!==id);
+  const ok=await W(async()=>{for(const p of pins)await setLeg(p[0],p[2],{spot:p[1]});await setLeg(id,leg,{spot:v})},'Moved to '+spotName(v));
   if(ok){setTimeout(()=>{if(MODAL.kind==='trip')openTrip(k,cr)},250)}});
 function fleetMini(date,cr){const sp=SPOTS();if(!sp.length)return '';const tm=tripMap(date,cr);
   return '<span class="fleet-mini">'+tm.spots.filter(x=>x.list.length).map(x=>esc(x.name)+' '+x.list.length+(x.cap?'/'+x.cap:'')).join(' · ')+(tm.none.length?' · <b>'+tm.none.length+' without a place</b>':'')+'</span>'}
@@ -1816,6 +1859,43 @@ function fleetFill(){const c=document.getElementById('fleetCard');if(!c)return;i
   document.getElementById('flBoats').innerHTML=f.boats.map(x=>fleetRow('boat',x.id,x.name,x.seats,x.sites)).join('')||'<p class="hint fl-empty">No boat yet.</p>';
   document.getElementById('flPools').innerHTML=f.pools.map(x=>fleetRow('pool',x.id,x.name,x.places)).join('')||'<p class="hint fl-empty">No pool yet.</p>';flBoatSites()}
 function fleetRow(t,id,name,cap,bs){const row='<div class="fl-row" data-t="'+t+'" data-id="'+esc(id)+'"><span class="fl-ic" aria-hidden="true">'+(t==='pool'?'<svg viewBox="0 0 24 24"><path d="M3 17c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M3 21c1.5 0 1.5-1 3-1s1.5 1 3 1 1.5-1 3-1 1.5 1 3 1 1.5-1 3-1 1.5 1 3 1M8 14V5a2 2 0 0 1 4 0M16 14V5a2 2 0 0 0-4 0M8 8h8M8 11h8"/></svg>':'<svg viewBox="0 0 24 24"><path d="M3 15h18l-3 4H6zM6 15V9h7l3 6M9 9V5M9 5l4 2-4 2"/></svg>')+'</span><input class="fl-name" maxlength="40" value="'+esc(name||'')+'" placeholder="'+(t==='pool'?'Pool name':'Boat name')+'" aria-label="'+(t==='pool'?'Pool name':'Boat name')+'"><input class="fl-cap" type="number" min="1" max="200" step="1" inputmode="numeric" value="'+esc(cap||'')+'" placeholder="Places" aria-label="Places"><button type="button" class="fl-del" data-act="flDel" aria-label="Remove '+esc(name||(t==='pool'?'pool':'boat'))+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';return t==='boat'?'<div class="fl-boat" data-sites="'+esc(JSON.stringify(Array.isArray(bs)?bs:[]))+'">'+row+'<div class="fl-bsites"></div></div>':row}
+/* ---- day plan: one booking, several parts of the day ---- */
+function legsOf(b){if(b&&Array.isArray(b.steps)&&b.steps.length>1)return b.steps.map(x=>({c:x.c||b.creneau,w:x.w||'',spot:x.spot||'',site:x.site||''}));return[{c:b.creneau,w:'',spot:(b&&b.spot)||'',site:(b&&b.site)||''}]}
+function legView(b,l,i,n){return Object.assign({},b,{creneau:l.c,spot:l.spot,site:l.site,__leg:n>1?i:null,__w:l.w})}
+function tripKey(date,cr,k){return 't_'+date+'_'+String(cr||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'_'+String(k||'').replace(/[^a-z0-9]+/gi,'-')}
+function tripSiteOf(date,cr,x){const d=(S.trips||{})[tripKey(date,cr,x.k)];return (d&&d.site)||tripSite(x.list)}
+async function setLeg(id,leg,patch){if(leg==null||leg===''){await col('bookings').doc(id).update(patch);return}const b=S.bookings[id];if(!b)return;
+  const st=legsOf(b).map(x=>Object.assign({},x)),i=+leg;st[i]=Object.assign({},st[i],patch);await col('bookings').doc(id).update(Object.assign({steps:st},i===0?patch:{}))}
+function legWhere(l){return l.w==='pool'||String(l.spot||'').indexOf('p:')===0?'Pool':'Sea'}
+function legLine(b){const L=legsOf(b);if(L.length<2)return '';return L.map(l=>{const nm=l.spot?spotName(l.spot):'';return slotTime(slotNorm(l.c))+' '+legWhere(l)+(nm&&nm!=='Pool'?' ('+nm+')':'')}).join(' → ')}
+let LEG_N=0;
+const X_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+function legRow(l){const n=++LEG_N,sp=SPOTS(),pools=sp.some(x=>x.type==='pool'),w=l.w||(String(l.spot||'').indexOf('p:')===0?'pool':'sea');
+  return '<div class="leg" data-n="'+n+'"><div class="leg-h"><span class="leg-t">Then</span><button type="button" class="fl-del" data-act="legDel" aria-label="Remove this part of the day">'+X_SVG+'</button></div><div class="gf">'+
+    '<label class="fld">Trip time<select class="leg-c">'+CRENEAUX.map(x=>opt(x,x,x===slotNorm(l.c))).join('')+'</select></label>'+
+    (pools?'<div class="fld"><span>Where</span><div class="seg2 sm" role="radiogroup" aria-label="Where"><label><input type="radio" name="leg-w-'+n+'" value="sea"'+(w==='sea'?' checked':'')+'>'+SEA_SVG+'<span>Sea</span></label><label><input type="radio" name="leg-w-'+n+'" value="pool"'+(w==='pool'?' checked':'')+'>'+POOL_SVG+'<span>Pool</span></label></div></div>':'')+
+    (sp.length?'<label class="fld leg-spotw"><span class="leg-sl">'+(w==='pool'?'Pool':'Boat')+'</span><select class="leg-spot" data-cur="'+esc(l.spot||'')+'"></select></label>':'')+
+    '<label class="fld leg-sitew"'+(w==='pool'?' hidden':'')+'>Dive site<select class="leg-site" data-cur="'+esc(l.site||'')+'"></select></label>'+
+    '<p class="hint full capinfo leg-info" aria-live="polite"></p></div></div>'}
+function legW(row){const r=row.querySelector('input[type=radio]:checked');return r?r.value:'sea'}
+function legSync(row){const w=legW(row),typ=w==='pool'?'pool':'boat',d=($('#f-date')||{}).value,c=row.querySelector('.leg-c').value,sel=row.querySelector('.leg-spot'),site=row.querySelector('.leg-site'),sw=row.querySelector('.leg-sitew'),sl=row.querySelector('.leg-sl'),pw=row.querySelector('.leg-spotw');
+  if(sel){const cur=sel.options.length?sel.value:(sel.dataset.cur||'');const keep=cur&&((typ==='pool')===(cur.indexOf('p:')===0))?cur:'';sel.innerHTML=spotOpts(d,c,keep,MODAL.bookingId,typ);sel.value=keep;if(sl)sl.textContent=typ==='pool'?'Pool':'Boat';if(pw)pw.hidden=!SPOTS().some(x=>x.type===typ)}
+  if(sw)sw.hidden=w==='pool';
+  if(site&&w!=='pool'){const k=(sel&&sel.value)||tripAutoKey(d,c,w),cur=site.options.length?site.value:(site.dataset.cur||'');site.innerHTML=siteOpts(k,cur,cfg().sites.slice());site.value=cur;
+    if(!site.value&&k){const tm=tripMap(d,c,MODAL.bookingId),x=tm.spots.find(y=>y.k===k),ts=x?tripSiteOf(d,c,x):'',us=boatSites(k),sug=ts||(us.length===1?us[0]:'');if(sug)site.value=sug}}
+  legHint(row)}
+function legHint(row){const e=row.querySelector('.leg-info');if(!e)return;const sel=row.querySelector('.leg-spot');if(!sel){e.textContent='';return}
+  const d=($('#f-date')||{}).value,c=row.querySelector('.leg-c').value,w=legW(row),tm=tripMap(d,c,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value);
+  if(!x){x=autoSpot(tm.spots,{},w);if(!x){const has=tm.spots.some(y=>y.type===(w==='pool'?'pool':'boat'));e.className='hint full capinfo leg-info'+(has?' is-full':'');e.textContent=has?'No free place left: every '+(w==='pool'?'pool':'boat')+' is full.':'';return}}
+  const n=x.list.length;e.className='hint full capinfo leg-info'+(x.cap&&n>=x.cap?' is-full':x.cap&&n>=Math.ceil(x.cap*0.8)?' is-near':'');
+  e.textContent=(sel.value?'':'Goes to ')+x.name+': '+(x.cap?(n>=x.cap?'full ('+n+' of '+x.cap+')':(x.cap-n)+' of '+x.cap+' places left'):n+' booked')+'.'}
+function legSuggest(){const e=document.getElementById('f-legsug');if(!e)return;const sp=SPOTS(),t=tarifs().list.find(x=>x.id===($('#f-tarif')||{}).value);
+  const ok=sp.some(x=>x.type==='pool')&&sp.some(x=>x.type==='boat')&&t&&/discover|try|intro|bapt|dsd|scuba diver|open water|refresh|tune|bubble/i.test(String(t.nom)+' '+String(t.categorie||''))&&!document.querySelector('#f-legs .leg');
+  e.innerHTML=ok?'<button type="button" class="legsug" data-act="legSuggest">'+POOL_SVG+'<span>Pool first, then sea</span>'+SEA_SVG+'</button>':''}
+function legNextDefaults(){const rows=[...document.querySelectorAll('#f-legs .leg')],last=rows.length?rows[rows.length-1]:null;
+  const lc=last?last.querySelector('.leg-c').value:(($('#f-creneau')||{}).value||CRENEAUX[0]),lw=last?legW(last):(whereVal()||'sea');
+  const i=CRENEAUX.indexOf(lc);return{c:CRENEAUX[Math.min(CRENEAUX.length-1,i+1)]||lc,w:SPOTS().some(x=>x.type==='pool')?(lw==='pool'?'sea':'pool'):'sea'}}
+function legAddRow(l){const box=document.getElementById('f-legs');if(!box)return;box.insertAdjacentHTML('beforeend',legRow(l));legSync(box.lastElementChild);legSuggest()}
 function openBooking(id,draft){
   if(!canWrite){toast('You have read-only access.','bad');return}
   const old=id?S.bookings[id]:null;
@@ -1854,7 +1934,7 @@ function openBooking(id,draft){
    '<div class="sum" id="f-sum"></div><div class="err" id="f-err" role="alert"></div>'+
    '<div class="actions">'+(id?(bkLocked(id)?'<span class="hint push">🔒 Paid: protected</span>':'<button type="button" class="btn danger push" data-act="delBk">Delete</button>')+'<button type="button" class="btn ghost" data-act="payBooking" data-id="'+esc(id)+'">Collect</button>':'')+
    '<button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="saveBk" id="f-save">Save</button></div>');
-  const body=$('#mBody');MODAL.whereManual=!!b.spot;capHint();tripSync('open');
+  const body=$('#mBody');MODAL.whereManual=!!b.spot;capHint();tripSync('open');document.querySelectorAll('#f-legs .leg').forEach(legSync);legSuggest();
   body.oninput=body.onchange=e=>{
     if(e.target.id==='f-client'){if(e.type==='input'){MODAL.clientId='';selClientHint();renderPick()}return}
     if(e.target.id==='f-tarif'){const t=tarifs().list.find(x=>x.id===e.target.value);if(t){$('#f-prix').value=t.prix}}
@@ -1890,15 +1970,25 @@ async function saveBk(){
   if(!r.date){err.textContent='Enter the date.';return}
   err.textContent='';
  {const cap=capOf(r.creneau),was=MODAL.bookingId&&S.bookings[MODAL.bookingId],same=was&&was.date===r.date&&slotNorm(was.creneau)===r.creneau&&was.statut!=='Cancelled';if(cap&&!same&&r.statut!=='Cancelled'){const n=slotLoad(r.date,r.creneau,MODAL.bookingId);if(n>=cap&&!MODAL.capOk){MODAL.capOk=true;err.textContent='This trip is full ('+n+' of '+cap+' places). Press Save again to add this booking anyway.';return}}}
- {const sel=$('#f-spot'),w=whereVal(),want=w==='pool'?'pool':w==='sea'?'boat':'';r.spot='';if(sel&&SPOTS().length){const tm=tripMap(r.date,r.creneau,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value)||null;if(!x&&r.statut!=='Cancelled')x=autoSpot(tm.spots,r,want);const typ=want||(isPoolAct(r)?'pool':'boat'),has=tm.spots.some(y=>y.type===typ);if(r.statut!=='Cancelled'&&!MODAL.spotOk){if(!x&&has){MODAL.spotOk=true;err.textContent=(typ==='pool'?'Every pool':'Every boat')+' is full on this trip. Press Save again to add this booking without a place.';return}if(x&&x.cap&&x.list.length>=x.cap){MODAL.spotOk=true;err.textContent=x.name+' is full ('+x.list.length+' of '+x.cap+'). Press Save again to add this booking anyway.';return}}MODAL.pins=r.statut!=='Cancelled'?autoPins(tm):[];r.spot=x?x.k:''}if(w==='pool')r.site='';else if(!r.site&&r.spot){const o=Object.values(S.bookings).find(b=>b.id!==MODAL.bookingId&&b.date===r.date&&slotNorm(b.creneau)===r.creneau&&b.spot===r.spot&&b.site);if(o)r.site=o.site;else{const us=boatSites(r.spot);if(us.length===1)r.site=us[0]}}}
+ {const sel=$('#f-spot'),w=whereVal(),want=w==='pool'?'pool':w==='sea'?'boat':'';r.spot='';if(sel&&SPOTS().length){const tm=tripMap(r.date,r.creneau,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value)||null;if(!x&&r.statut!=='Cancelled')x=autoSpot(tm.spots,r,want);const typ=want||(isPoolAct(r)?'pool':'boat'),has=tm.spots.some(y=>y.type===typ);if(r.statut!=='Cancelled'&&!MODAL.spotOk){if(!x&&has){MODAL.spotOk=true;err.textContent=(typ==='pool'?'Every pool':'Every boat')+' is full on this trip. Press Save again to add this booking without a place.';return}if(x&&x.cap&&x.list.length>=x.cap){MODAL.spotOk=true;err.textContent=x.name+' is full ('+x.list.length+' of '+x.cap+'). Press Save again to add this booking anyway.';return}}MODAL.pins=r.statut!=='Cancelled'?autoPins(tm):[];r.spot=x?x.k:''}if(w==='pool')r.site='';else if(!r.site&&r.spot){const td=(S.trips||{})[tripKey(r.date,r.creneau,r.spot)];if(td&&td.site)r.site=td.site;else{const o=Object.values(S.bookings).find(b=>b.id!==MODAL.bookingId&&b.date===r.date&&slotNorm(b.creneau)===r.creneau&&b.spot===r.spot&&b.site);if(o)r.site=o.site;else{const us=boatSites(r.spot);if(us.length===1)r.site=us[0]}}}
+ const legRows=[...document.querySelectorAll('#f-legs .leg')];r.steps=[];
+ if(legRows.length){const steps=[{c:r.creneau,w:w||(String(r.spot).indexOf('p:')===0?'pool':'sea'),spot:r.spot||'',site:r.site||''}],seen=new Set([r.creneau]);
+  for(const row of legRows){const c=row.querySelector('.leg-c').value,lw=legW(row);if(seen.has(c)){err.textContent='Two parts of the day are at '+c+'. Choose another time.';return}seen.add(c);
+   const tm2=tripMap(r.date,c,MODAL.bookingId),sel2=row.querySelector('.leg-spot');let x2=sel2?tm2.spots.find(y=>y.k===sel2.value)||null:null;if(!x2&&r.statut!=='Cancelled')x2=autoSpot(tm2.spots,r,lw);
+   const typ2=lw==='pool'?'pool':'boat',has2=tm2.spots.some(y=>y.type===typ2);
+   if(r.statut!=='Cancelled'&&!MODAL.spotOk){if(!x2&&has2){MODAL.spotOk=true;err.textContent='At '+c+', every '+typ2+' is full. Press Save again to add it without a place.';return}if(x2&&x2.cap&&x2.list.length>=x2.cap){MODAL.spotOk=true;err.textContent='At '+c+', '+x2.name+' is full ('+x2.list.length+' of '+x2.cap+'). Press Save again to add it anyway.';return}}
+   if(r.statut!=='Cancelled')MODAL.pins=(MODAL.pins||[]).concat(autoPins(tm2));
+   let st2='';if(lw!=='pool'){const ss=row.querySelector('.leg-site');st2=ss?ss.value:'';if(!st2&&x2){const td2=(S.trips||{})[tripKey(r.date,c,x2.k)];st2=(td2&&td2.site)||tripSite(x2.list)||(boatSites(x2.k).length===1?boatSites(x2.k)[0]:'')}}
+   steps.push({c:c,w:lw,spot:x2?x2.k:'',site:st2})}
+  steps.sort((p,q)=>CRENEAUX.indexOf(slotNorm(p.c))-CRENEAUX.indexOf(slotNorm(q.c)));r.steps=steps;r.creneau=steps[0].c;r.spot=steps[0].spot;r.site=steps[0].site}}
   const id=MODAL.bookingId,old=id?S.bookings[id]:null,cl=S.clients[r.clientId];
   if(cfg().lockPay&&old&&old.fraisPaye){r.feeOn=true;r.feePaid=true}
   const d={clientId:r.clientId,date:r.date,creneau:r.creneau,tarifId:r.tarifId,tarifNom:r.tarifNom||'',categorie:r.categorie||'',plongees:r.plongees||0,
     prixUnit:r.prixUnit,feeUnit:feeUnitOf(r.tarifId),qte:r.qte,remise:r.remise,frais:r.feeOn?feeFor(cl):0,fraisPaye:!!r.feePaid,fraisPayeLe:r.feePaid?((old&&old.fraisPaye&&old.fraisPayeLe)||today()):'',fraisPayePar:r.feePaid?((old&&old.fraisPaye&&old.fraisPayePar)||whoAmI()):'',site:r.site,instructeurId:r.instructeurId,agent:r.agent,statut:r.statut,notes:r.notes,spot:r.spot||'',
-    creeLe:(old&&old.creeLe)||today()};
+    creeLe:(old&&old.creeLe)||today(),steps:r.steps||[]};
   $('#f-save').disabled=true;
   const fromPay=!!MODAL.fromPay;let nid=id;
-  const pins=(MODAL.pins||[]).filter(p=>p[0]!==id);const ok=await W(async()=>{for(const p of pins)await col('bookings').doc(p[0]).update({spot:p[1]});const ref=id?col('bookings').doc(id):col('bookings').doc();nid=ref.id;await ref.set(d)},'Booking saved');
+  const pins=(MODAL.pins||[]).filter(p=>p[0]!==id);const ok=await W(async()=>{for(const p of pins)await setLeg(p[0],p[2],{spot:p[1]});const ref=id?col('bookings').doc(id):col('bookings').doc();nid=ref.id;await ref.set(d)},'Booking saved');
   if(ok){closeModal();if(fromPay&&nid)setTimeout(()=>{if(S.bookings[nid])openPay(nid)},500)}else{const b=$('#f-save');if(b)b.disabled=false}
 }
 
@@ -2394,7 +2484,7 @@ function stmtFill(){
    '<div class="chips" style="margin:4px 0 10px"><span class="pill st-confirmed">'+pl(co.length?sum(co,x=>x.qty):0,'course')+' · '+fmt(sum(co,x=>x.comm))+' '+CUR()+'</span><span class="pill st-completed">'+pl(sum(fu,x=>x.qty),'fun dive')+' · '+fmt(sum(fu,x=>x.comm))+' '+CUR()+'</span><span class="pill st-pending"><b>'+(poolCfg().on&&S.staff[ST.stmtId].payMode!=='commission'?'Individual (ref.) ':'Total ')+fmt(sum(ok,x=>x.comm))+' '+CUR()+'</b></span>'+(poolCfg().on&&S.staff[ST.stmtId].payMode!=='commission'?'<span class="pill st-completed"><b>Pool share '+fmt(((poolCalc(m).rows.find(x=>x.id===ST.stmtId))||{amt:0}).amt)+' '+CUR()+'</b></span>':'')+'</div>'+
    (L.length?'<div class="tablewrap"><table><thead><tr><th>Date</th><th>Activity</th><th class="n">Qty</th><th class="n">Commission</th><th></th></tr></thead><tbody>'+L.map(x=>'<tr><td>'+esc(fmtShort(x.date))+'</td><td>'+esc(x.activity)+'<div class="hint">'+esc(x.who)+(x.decl?' · declared':'')+'</div></td><td class="n">'+x.qty+(x.type==='Fun dive'?' dives':'')+'</td><td class="n">'+(x.status==='Counted'?fmt(x.comm):'<span class="hint">'+fmt(x.comm)+'</span>')+'</td><td>'+(x.status==='Counted'?(x.decl&&canEdit?'<button type="button" class="btn ghost sm" data-act="declDel" data-id="'+esc(x.id)+'">✕</button>':''):(canEdit?'<button type="button" class="btn sm" data-act="declOk" data-id="'+esc(x.id)+'">Approve</button> <button type="button" class="btn ghost sm" data-act="declNo" data-id="'+esc(x.id)+'">Reject</button>':'<span class="pill st-pending">Pending</span>'))+'</td></tr>').join('')+'</tbody></table></div>':emptyBox('Nothing this month','No confirmed bookings or declared activities for this instructor.'))+
    '<p class="hint">Pending activities were declared by the instructor and are not counted until a manager approves them.</p>'+
-   '<div class="actions" style="flex-wrap:wrap"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button><button type="button" class="btn ghost" data-act="stmtXlsx">Excel (this instructor)</button><button type="button" class="btn ghost" data-act="payrollXlsx">Excel (everyone)</button><button type="button" class="btn ghost" data-act="stmtSheet">Google Sheet (this instructor)</button><button type="button" class="btn ghost" data-act="payrollSheet">Google Sheet (everyone)</button></div>';
+   '<div class="actions" style="flex-wrap:wrap"><button type="button" class="btn" data-act="declNew">+ Declare an activity</button>'+ddMenu('Export',[{h:'This instructor',items:[{act:'stmtXlsx',label:'Excel'},{act:'stmtSheet',label:'Google Sheet'}]},{h:'Everyone',items:[{act:'payrollXlsx',label:'Excel'},{act:'payrollSheet',label:'Google Sheet'}]}])+'</div>';
   $('#stmtSel').onchange=e=>{ST.stmtId=e.target.value;stmtFill()};
 }
 function openDecl(){
@@ -2463,6 +2553,15 @@ function openTarif(id){
 const armed=(t,label)=>{if(t.dataset.arm==='1')return true;t.dataset.arm='1';t.dataset.label=t.textContent;t.textContent=label||'Confirm deletion';setTimeout(()=>{if(t.isConnected){t.dataset.arm='';t.textContent=t.dataset.label}},4000);return false};
 const ACT={
  go(t){go(t.dataset.v)},
+ tripPickInst(t){const all=[...document.querySelectorAll('.trip-pick')].filter(x=>x.dataset.i===t.dataset.i);const on=!all.every(x=>x.checked);all.forEach(x=>{x.checked=on});tripBulkUpdate()},
+ async tripBulkMove(t){const P=[...document.querySelectorAll('.trip-pick:checked')],to=(document.getElementById('tbTo')||{}).value;if(!P.length||!to)return;const k=MODAL.k,cr=MODAL.cr,tm=tripMap(ST.date,cr),dest=tm.spots.find(y=>y.k===to);
+   if(dest&&dest.cap&&dest.list.length+P.length>dest.cap&&!MODAL.bulkOk){MODAL.bulkOk=true;toast(dest.name+' would have '+(dest.list.length+P.length)+' of '+dest.cap+' places. Tap Move again to move them anyway.','bad');return}
+   const ids=new Set(P.map(x=>x.dataset.id+'|'+x.dataset.leg)),pins=autoPins(tm).filter(p=>!ids.has(p[0]+'|'+(p[2]==null?'':p[2])));t.disabled=true;
+   const ok=await W(async()=>{for(const p of pins)await setLeg(p[0],p[2],{spot:p[1]});for(const x of P)await setLeg(x.dataset.id,x.dataset.leg,{spot:to})},pl(P.length,'customer')+' moved to '+spotName(to));
+   t.disabled=false;if(ok)setTimeout(()=>{if(MODAL.kind==='trip')openTrip(k,cr)},250)},
+ legAdd(){legAddRow(Object.assign({spot:'',site:''},legNextDefaults()))},
+ legDel(t){const r=t.closest('.leg');if(r)r.remove();legSuggest()},
+ legSuggest(){const r=document.querySelector('#mBody input[name="f-where"][value=pool]');if(r&&!r.checked){r.checked=true;MODAL.whereManual=true;tripSync('where')}const i=CRENEAUX.indexOf(($('#f-creneau')||{}).value);legAddRow({c:CRENEAUX[Math.min(CRENEAUX.length-1,i+1)],w:'sea',spot:'',site:''})},
  slotAdd(){const box=document.getElementById('slotList');box.insertAdjacentHTML('beforeend',slotRow(''));const i=box.lastElementChild.querySelector('.fl-name');if(i)i.focus()},
  slotDel(t){const r=t.closest('.sl-row');if(r)r.remove()},
  async slotSave(){const rows=[...document.querySelectorAll('#slotList .sl-row')];const L=[],seen=new Set(),alias=Object.assign({},(S.config&&S.config.slotAlias)||{});
@@ -3805,7 +3904,7 @@ if('serviceWorker' in navigator&&location.protocol==='https:'&&window.DD_STANDAL
   try{const me=await u.me();ME.name=me.name||''}catch(e){}
   ME.level=canEdit?'Manager':(window.__role==='instructor'?'Instructor':(canWrite?'Staff':'Read-only'));
   openApp();
-  ['clients','bookings','payments','expenses','staff','tarifs','gear','gearLog','declarations','leaves','removed'].forEach(n=>{
+  ['clients','bookings','payments','expenses','staff','tarifs','gear','gearLog','declarations','leaves','removed','trips'].forEach(n=>{
     col(n).onSnapshot(snap=>{const o={};snap.docs.forEach(x=>{o[x.id]=Object.assign({},x.data(),{id:x.id})});S[n]=o;LOADED[n]=true;schedule()},err=>{console.error(n,err);if(err&&err.code==='revoked')showGate('Access removed','Your access to this workspace was withdrawn. Reload the page or ask the manager.')});
   });
   const t0=setInterval(()=>{if(LOADED.clients){clearInterval(t0);autoSync()}},500);
