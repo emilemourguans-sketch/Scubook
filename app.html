@@ -484,6 +484,22 @@ main{gap:20px;padding-block:28px 56px}
 @media(max-width:900px){.actgrid{grid-template-columns:1fr;justify-items:center}.alg{width:100%}.bars{width:100%}}
 #demoBar{background:#fff!important;color:var(--ink)!important;border-bottom:1px solid var(--line);font-weight:500!important;font-size:.85rem!important}
 #demoBar a{background:var(--ink)!important;color:#fff!important}
+.gpm{display:grid;gap:10px}
+.gpm-h{margin:4px 0 10px!important;font-size:13px;font-weight:600;letter-spacing:.02em;color:rgba(255,255,255,.6);text-align:center}
+.gpm-pp{display:flex;align-items:center;justify-content:center;width:100%;height:50px;border:0;border-radius:99px;background:#FFC439;cursor:pointer;transition:filter .2s,transform .15s}
+.gpm-pp:hover{filter:brightness(.95)}.gpm-pp:active{transform:scale(.98)}.gpm-pp img{height:24px;width:auto;display:block}
+.gpm-pp:focus-visible{outline:3px solid #8AD9E3;outline-offset:3px}
+.gor{display:flex;align-items:center;gap:12px;margin:4px 0;color:rgba(255,255,255,.5);font-size:13px}.gor::before,.gor::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.14)}
+@media(prefers-reduced-motion:reduce){.gpm-pp{transition:none}.gpm-pp:active{transform:none}}
+.gpm-apple{display:block;width:100%;height:50px;border:0;border-radius:99px;cursor:pointer;-webkit-appearance:-apple-pay-button;-apple-pay-button-type:plain;-apple-pay-button-style:black;box-shadow:0 0 0 1px rgba(255,255,255,.22)}
+.gpm-g{height:50px;border-radius:25px;overflow:hidden}.gpm-g>div,.gpm-g button{width:100%!important;height:50px!important}
+.gpm-wallet{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;border:0;border-radius:99px;background:#fff;color:#0A2540;font:700 16px var(--f-body);letter-spacing:-.005em;cursor:pointer;transition:transform .15s,background .2s}
+.gpm-wallet:hover{background:#EEF2F6}.gpm-wallet:active{transform:scale(.98)}
+.gpm-wallet:focus-visible,.gpm-apple:focus-visible{outline:3px solid #8AD9E3;outline-offset:3px}
+#gate #ddLogin .gpm-card svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-right:8px;flex:none}
+.gpm-more{justify-self:center;margin-top:2px}
+.gpm [disabled]{opacity:.6;cursor:progress}
+@media(prefers-reduced-motion:reduce){.gpm-wallet{transition:none}.gpm-wallet:active{transform:none}}
 /* phone bottom menu: pinned, own compositing layer, no blur (iOS Safari moves blurred fixed bars while scrolling) */
 @media(max-width:760px){
   #nav.tabs{position:fixed;top:auto;bottom:0;left:0;right:0;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);-webkit-backface-visibility:hidden;backface-visibility:hidden;background:var(--navy);-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -1106,7 +1122,7 @@ V.payments={
     const L=Object.values(S.bookings).map(b=>({b,k:calc(b)})).filter(x=>x.k.due>0).sort((a,b)=>a.b.date<b.b.date?-1:1);
     $('#payTotal').innerHTML=L.length?'<span class="due">'+pl(L.length,'open balance')+' · '+fmt(sum(L,x=>x.k.due))+' '+CUR()+' to collect</span>':'<span class="paid">✓ No open balances: everything is collected</span>';
     $('#payList').innerHTML=L.length?L.map((x,i)=>{const c=S.clients[x.b.clientId]||{};
-      return '<div class="row '+(x.k.paid>0?'rpart':'rdue')+'" style="'+(i===0?'border-top:0':'')+'"><button type="button" class="row-main" data-act="payBooking" data-id="'+esc(x.b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(x.b.statut)+'</span><span class="r2">'+esc(x.b.tarifNom||'')+' · '+esc(fmtShort(x.b.date))+'</span><span class="hint">Total '+fmt(x.k.total)+' · paid '+fmt(x.k.paid)+'</span></button><div class="r-side"><span class="due" style="font-size:1.02rem">'+fmt(x.k.due)+'</span><br><span class="btn sm" style="margin-top:6px">Collect</span></div></div>';
+      return '<div class="row '+(x.k.paid>0?'rpart':'rdue')+'" style="'+(i===0?'border-top:0':'')+'"><button type="button" class="row-main" data-act="payBooking" data-id="'+esc(x.b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(x.b.statut)+'</span><span class="r2">'+esc(x.b.tarifNom||'')+' · '+esc(fmtShort(x.b.date))+'</span><span class="hint">Total '+fmt(x.k.total)+' · paid '+fmt(x.k.paid)+'</span></button><div class="r-side"><span class="due" style="font-size:1.02rem">'+fmt(x.k.due)+'</span><br><button type="button" class="btn sm" style="margin-top:6px" data-act="payBooking" data-id="'+esc(x.b.id)+'" aria-label="Collect '+esc(fmt(x.k.due))+' from '+esc(c.nom||'customer')+'">Collect</button></div></div>';
     }).join(''):emptyBox('✓ Everything is paid','Bookings with a remaining balance appear here.');
   }else if(ST.payTab==='fees'){
     const F=Object.values(S.bookings).filter(b=>(+b.frais||0)>0&&b.statut!=='Cancelled'),mth=perLabel();
@@ -3069,12 +3085,29 @@ function paddleLoad(){
     const x=document.createElement('script');x.src='https://cdn.paddle.com/paddle/v2/paddle.js';x.async=true;x.onload=go;x.onerror=()=>{PADDLE_READY=null;rej(new Error('load'))};document.head.appendChild(x)});
   return PADDLE_READY;
 }
-async function paddleCheckout(plan,email,centreId){
+async function paddleCheckout(plan,email,centreId,methods){
   await paddleLoad();
   const pr=(CFG.paddle.prices||{})[plan]||(CFG.paddle.prices||{}).monthly;
   Paddle.Checkout.open({items:[{priceId:pr,quantity:1}],customer:{email:email},customData:{centre_id:String(centreId||'')},
-    settings:{displayMode:'overlay',theme:'dark',locale:'en',allowLogout:false,showAddDiscounts:false}});
+    settings:Object.assign({displayMode:'overlay',theme:'dark',locale:'en',allowLogout:false,showAddDiscounts:false},methods&&methods.length?{allowedPaymentMethods:methods}:{})});
 }
+const PM_APPLE=(()=>{try{return !!(window.ApplePaySession&&ApplePaySession.canMakePayments())}catch(e){return false}})();
+const PM_GOOGLE=!PM_APPLE&&/Chrome|CriOS|Android/.test(navigator.userAgent)&&!/Edg\/|OPR\//.test(navigator.userAgent);
+let GPAY_JS=null;
+function gpayLoad(){if(GPAY_JS)return GPAY_JS;GPAY_JS=new Promise((res,rej)=>{if(window.google&&google.payments&&google.payments.api)return res();const x=document.createElement('script');x.src='https://pay.google.com/gp/p/js/pay.js';x.async=true;x.onload=()=>res();x.onerror=()=>{GPAY_JS=null;rej(new Error('gpay'))};document.head.appendChild(x)});return GPAY_JS}
+async function gpayMount(box,onClick){
+  if(!box)return;
+  try{await gpayLoad();
+    const pc=new google.payments.api.PaymentsClient({environment:CFG.paddle&&CFG.paddle.env==='live'?'PRODUCTION':'TEST'});
+    const card={type:'CARD',parameters:{allowedAuthMethods:['PAN_ONLY','CRYPTOGRAM_3DS'],allowedCardNetworks:['VISA','MASTERCARD','AMEX']}};
+    const r=await pc.isReadyToPay({apiVersion:2,apiVersionMinor:0,allowedPaymentMethods:[card]});
+    window.__gpReady=r&&r.result;if(!r||!r.result||!box.isConnected)return;
+    const btn=pc.createButton({onClick:onClick,buttonColor:'white',buttonType:'plain',buttonSizeMode:'fill',buttonRadius:25,buttonLocale:'en',allowedPaymentMethods:[card]});
+    box.replaceChildren(btn);box.hidden=false;
+  }catch(e){box.hidden=true;window.__gpErr=String(e&&e.message||e)}
+}
+const PP_LOGO='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAxNzAgNDgiPgogIDxnIGNsaXAtcGF0aD0idXJsKCNwcEEpIj4KICAgIDxwYXRoIGZpbGw9IiMwMDMwODciIGQ9Ik02Mi41NiAyOC42NzJhMTAuMTExIDEwLjExMSAwIDAgMCA5Ljk4My04LjU2Yy43OC00Ljk2Ny0zLjEwMS05LjMwMy04LjYtOS4zMDNINTUuMDhhLjY4OS42ODkgMCAwIDAtLjY5LjU4NWwtMy45NSAyNS4wNzJhLjY0My42NDMgMCAwIDAgLjYzNC43NDJoNC42OWEuNjg5LjY4OSAwIDAgMCAuNjg4LS41ODVsMS4xNjItNy4zNjVhLjY4OS42ODkgMCAwIDEgLjY4OS0uNTg2aDQuMjU3Wm0zLjkyNS04Ljc4NmMtLjI5IDEuODM2LTEuNzA5IDMuMTg5LTQuNDI1IDMuMTg5aC0zLjQ3NGwxLjA1My02LjY4aDMuNDExYzIuODEuMDA2IDMuNzIzIDEuNjYzIDMuNDM1IDMuNDk2di0uMDA1Wm0yNi4zNzgtMS4xOEg4OC40MWEuNjkuNjkgMCAwIDAtLjY5LjU4NWwtLjE0NC45MjRzLTMuNDU3LTMuNzc1LTkuNTc1LTEuMjI1Yy0zLjUxIDEuNDYxLTUuMTk0IDQuNDgtNS45MSA2LjY5IDAgMC0yLjI3NyA2LjcxOCAyLjg3IDEwLjQxNyAwIDAgNC43NzEgMy41NTYgMTAuMTQ1LS4yMmwtLjA5My41ODlhLjY0Mi42NDIgMCAwIDAgLjYzNC43NDJoNC40NTFhLjY4OS42ODkgMCAwIDAgLjY5LS41ODVsMi43MDgtMTcuMTc1YS42NDMuNjQzIDAgMCAwLS42MzQtLjc0MlptLTYuNTQ3IDkuNDkyYTQuOTk2IDQuOTk2IDAgMCAxLTQuOTk2IDQuMjc2IDQuNTEzIDQuNTEzIDAgMCAxLTEuMzk3LS4yMDVjLTEuOTItLjYxNi0zLjAxNS0yLjQ2Mi0yLjctNC40NjJhNC45OTYgNC45OTYgMCAwIDEgNS4wMTQtNC4yNzdjLjQ3NC0uMDA1Ljk0Ni4wNjUgMS4zOTguMjA2IDEuOTEzLjYxNCAzLjAwMSAyLjQ2IDIuNjg2IDQuNDYyaC0uMDA1WiIvPgogICAgPHBhdGggZmlsbD0iIzAwNzBFMCIgZD0iTTEyNi42NzIgMjguNjcyYTEwLjExNSAxMC4xMTUgMCAwIDAgOS45OTItOC41NmMuNzc5LTQuOTY3LTMuMTAxLTkuMzAzLTguNjAyLTkuMzAzaC04Ljg2YS42OS42OSAwIDAgMC0uNjg5LjU4NWwtMy45NjIgMjUuMDc5YS42MzcuNjM3IDAgMCAwIC4zNjUuNjgzLjY0LjY0IDAgMCAwIC4yNjkuMDZoNC42OTFhLjY5LjY5IDAgMCAwIC42ODktLjU4NmwxLjE2My03LjM2NWEuNjg4LjY4OCAwIDAgMSAuNjg5LS41ODZsNC4yNTUtLjAwN1ptMy45MjUtOC43ODZjLS4yOSAxLjgzNi0xLjcwOSAzLjE4OS00LjQyNiAzLjE4OWgtMy40NzNsMS4wNTQtNi42OGgzLjQxMWMyLjgwOC4wMDYgMy43MjMgMS42NjMgMy40MzQgMy40OTZ2LS4wMDVabTI2LjM3Ny0xLjE4aC00LjQ0OGEuNjkuNjkgMCAwIDAtLjY4OS41ODVsLS4xNDYuOTI0cy0zLjQ1Ni0zLjc3NS05LjU3NC0xLjIyNWMtMy41MDkgMS40NjEtNS4xOTQgNC40OC01LjkxMSA2LjY5IDAgMC0yLjI3NiA2LjcxOCAyLjg3IDEwLjQxNyAwIDAgNC43NzIgMy41NTYgMTAuMTQ2LS4yMmwtLjA5My41ODlhLjYzNy42MzcgMCAwIDAgLjM2NS42ODNjLjA4NC4wNC4xNzYuMDYuMjY5LjA2aDQuNDUxYS42ODYuNjg2IDAgMCAwIC42ODktLjU4NmwyLjcwOS0xNy4xNzVhLjY1Ny42NTcgMCAwIDAtLjE0OC0uNTE4LjYzMi42MzIgMCAwIDAtLjQ5LS4yMjRabS02LjU0NiA5LjQ5MmE0Ljk4NiA0Ljk4NiAwIDAgMS00Ljk5NiA0LjI3NiA0LjUxMyA0LjUxMyAwIDAgMS0xLjM5OS0uMjA1Yy0xLjkyMS0uNjE2LTMuMDE3LTIuNDYyLTIuNzAyLTQuNDYyYTQuOTk2IDQuOTk2IDAgMCAxIDQuOTk2LTQuMjc3Yy40NzUtLjAwNS45NDcuMDY0IDEuMzk5LjIwNiAxLjkzMy42MTQgMy4wMjQgMi40NiAyLjcwNyA0LjQ2MmgtLjAwNVoiLz4KICAgIDxwYXRoIGZpbGw9IiMwMDMwODciIGQ9Im0xMDkuMjA1IDE5LjEzMS01LjM2NyA5LjA1OS0yLjcyMy04Ljk5MmEuNjkuNjkgMCAwIDAtLjY2NC0uNDkyaC00Ljg0MmEuNTE2LjUxNiAwIDAgMC0uNDk2LjY4OWw0Ljg4IDE1LjE0Ni00LjQxMyA3LjEzOGEuNTE3LjUxNyAwIDAgMCAuNDQyLjc5NGg1LjIxN2EuODU4Ljg1OCAwIDAgMCAuNzQxLS40MThsMTMuNjMyLTIyLjU1MmEuNTE2LjUxNiAwIDAgMC0uNDQ2LS43ODloLTUuMjE1YS44NTguODU4IDAgMCAwLS43NDYuNDE3WiIvPgogICAgPHBhdGggZmlsbD0iIzAwNzBFMCIgZD0ibTE2MS45ODIgMTEuMzg3LTMuOTYyIDI1LjA3OWEuNjM3LjYzNyAwIDAgMCAuMzY1LjY4M2MuMDg0LjA0LjE3Ni4wNi4yNjkuMDZoNC42ODlhLjY4OC42ODggMCAwIDAgLjY4OS0uNTg2bDMuOTYzLTI1LjA3OWEuNjM3LjYzNyAwIDAgMC0uMTQ2LS41MTcuNjQ1LjY0NSAwIDAgMC0uNDg4LS4yMjVoLTQuNjlhLjY5LjY5IDAgMCAwLS42ODkuNTg1WiIvPgogICAgPHBhdGggZmlsbD0iIzAwMUM2NCIgZD0iTTM3LjE0NiAyMi4yNmMtMS4wMDYgNS43MzUtNS42ODUgMTAuMDctMTEuODI1IDEwLjA3aC0zLjg5OGMtLjc5NSAwLTEuNTk2LjczNi0xLjcyMyAxLjU1bC0xLjcwNyAxMC44MzVjLS4wOTkuNjE3LS4zODguODIyLTEuMDEzLjgyMmgtNi4yN2MtLjYzNCAwLS43ODQtLjIxMi0uNjg5LS44MzdsLjcyLTcuNDkzLTcuNTI2LS4zODljLS42MzMgMC0uODYyLS4zNDUtLjc3Mi0uOTc3bDUuMTM1LTMyLjU2Yy4wOTktLjYxNy40ODMtLjg4MiAxLjEwNi0uODgyaDEzLjAyM2M2LjI2OSAwIDEwLjIzNSA0LjIyIDEwLjcyIDkuNjkyIDMuNzMgMi41MiA1LjQ3NCA1Ljg3MyA0LjcyIDEwLjE2OFoiLz4KICAgIDxwYXRoIGZpbGw9IiMwMDcwRTAiIGQ9Im0xMi42NDkgMjUuMDc1LTEuOTA3IDEyLjEzMy0xLjIwNiA3LjYxMmExLjAzNCAxLjAzNCAwIDAgMCAxLjAxNiAxLjE5aDYuNjIyYTEuMjcgMS4yNyAwIDAgMCAxLjI1My0xLjA3MmwxLjc0My0xMS4wNmExLjI3IDEuMjcgMCAwIDEgMS4yNTMtMS4wNzFoMy44OThBMTIuNDYgMTIuNDYgMCAwIDAgMzcuNjE3IDIyLjI2Yy42NzUtNC4zMDctMS40OTItOC4yMjgtNS4yMDEtMTAuMTY1YTkuOTYgOS45NiAwIDAgMS0uMTIgMS4zNyAxMi40NjEgMTIuNDYxIDAgMCAxLTEyLjI5NSAxMC41NGgtNi4xYTEuMjY4IDEuMjY4IDAgMCAwLTEuMjUyIDEuMDdaIi8+CiAgICA8cGF0aCBmaWxsPSIjMDAzMDg3IiBkPSJNMTAuNzQxIDM3LjIwOEgzLjAzYTEuMDM1IDEuMDM1IDAgMCAxLTEuMDE4LTEuMTkyTDcuMjA4IDMuMDcyQTEuMjY4IDEuMjY4IDAgMCAxIDguNDYgMkgyMS43YzYuMjY5IDAgMTAuODI3IDQuNTYyIDEwLjcyIDEwLjA4OWExMS41NjcgMTEuNTY3IDAgMCAwLTUuMzk5LTEuMjg3SDE1Ljk4M2ExLjI3IDEuMjcgMCAwIDAtMS4yNTQgMS4wNzFsLTIuMDggMTMuMjAyLTEuOTA4IDEyLjEzM1oiLz4KICA8L2c+CiAgPGRlZnM+CiAgICA8Y2xpcFBhdGggaWQ9InBwQSI+CiAgICAgIDxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDBoMTY2djQ0LjAxSDB6IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyIDIpIi8+CiAgICA8L2NsaXBQYXRoPgogIDwvZGVmcz4KPC9zdmc+Cg==';
+const CARD_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h3"/></svg>';
 const LOCK_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>';
 const CHECK_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const FEATURES=['Bookings, planning and calendar','QR check-in for divers','Payments, marine fees and receipts','Commissions and payroll','Unlimited staff accounts'];
@@ -3100,7 +3133,7 @@ function payScreen(state,c,role,email){
         '<div class="gseg" role="radiogroup" aria-label="Billing"><label><input type="radio" name="psPlan" value="monthly"'+(plan==='monthly'?' checked':'')+'>Monthly</label><label><input type="radio" name="psPlan" value="yearly"'+(plan==='yearly'?' checked':'')+'>Yearly <em>−20%</em></label></div>'+
         '<div class="gprice"><span class="amt" id="psAmt"></span><span class="per">/ month</span></div><div class="gbill" id="psBill"></div>'+
         '<ul class="gfeat">'+FEATURES.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+
-        (pay?'<button class="btn" id="psPay">Continue to payment</button><div id="psErr" role="alert" style="color:#ff9b8a;min-height:0;font-size:.9rem;margin-top:8px"></div><p class="gfine">'+LOCK_SVG+'Secure payment by Paddle · Card, PayPal, Apple Pay, Google Pay</p>'+'<p class="gfine" style="margin-top:6px!important">By continuing you accept our <a href="terms.html" target="_blank" rel="noopener" style="color:#fff">Terms</a> and <a href="refund.html" target="_blank" rel="noopener" style="color:#fff">Refund policy</a>. 14-day money-back guarantee.</p>':
+        (pay?(pay==='paddle'?'<p class="gpm-h">Pay with</p><div class="gpm">'+(PM_APPLE?'<button type="button" class="gpm-apple" data-pm="apple_pay" lang="en" aria-label="Pay with Apple Pay"></button>':'')+(PM_GOOGLE?'<div class="gpm-g" id="gpmG" hidden></div>':'')+'<button type="button" class="gpm-pp" data-pm="paypal" aria-label="Pay with PayPal"><img src="'+PP_LOGO+'" alt="" width="85" height="24"></button>'+'<div class="gor" aria-hidden="true"><span>or</span></div>'+'<button type="button" class="btn gpm-card" data-pm="card" id="psPay">'+CARD_SVG+'Pay by card</button></div>':'<button class="btn" id="psPay">Continue to payment</button>')+'<div id="psErr" role="alert" style="color:#ff9b8a;min-height:0;font-size:.9rem;margin-top:8px"></div><p class="gfine">'+LOCK_SVG+'Secure payment by Paddle, our payment partner</p>'+'<p class="gfine" style="margin-top:6px!important">By continuing you accept our <a href="terms.html" target="_blank" rel="noopener" style="color:#fff">Terms</a> and <a href="refund.html" target="_blank" rel="noopener" style="color:#fff">Refund policy</a>. 14-day money-back guarantee.</p>':
          '<p class="gnote"><strong style="color:#fff">Your request is saved.</strong> Online payment opens soon. We will email you at <strong style="color:#fff">'+esc(email)+'</strong> within one working day to activate your Dive Center. This page opens by itself once it is active.</p><a class="btn" href="mailto:contact@scubook.app?subject='+encodeURIComponent('Activate '+cn)+'" style="text-decoration:none;box-sizing:border-box">Email us</a>')+
         '</div>'}
     f.innerHTML=body+links;
@@ -3109,8 +3142,12 @@ function payScreen(state,c,role,email){
     f.querySelectorAll('input[name=psPlan]').forEach(r=>r.onchange=()=>{plan=r.value;draw()});draw();
     const done=v=>{clearInterval(t);f.remove();resolve(v)};
     document.getElementById('ddAgain').onclick=()=>done('again');document.getElementById('ddOut').onclick=()=>done('out');
-    const p=document.getElementById('psPay');if(p)p.onclick=async()=>{
-      if(pay==='paddle'){p.disabled=true;try{await paddleCheckout(plan,email,c.id)}catch(e){const er=document.getElementById('psErr');if(er)er.textContent='Payment could not open. Check your connection and try again.'}p.disabled=false;return}
+    const PMS={apple_pay:['apple_pay','card'],google_pay:['google_pay','card'],paypal:['paypal'],card:['card']};
+    let busy=false;const startPM=async pm=>{if(busy)return;busy=true;const all=f.querySelectorAll('[data-pm]');all.forEach(x=>x.disabled=true);
+      try{await paddleCheckout(plan,email,c.id,PMS[pm]||null)}catch(e){const er=document.getElementById('psErr');if(er)er.textContent='Payment could not open. Check your connection and try again.'}all.forEach(x=>x.disabled=false);busy=false};
+    f.querySelectorAll('[data-pm]').forEach(b=>b.onclick=()=>startPM(b.dataset.pm));
+    if(pay==='paddle'&&PM_GOOGLE)gpayMount(document.getElementById('gpmG'),()=>startPM('google_pay'));
+    const p=document.getElementById('psPay');if(p&&pay!=='paddle')p.onclick=async()=>{
       const u=new URL(pay,location.href);u.searchParams.set('plan',plan);u.searchParams.set('email',email);location.href=u.toString()};
     const t=setInterval(()=>{if(!wait&&document.querySelector('.paddle-frame'))return;done('again')},wait?2000:20000);
     if(pay==='paddle'&&!wait&&!late)paddleLoad().catch(()=>{});
