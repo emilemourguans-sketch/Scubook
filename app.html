@@ -543,6 +543,20 @@ main{gap:20px;padding-block:28px 56px}
 .fl-ic{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--soft)}.fl-ic svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .fl-del{all:unset;box-sizing:border-box;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;cursor:pointer;color:var(--muted)}.fl-del:hover{background:var(--soft);color:var(--bad,#C0392B)}.fl-del:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.fl-del svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 @media(max-width:480px){.fl-row{grid-template-columns:28px minmax(0,1fr) 64px 40px;gap:6px}.fl-del{width:40px}}
+.trip-sum{display:grid;gap:12px;padding:12px 14px;border-radius:16px;background:var(--soft)}
+.ts-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ts-count{font-family:var(--f-display);font-weight:600;font-size:1.5rem;font-variant-numeric:tabular-nums}.ts-count small{font-family:var(--f-body);font-size:.85rem;font-weight:600;color:var(--muted)}
+.ts-count.is-full{color:#E5484D}
+.ts-h{margin:0 0 6px!important;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ts-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ts-chip{display:inline-flex;gap:6px;align-items:center;padding:6px 11px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-size:.86rem;font-weight:600}
+.ts-chip b{font-variant-numeric:tabular-nums;color:var(--accent)}.ts-chip.warn{border-color:#f0b54a;color:#9a6400}
+.trip-det{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.trip-det span{font-size:.74rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--muted)}
+.tc-site{display:flex;align-items:center;gap:4px;font-size:.8rem;font-weight:600;color:var(--accent);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-site svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tc-site.none{color:var(--muted);font-weight:500}
+.tc-inst{font-size:.78rem;color:var(--ink);opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sl-row{display:grid;grid-template-columns:30px minmax(0,1fr) 44px;gap:8px;align-items:center}
 .trip-move{max-width:150px}
 .trip-list{display:grid}
 .sheet-b>*{flex-shrink:0}
@@ -552,6 +566,9 @@ main{gap:20px;padding-block:28px 56px}
 /* Scubook wordmark: same lettering as the website (Fredoka, 'ook' bolder) */
 .wm{font-family:Fredoka,Inter,system-ui,sans-serif;letter-spacing:normal}.wm i{font-weight:700;letter-spacing:-.05em}
 .wm.plain,.wm.plain i{font-family:var(--f-display);font-weight:600;letter-spacing:-.01em}
+body{margin:0}
+#supBar .sup-short{display:none}
+@media(max-width:760px){#supBar{padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px!important;gap:10px!important;justify-content:space-between!important;flex-wrap:nowrap!important}#supBar .sup-long{display:none}#supBar .sup-short{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#supBar .sup-back{flex:none;font-size:13px}body.has-sup .bar>#platBtn{display:none!important}body.has-sup #app:not([hidden]){top:var(--supH,0px)}}
 /* phone: the app is its own scrolling frame and the menu is part of that frame, so iOS Safari cannot move it */
 @media(max-width:760px){
   html:has(#app:not([hidden])),html:has(#app:not([hidden])) body{height:100%;overflow:hidden;overscroll-behavior:none}
@@ -633,8 +650,9 @@ const sum=(l,f)=>Math.round(l.reduce((s,x)=>s+(+f(x)||0),0)*100)/100;
 const pl=(n,w)=>n+' '+w+(n===1?'':'s');
 
 const STATUTS=['Pending','Confirmed','Completed','Cancelled'];
-const CRENEAUX=['Morning 9:00','Morning 11:00','Afternoon','Night'];
-const slotNorm=x=>(!x||x==='Morning')?'Morning 9:00':x;
+const CRENEAUX=['Morning 9:00','Morning 11:00','Afternoon','Night'];const SLOTS_DEF=CRENEAUX.slice();const SLOTALIAS={};
+function applySlots(c){const raw=(c&&Array.isArray(c.slots))?c.slots.map(x=>String(x||'').trim()).filter(Boolean):[];const L=raw.length?raw:SLOTS_DEF;CRENEAUX.splice(0,CRENEAUX.length,...L);Object.keys(SLOTALIAS).forEach(k=>{delete SLOTALIAS[k]});Object.assign(SLOTALIAS,(c&&c.slotAlias)||{})}
+const slotNorm=x=>{let v=(!x||x==='Morning')?'Morning 9:00':String(x);for(let i=0;i<6&&SLOTALIAS[v]&&SLOTALIAS[v]!==v;i++)v=SLOTALIAS[v];if((!x||x==='Morning')&&!CRENEAUX.includes(v))v=CRENEAUX[0];return v};
 const METHODES=['Cash','Card','Bank transfer','QRIS','Other'];
 const ROLES=['Instructor','Divemaster','Assistant Instructor','Reception','Manager'];
 const GUIDES=['Instructor','Divemaster','Assistant Instructor'];
@@ -776,7 +794,7 @@ const waLink=(tel,msg)=>'https://wa.me/'+waNum(tel)+'?text='+encodeURIComponent(
 const firstName=n=>String(n||'').trim().split(/\s+/)[0]||'';
 const slotTime=x=>String(x||'').replace(/^[A-Za-z]+\s+/,'');
 const helloMsg=c=>'Hi '+firstName(c.nom)+', this is '+BN()+'.';
-const remindMsg=(b,c)=>'Hi '+firstName(c.nom)+', this is '+BN()+'. A reminder for tomorrow, '+fmtLong(b.date)+': '+(b.tarifNom||'your dive')+(slotTime(b.creneau)?' at '+slotTime(b.creneau):'')+'. See you soon!';
+const remindMsg=(b,c)=>'Hi '+firstName(c.nom)+', this is '+BN()+'. A reminder for tomorrow, '+fmtLong(b.date)+': '+(b.tarifNom||'your dive')+(slotTime(slotNorm(b.creneau))?' at '+slotTime(slotNorm(b.creneau)):'')+'. See you soon!';
 const EXP_CATS=['Fuel & boat','Tank fills & gas','Equipment','Rent','Salaries','Commissions','Agency fees','Marketing','Supplies','Utilities','Taxes & licences','Other'];
 function openExpense(id){
   if(!canWrite){toast('You have read-only access.','bad');return}
@@ -1445,7 +1463,7 @@ function subRender(){
 V.settings={
  shell(m){
   m.innerHTML='<div class="head"><div><h1>Settings</h1><p class="sub">Branding, home page, access and business rules. Managers only.</p></div></div>'+
-   '<section class="card" id="subCard" hidden></section>'+'<section class="card" id="fleetCard" hidden><h2>Boats and pool</h2><p class="hint">Add your boats and pools with their places. Each booking goes on a boat or in the pool, and the Schedule shows who goes where, trip by trip.</p><p class="fl-h">Boats</p><div id="flBoats" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="boat">+ Add a boat</button><p class="fl-h">Pools</p><div id="flPools" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="pool">+ Add a pool</button><p class="hint" style="margin:10px 0 0">Activities with “pool” in their name go to the pool automatically. Everything else goes on the first boat with space. You can always move someone.</p><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="flSave">Save boats and pool</button></div></section>'+'<section class="card" id="capCard" hidden><h2>Limit per time slot</h2><p class="hint">Optional: the most customers per time slot, all boats and pools together. Leave empty for no limit.</p><div class="gf3" id="capGrid"></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="capSave">Save places</button></div></section>'+'<section class="card" id="bkoCard" hidden><h2>Online booking</h2><p class="hint">Customers request a booking from your own page. Requests appear on Home, ready to confirm in one tap.</p><label class="fld check"><input type="checkbox" id="bko-on"> Accept booking requests online</label><div id="bko-body" hidden><div class="gf"><label class="fld">Earliest date<select id="bko-notice"><option value="0">Same day</option><option value="1">From tomorrow</option><option value="2">2 days ahead</option><option value="3">3 days ahead</option></select></label><label class="fld">Latest date<select id="bko-ahead"><option value="30">1 month ahead</option><option value="60">2 months ahead</option><option value="90">3 months ahead</option><option value="180">6 months ahead</option><option value="365">1 year ahead</option></select></label><label class="fld full">Message on your booking page (optional)<textarea id="bko-msg" maxlength="400" rows="2" placeholder="For example: we reply within a few hours on WhatsApp."></textarea></label></div><p class="hint" style="margin:10px 0 4px">Activities customers can choose</p><div id="bko-acts" class="bko-acts"></div><div class="bko-link"><input id="bko-url" readonly aria-label="Your booking page link"><button type="button" class="btn ghost sm" data-act="bkoCopy">Copy link</button><a class="btn ghost sm" id="bko-open" target="_blank" rel="noopener">Open page</a></div><p class="hint" style="margin:6px 0 0">Share this link on your website, Instagram, Google profile or WhatsApp.</p></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="bkoSave">Save online booking</button></div></section>'+
+   '<section class="card" id="subCard" hidden></section>'+'<section class="card" id="fleetCard" hidden><h2>Boats and pool</h2><p class="hint">Add your boats and pools with their places. Each booking goes on a boat or in the pool, and the Schedule shows who goes where, trip by trip.</p><p class="fl-h">Boats</p><div id="flBoats" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="boat">+ Add a boat</button><p class="fl-h">Pools</p><div id="flPools" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="pool">+ Add a pool</button><p class="hint" style="margin:10px 0 0">Activities with “pool” in their name go to the pool automatically. Everything else goes on the first boat with space. You can always move someone.</p><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="flSave">Save boats and pool</button></div></section>'+'<section class="card" id="slotCard" hidden><h2>Trip times</h2><p class="hint">Your departure times, in order. Rename them to match your day (for example “Morning 8:30”), add or remove some. Bookings follow a renamed time.</p><div id="slotList" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="slotAdd">+ Add a time</button><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="slotSave">Save trip times</button></div></section>'+'<section class="card" id="capCard" hidden><h2>Limit per time slot</h2><p class="hint">Optional: the most customers per time slot, all boats and pools together. Leave empty for no limit.</p><div class="gf3" id="capGrid"></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="capSave">Save places</button></div></section>'+'<section class="card" id="bkoCard" hidden><h2>Online booking</h2><p class="hint">Customers request a booking from your own page. Requests appear on Home, ready to confirm in one tap.</p><label class="fld check"><input type="checkbox" id="bko-on"> Accept booking requests online</label><div id="bko-body" hidden><div class="gf"><label class="fld">Earliest date<select id="bko-notice"><option value="0">Same day</option><option value="1">From tomorrow</option><option value="2">2 days ahead</option><option value="3">3 days ahead</option></select></label><label class="fld">Latest date<select id="bko-ahead"><option value="30">1 month ahead</option><option value="60">2 months ahead</option><option value="90">3 months ahead</option><option value="180">6 months ahead</option><option value="365">1 year ahead</option></select></label><label class="fld full">Message on your booking page (optional)<textarea id="bko-msg" maxlength="400" rows="2" placeholder="For example: we reply within a few hours on WhatsApp."></textarea></label></div><p class="hint" style="margin:10px 0 4px">Activities customers can choose</p><div id="bko-acts" class="bko-acts"></div><div class="bko-link"><input id="bko-url" readonly aria-label="Your booking page link"><button type="button" class="btn ghost sm" data-act="bkoCopy">Copy link</button><a class="btn ghost sm" id="bko-open" target="_blank" rel="noopener">Open page</a></div><p class="hint" style="margin:6px 0 0">Share this link on your website, Instagram, Google profile or WhatsApp.</p></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="bkoSave">Save online booking</button></div></section>'+
    '<section class="card" id="teamAcc"><h2>Team and access rights</h2><p class="hint">Everyone who can open <strong>your company space</strong>, with their role and last sign-in. Employees join with your access code (above) or by email below. Nobody outside your company can see your data.</p><form id="addPerson" style="display:grid;grid-template-columns:2fr 1.4fr 1fr auto;gap:8px;align-items:end;margin:12px 0"><label class="f" style="display:grid;gap:4px">Employee email<input id="apEmail" type="email" required autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Name<input id="apName" maxlength="60" autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Role<select id="apRole" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"><option value="staff">Staff</option><option value="instructor">Instructor</option><option value="viewer">Read-only</option><option value="manager">Manager</option></select></label><button class="btn" type="submit">Add</button></form><p class="hint">Or add someone by email: when they create their account with this same email, they land directly in your company space.</p><div id="accPending"></div><div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th>Last sign-in</th><th></th></tr></thead><tbody id="accRows"></tbody></table></div></section>'+
    '<section class="card" id="joinCard" hidden></section>'+
    '<section class="card" id="brandCard"><h2>Branding</h2><p class="hint">Your center name, logo and colours. Applied to the whole app for everyone on your team.</p><div class="gf">'+
@@ -1499,7 +1517,7 @@ V.settings={
     $('#cLock').checked=c.lockPay;V.settings.cfgLoaded=true;
     const br=(S.config&&S.config.brand)||{};$('#bName').value=br.name||'';$('#bNavy').value=br.navy||'#0A2540';$('#bAcc').value=br.lime||((br.accent&&!['#0b7285','#2e799e','#8ad9e3'].includes(String(br.accent).toLowerCase()))?br.accent:'#FF7A5C');$('#bPrevImg').src=br.logo||LOGO0;V.settings.pendLogo=undefined;
   }
-  ciFill();subRender();fleetFill();capFill();bkoFill();
+  ciFill();subRender();fleetFill();slotFill();capFill();bkoFill();
   $$('#bName,#bNavy,#bAcc,#bFile').forEach(e=>e.disabled=!canEdit);$('#brandCard').hidden=!canEdit;joinRender();{const ta=document.getElementById('teamAcc');if(ta){const ok=!!(window.DD_STANDALONE&&canEdit&&(window.DD_SHIM||window.claude).admin&&!/[?&]demo/.test(location.search));ta.hidden=!ok;if(ok&&!ta.dataset.loaded){ta.dataset.loaded='1';loadAccounts()}}}
   $$('#cCp,#cCf,#cEco,#cPe,#cPl,#cSites,#cAgents,#cNiv,#cLock').forEach(e=>e.disabled=!canEdit);
   $('#cSave').hidden=!canEdit;
@@ -1698,24 +1716,43 @@ function fleetBoard(date){
         return '<button type="button" class="tripcard'+(full?' is-full':near?' is-near':'')+'" data-act="tripOpen" data-k="'+esc(x.k)+'" data-cr="'+esc(cr)+'" aria-label="'+esc(x.name+', '+n+(x.cap?' of '+x.cap:'')+' places, '+cr)+'">'+
           (x.type==='pool'?poolSVG(n,x.cap,full):boatSVG(n,x.cap,full))+
           '<span class="tc-meta"><span class="tc-name">'+esc(x.name)+'</span><span class="tc-n">'+n+(x.cap?' / '+x.cap:'')+'</span></span>'+
-          '<span class="tc-sub">'+(x.type==='pool'?'Pool':'Boat')+(full?' · Full':x.cap?' · '+(x.cap-n)+' left':'')+'</span></button>'}).join('')+'</div></div>'}).join('')}
+          (x.type==='boat'?'<span class="tc-site'+(tripSite(x.list)?'':' none')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>'+esc(tripSite(x.list)||(x.list.some(b=>b.site)?'Several sites':'No dive site yet'))+'</span>':'')+(function(){const I=Array.from(new Set(x.list.map(b=>b.instructeurId).filter(Boolean)));return I.length?'<span class="tc-inst">'+esc(I.map(i=>firstName(staffName(i))).join(', '))+'</span>':''})()+'<span class="tc-sub">'+(x.type==='pool'?'Pool':'Boat')+(full?' · Full':x.cap?' · '+(x.cap-n)+' left':'')+'</span></button>'}).join('')+'</div></div>'}).join('')}
+function tripSite(L){const set=new Set(L.map(b=>String(b.site||'').trim()).filter(Boolean));return set.size===1?[...set][0]:''}
 function openTrip(k,cr){
   const date=ST.date,tm=tripMap(date,cr),x=k==='none'?null:tm.spots.find(y=>y.k===k),L=x?x.list:tm.none;
   MODAL={kind:'trip',k:k,cr:cr};
   const moveOpts=cur=>tm.spots.map(y=>opt(y.k,y.name+(y.cap?' '+y.list.length+'/'+y.cap:''),y.k===cur)).join('');
-  openModal((x?x.name:'Without a place')+' · '+cr,
-    '<p class="hint" style="margin:0">'+esc(fmtLong(date))+(x&&x.cap?' · '+L.length+' of '+x.cap+' places':'')+'. Move a customer to another boat or the pool with the list on the right.</p>'+
-    (L.length?'<div class="trip-list">'+L.map(b=>{const c=S.clients[b.clientId]||{};const cur=x?x.k:'';
-      return '<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+(b.spot?'':'<span class="pill st-none">Auto</span>')+'</span><span class="r2">'+esc(b.tarifNom||'')+(b.instructeurId?' · '+esc(staffName(b.instructeurId)):'')+'</span></button>'+
-        '<div class="r-side">'+(canWrite?'<select class="trip-move" data-id="'+esc(b.id)+'" aria-label="Move '+esc(c.nom||'customer')+'">'+(cur?'':'<option value="" selected>Choose…</option>')+moveOpts(cur)+'</select>':'')+'</div></div>'}).join('')+'</div>':emptyBox('Nobody here yet','Bookings for this trip appear here.'))+
-    '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Close</button></div>');
+  const cur=tripSite(L),mixed=!cur&&L.some(b=>b.site),sites=cfg().sites.slice();L.forEach(b=>{if(b.site&&!sites.includes(b.site))sites.push(b.site)});
+  const byI={};L.forEach(b=>{const i=b.instructeurId||'';(byI[i]=byI[i]||[]).push(b)});
+  const inst=Object.keys(byI).sort((p,q)=>p===''?1:q===''?-1:staffName(p).localeCompare(staffName(q),'en'));
+  const isBoat=x&&x.type==='boat',full=x&&x.cap&&L.length>=x.cap;
+  const head='<div class="trip-sum">'+
+    '<div class="ts-top"><span class="hint">'+esc(fmtLong(date))+'</span><span class="ts-count'+(full?' is-full':'')+'">'+L.length+(x&&x.cap?' / '+x.cap:'')+'<small>'+(x?(x.type==='pool'?' in the pool':' on board'):' waiting')+'</small></span></div>'+
+    (isBoat?'<label class="fld">Dive site<select class="trip-site"'+(canWrite&&L.length?'':' disabled')+'>'+opt('',mixed?'Several sites (choose one for everyone)':'Choose a dive site',!cur)+sites.map(v=>opt(v,v,v===cur)).join('')+'</select></label>':'')+
+    '<div><p class="ts-h">'+(inst.length===1&&inst[0]?'Instructor':'Instructors')+'</p><div class="ts-chips">'+(inst.length?inst.map(i=>'<span class="ts-chip'+(i?'':' warn')+'">'+(i?sFlag(i)+esc(staffName(i)):'No instructor yet')+' <b>'+byI[i].length+'</b></span>').join(''):'<span class="hint">Nobody yet</span>')+'</div></div></div>';
+  const rows=L.length?'<p class="ts-h" style="margin-top:4px">Customers</p><div class="trip-list">'+L.map(b=>{const c=S.clients[b.clientId]||{},t=c.tailles||{},here=x?x.k:'';
+      const det=[c.niveau,t.bcd&&('BCD '+t.bcd),t.combi&&('Wetsuit '+t.combi),t.palmes&&('Fins '+t.palmes),t.plombs&&('Weights '+t.plombs)].filter(Boolean);
+      return '<div class="row trip-row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(b.statut)+'</span>'+
+        '<span class="r2">'+esc(b.tarifNom||'')+' · '+(b.instructeurId?esc(staffName(b.instructeurId)):'<span class="pill st-none">To assign</span>')+(isBoat&&b.site&&b.site!==cur?' · '+esc(b.site):'')+'</span>'+
+        (det.length?'<span class="trip-det">'+det.map(v=>'<span>'+esc(v)+'</span>').join('')+'</span>':'')+'</button>'+
+        '<div class="r-side">'+(canWrite?'<select class="trip-move" data-id="'+esc(b.id)+'" aria-label="Move '+esc(c.nom||'customer')+'">'+(here?'':'<option value="" selected>Place…</option>')+moveOpts(here)+'</select>':'')+'</div></div>'}).join('')+'</div>'
+    :emptyBox('Nobody here yet','Bookings for this trip appear here.');
+  openModal((x?x.name:'Without a place')+' · '+cr, head+rows+'<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Close</button></div>');
 }
+document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('trip-site')||MODAL.kind!=='trip')return;
+  const v=t.value;if(!v)return;const k=MODAL.k,cr=MODAL.cr,tm=tripMap(ST.date,cr),x=tm.spots.find(y=>y.k===k);if(!x)return;
+  const pins=autoPins(tm);
+  const ok=await W(async()=>{for(const p of pins)await col('bookings').doc(p[0]).update({spot:p[1]});for(const b of x.list)if(b.site!==v)await col('bookings').doc(b.id).update({site:v})},x.name+' goes to '+v);
+  if(ok)setTimeout(()=>{if(MODAL.kind==='trip')openTrip(k,cr)},250)});
 document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('trip-move')||MODAL.kind!=='trip')return;
   const id=t.dataset.id,v=t.value;if(!v)return;const k=MODAL.k,cr=MODAL.cr;const pins=autoPins(tripMap(ST.date,cr)).filter(p=>p[0]!==id);
   const ok=await W(async()=>{for(const p of pins)await col('bookings').doc(p[0]).update({spot:p[1]});await col('bookings').doc(id).update({spot:v})},'Moved to '+spotName(v));
   if(ok){setTimeout(()=>{if(MODAL.kind==='trip')openTrip(k,cr)},250)}});
 function fleetMini(date,cr){const sp=SPOTS();if(!sp.length)return '';const tm=tripMap(date,cr);
   return '<span class="fleet-mini">'+tm.spots.filter(x=>x.list.length).map(x=>esc(x.name)+' '+x.list.length+(x.cap?'/'+x.cap:'')).join(' · ')+(tm.none.length?' · <b>'+tm.none.length+' without a place</b>':'')+'</span>'}
+const CLOCK_SVG='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+function slotRow(v){return '<div class="sl-row" data-orig="'+esc(v||'')+'"><span class="fl-ic" aria-hidden="true">'+CLOCK_SVG+'</span><input class="fl-name" maxlength="30" value="'+esc(v||'')+'" placeholder="For example: Morning 8:30" aria-label="Trip time"><button type="button" class="fl-del" data-act="slotDel" aria-label="Remove '+esc(v||'this time')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'}
+function slotFill(){const c=document.getElementById('slotCard');if(!c)return;if(!canEdit){c.hidden=true;return}c.hidden=false;document.getElementById('slotList').innerHTML=CRENEAUX.map(slotRow).join('')}
 function fleetFill(){const c=document.getElementById('fleetCard');if(!c)return;if(!canEdit){c.hidden=true;return}c.hidden=false;const f=FLEET();
   document.getElementById('flBoats').innerHTML=f.boats.map(x=>fleetRow('boat',x.id,x.name,x.seats)).join('')||'<p class="hint fl-empty">No boat yet.</p>';
   document.getElementById('flPools').innerHTML=f.pools.map(x=>fleetRow('pool',x.id,x.name,x.places)).join('')||'<p class="hint fl-empty">No pool yet.</p>'}
@@ -1794,6 +1831,7 @@ async function saveBk(){
   err.textContent='';
  {const cap=capOf(r.creneau),was=MODAL.bookingId&&S.bookings[MODAL.bookingId],same=was&&was.date===r.date&&slotNorm(was.creneau)===r.creneau&&was.statut!=='Cancelled';if(cap&&!same&&r.statut!=='Cancelled'){const n=slotLoad(r.date,r.creneau,MODAL.bookingId);if(n>=cap&&!MODAL.capOk){MODAL.capOk=true;err.textContent='This trip is full ('+n+' of '+cap+' places). Press Save again to add this booking anyway.';return}}}
  {const sel=$('#f-spot');r.spot='';if(sel&&SPOTS().length){const tm=tripMap(r.date,r.creneau,MODAL.bookingId);let x=tm.spots.find(y=>y.k===sel.value);if(!x&&r.statut!=='Cancelled')x=autoSpot(tm.spots,r);if(r.statut!=='Cancelled'&&!MODAL.spotOk){if(!x){MODAL.spotOk=true;err.textContent='Every boat and pool is full on this trip. Press Save again to add this booking without a place.';return}if(x.cap&&x.list.length>=x.cap){MODAL.spotOk=true;err.textContent=x.name+' is full ('+x.list.length+' of '+x.cap+'). Press Save again to add this booking anyway.';return}}MODAL.pins=r.statut!=='Cancelled'?autoPins(tm):[];r.spot=x?x.k:''}}
+ if(!r.site&&r.spot){const o=Object.values(S.bookings).find(b=>b.id!==MODAL.bookingId&&b.date===r.date&&slotNorm(b.creneau)===r.creneau&&b.spot===r.spot&&b.site);if(o)r.site=o.site}
   const id=MODAL.bookingId,old=id?S.bookings[id]:null,cl=S.clients[r.clientId];
   if(cfg().lockPay&&old&&old.fraisPaye){r.feeOn=true;r.feePaid=true}
   const d={clientId:r.clientId,date:r.date,creneau:r.creneau,tarifId:r.tarifId,tarifNom:r.tarifNom||'',categorie:r.categorie||'',plongees:r.plongees||0,
@@ -1919,7 +1957,7 @@ function rowToClient(r,map){
   return{nom:(g('first')+' '+g('last')).trim(),tel:g('phone'),email:g('email'),nationalite:g('nat'),langue:g('lang'),
     local:/^(yes|y|oui|ya|true|1)\b/i.test(g('local')),niveau:level,numCert:g('certNo'),urgenceNom:g('emName'),urgenceTel:g('emPhone'),
     tailles:{bcd:g('bcd').toUpperCase(),combi:g('wetsuit').toUpperCase(),palmes:g('fins'),plombs:g('plombs')},
-    heard:g('heard'),custom:g('custom'),interest:g('interest'),plannedDate:g('planned')?parseTs(g('planned')):'',plannedSlot:/night/i.test(g('time'))?'Night':/afternoon/i.test(g('time'))?'Afternoon':/11/.test(g('time'))?'Morning 11:00':(/9/.test(g('time'))?'Morning 9:00':''),bookOnline:/(^|\|\s*)Booked online:\s*yes/i.test(g('custom')),bookPeople:(/(?:^|\|\s*)People:\s*(\d+)/i.exec(g('custom'))||[])[1]||'',bookNotes:((/(?:^|\|\s*)Notes:\s*([^|]*)/i.exec(g('custom'))||[])[1]||'').trim(),checkinAt:parseTs(g('ts'))};
+    heard:g('heard'),custom:g('custom'),interest:g('interest'),plannedDate:g('planned')?parseTs(g('planned')):'',plannedSlot:CRENEAUX.find(x=>x.toLowerCase()===g('time').toLowerCase())||(/night/i.test(g('time'))?'Night':/afternoon/i.test(g('time'))?'Afternoon':/11/.test(g('time'))?'Morning 11:00':(/9/.test(g('time'))?'Morning 9:00':'')),bookOnline:/(^|\|\s*)Booked online:\s*yes/i.test(g('custom')),bookPeople:(/(?:^|\|\s*)People:\s*(\d+)/i.exec(g('custom'))||[])[1]||'',bookNotes:((/(?:^|\|\s*)Notes:\s*([^|]*)/i.exec(g('custom'))||[])[1]||'').trim(),checkinAt:parseTs(g('ts'))};
 }
 let LASTROWS=0;
 const nTok=n=>String(n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/[^a-z0-9]+/).filter(Boolean);
@@ -2366,6 +2404,18 @@ function openTarif(id){
 const armed=(t,label)=>{if(t.dataset.arm==='1')return true;t.dataset.arm='1';t.dataset.label=t.textContent;t.textContent=label||'Confirm deletion';setTimeout(()=>{if(t.isConnected){t.dataset.arm='';t.textContent=t.dataset.label}},4000);return false};
 const ACT={
  go(t){go(t.dataset.v)},
+ slotAdd(){const box=document.getElementById('slotList');box.insertAdjacentHTML('beforeend',slotRow(''));const i=box.lastElementChild.querySelector('.fl-name');if(i)i.focus()},
+ slotDel(t){const r=t.closest('.sl-row');if(r)r.remove()},
+ async slotSave(){const rows=[...document.querySelectorAll('#slotList .sl-row')];const L=[],seen=new Set(),alias=Object.assign({},(S.config&&S.config.slotAlias)||{});
+   for(const r of rows){const v=r.querySelector('.fl-name').value.trim().replace(/\s+/g,' ');if(!v){toast('Give each trip time a name, for example “Morning 8:30”.','bad');return}
+     if(seen.has(v.toLowerCase())){toast('Two trip times have the same name: '+v+'.','bad');return}seen.add(v.toLowerCase());L.push(v);const o=r.dataset.orig;if(o&&o!==v)alias[o]=v}
+   if(!L.length){toast('Keep at least one trip time.','bad');return}
+   const kept=new Set(rows.map(r=>r.dataset.orig).filter(Boolean)),t0=today();
+   for(const x of CRENEAUX.filter(x=>!kept.has(x))){const n=Object.values(S.bookings).filter(b=>b.date>=t0&&b.statut!=='Cancelled'&&slotNorm(b.creneau)===x).length;if(n){toast(pl(n,'upcoming booking')+' still on “'+x+'”. Move them to another time first.','bad');return}}
+   L.forEach(v=>{delete alias[v]});
+   const cap=Object.assign({},CAP());Object.keys(cap).forEach(k=>{if(alias[k]&&!L.includes(k)){if(!cap[alias[k]])cap[alias[k]]=cap[k];delete cap[k]}});
+   const ok=await W(()=>db.doc('config/main').update({slots:L,slotAlias:alias,capacity:cap}),'Trip times saved');
+   if(ok&&window.__pubPublic)setTimeout(window.__pubPublic,700)},
  tripOpen(t){openTrip(t.dataset.k,t.dataset.cr)},
  flAdd(t){const tp=t.dataset.t,box=document.getElementById(tp==='pool'?'flPools':'flBoats');const e=box.querySelector('.fl-empty');if(e)e.remove();
    const n=box.querySelectorAll('.fl-row').length+1;box.insertAdjacentHTML('beforeend',fleetRow(tp,(tp==='pool'?'p':'b')+Date.now().toString(36)+n,tp==='pool'?(n>1?'Pool '+n:'Pool'):'Boat '+n,tp==='pool'?8:12));
@@ -3061,10 +3111,10 @@ function supportBar(){
   if(!window.__support||document.getElementById('supBar'))return;
   const b=document.createElement('div');b.id='supBar';b.setAttribute('role','status');
   b.style.cssText='position:sticky;top:0;z-index:9999;background:#b45309;color:#fff;padding:9px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font:600 14px system-ui,sans-serif';
-  const t=document.createElement('span');t.textContent='Platform owner view: '+window.__support+'. You see and edit this company\'s real data.';
-  const k=document.createElement('button');k.type='button';k.textContent='Back to all companies';k.style.cssText='background:#fff;color:#7c2d12;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer';
+  const t=document.createElement('span');t.className='sup-long';t.textContent='Platform owner view: '+window.__support+'. You see and edit this company\'s real data.';const t2=document.createElement('span');t2.className='sup-short';t2.textContent='Owner view · '+window.__support;
+  const k=document.createElement('button');k.type='button';k.textContent=matchMedia('(max-width:760px)').matches?'All companies':'Back to all companies';k.style.cssText='background:#fff;color:#7c2d12;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer';
   k.onclick=()=>{try{sessionStorage.removeItem('sb-view')}catch(e){}location.hash='#account';location.reload()};
-  b.appendChild(t);b.appendChild(k);document.body.insertBefore(b,document.body.firstChild);
+  k.className='sup-back';b.appendChild(t);b.appendChild(t2);b.appendChild(k);document.body.insertBefore(b,document.body.firstChild);document.body.classList.add('has-sup');const fit=()=>{document.documentElement.style.setProperty('--supH',b.offsetHeight+'px')};fit();window.addEventListener('resize',fit);setTimeout(fit,300);
 }
 async function api(path,opt){
   opt=opt||{};
@@ -3466,6 +3516,7 @@ async function mirrorBrand(n,id,d){
   const cur=Object.assign({},colOf(n)[id]||{},d),pub=Object.assign({},cur.brand||{});if(cur.checkinForm)pub.form=cur.checkinForm;if(window.__bookPublic)pub.book=window.__bookPublic(cur);
   try{await api('/rest/v1/public_info?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{id:String(CENTRE),data:pub}})}catch(e){}
 }
+window.__pubPublic=()=>publishPublic();
 async function publishPublic(){
   if(DEMO||!CENTRE||ROLE!=='manager'||window.__viewC)return;
   const cur=colOf('config').main||{};if(!cur.booking)return;
@@ -3696,7 +3747,7 @@ if('serviceWorker' in navigator&&location.protocol==='https:'&&window.DD_STANDAL
   const t0=setInterval(()=>{if(LOADED.clients){clearInterval(t0);autoSync()}},500);
   setInterval(()=>{if(!document.hidden)autoSync()},45000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoSync()});
-  db.doc('config/main').onSnapshot(s=>{S.config=s.exists?s.data():null;LOADED.config=true;applyBrand(S.config&&S.config.brand);if(ST.view){buildNav();if(accessLevel(ST.view)==='none')go('home');else{canWrite=BASE_WRITE&&accessLevel(ST.view)==='edit'}}schedule()},()=>{LOADED.config=true});
+  db.doc('config/main').onSnapshot(s=>{S.config=s.exists?s.data():null;applySlots(S.config);LOADED.config=true;applyBrand(S.config&&S.config.brand);if(ST.view){buildNav();if(accessLevel(ST.view)==='none')go('home');else{canWrite=BASE_WRITE&&accessLevel(ST.view)==='edit'}}schedule()},()=>{LOADED.config=true});
 })();
 })();
 </script>
