@@ -3089,10 +3089,11 @@ async function paddleCheckout(plan,email,centreId,methods){
   await paddleLoad();
   const pr=(CFG.paddle.prices||{})[plan]||(CFG.paddle.prices||{}).monthly;
   Paddle.Checkout.open({items:[{priceId:pr,quantity:1}],customer:{email:email},customData:{centre_id:String(centreId||'')},
-    settings:Object.assign({displayMode:'overlay',theme:'dark',locale:'en',allowLogout:false,showAddDiscounts:false},methods&&methods.length?{allowedPaymentMethods:methods}:{})});
+    settings:Object.assign({displayMode:'overlay',theme:'dark',locale:'en',allowLogout:false,showAddDiscounts:false},methods&&methods.length?{allowedPaymentMethods:methods,variant:'multi-page'}:{})});
 }
 const PM_APPLE=(()=>{try{return !!(window.ApplePaySession&&ApplePaySession.canMakePayments())}catch(e){return false}})();
-const PM_GOOGLE=!PM_APPLE&&/Chrome|CriOS|Android/.test(navigator.userAgent)&&!/Edg\/|OPR\//.test(navigator.userAgent);
+const PM_IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const PM_GOOGLE=!PM_APPLE&&!PM_IOS&&/Chrome|Android/.test(navigator.userAgent)&&!/CriOS|Edg\/|OPR\//.test(navigator.userAgent);
 let GPAY_JS=null;
 function gpayLoad(){if(GPAY_JS)return GPAY_JS;GPAY_JS=new Promise((res,rej)=>{if(window.google&&google.payments&&google.payments.api)return res();const x=document.createElement('script');x.src='https://pay.google.com/gp/p/js/pay.js';x.async=true;x.onload=()=>res();x.onerror=()=>{GPAY_JS=null;rej(new Error('gpay'))};document.head.appendChild(x)});return GPAY_JS}
 async function gpayMount(box,onClick){
