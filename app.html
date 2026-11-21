@@ -569,6 +569,48 @@ main{gap:20px;padding-block:28px 56px}
 .gtile .gico{width:52px;height:52px}.gpick-t .gico{width:44px;height:44px}.gear-h .gico{width:36px;height:36px}
 .gear-h small{white-space:normal}
 @media(prefers-reduced-motion:reduce){.gtile{transition:none}.gtile:hover{transform:none}.qb:active{transform:none}}
+.hw-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.hw-sum{display:flex;flex-wrap:wrap;gap:8px}
+.hw-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;font-weight:700;font-size:.86rem}
+.hw-chip svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hw-chip b{font-family:var(--f-display);font-size:1rem}
+.hw-chip.sea{background:linear-gradient(165deg,#13698f,#0A2540);color:#fff}.hw-chip.sea svg{stroke:#8AD9E3}
+.hw-chip.pool{background:#8AD9E3;color:#0A2540}
+.hw-chip.none{background:rgba(255,122,92,.16);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,122,92,.6)}
+.hw-slot{display:flex;flex-direction:column;gap:10px}.hw-slot+.hw-slot{margin-top:14px;padding-top:16px;border-top:1px solid var(--line)}
+.hw-time b{font-family:var(--f-display);font-size:1.15rem}
+.hw-lanes{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:760px){.hw-lanes.n2{grid-template-columns:1fr 1fr}.hw-lanes.n3{grid-template-columns:1fr 1fr 1fr}}
+.hw-lane{border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.hw-lane h3{margin:0;display:flex;align-items:center;gap:8px;font-size:.95rem;font-weight:800;letter-spacing:.02em}
+.hw-lane h3 svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hw-lane h3 .btn{margin-left:auto}
+.hw-lane.sea{background:linear-gradient(165deg,#13698f 0%,#0d4a6e 45%,#0A2540 100%);color:#fff;box-shadow:inset 0 0 0 1px rgba(138,217,227,.25)}.hw-lane.sea h3 svg{stroke:#8AD9E3}
+.hw-lane.pool{background:linear-gradient(165deg,#a9e6ee,#6fcbd8);color:#0A2540}.hw-lane.pool h3 svg{stroke:#0A2540}
+.hw-lane.none{background:rgba(255,122,92,.08);box-shadow:inset 0 0 0 1.5px rgba(255,122,92,.55)}
+.hw-spot{background:var(--surface);color:var(--ink);border-radius:14px;overflow:hidden;box-shadow:0 6px 16px -10px rgba(0,0,0,.45)}
+.hw-spot.is-full{box-shadow:0 0 0 2px #E5484D,0 6px 16px -10px rgba(0,0,0,.45)}
+.hw-sh{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;background:var(--soft)}
+.hw-sh.static{cursor:default}.hw-sh:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.hw-th{flex:none;width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:rgba(138,217,227,.22);overflow:hidden}
+.hw-th svg{width:24px;height:24px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hw-th img{width:100%;height:100%;object-fit:cover}
+.hw-nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.hw-nm b{font-weight:800}
+.hw-nm small{display:flex;align-items:center;gap:4px;color:var(--accent);font-weight:700;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hw-nm small.muted{color:var(--muted)}
+.hw-nm small svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2}
+.hw-cap{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.hw-cap b{font-family:var(--f-display);font-size:1.15rem;font-variant-numeric:tabular-nums}.hw-cap i{font-style:normal;color:var(--muted);font-size:.85rem}
+.hw-bar{width:56px;height:5px;border-radius:9px;background:var(--line);overflow:hidden}.hw-bar span{display:block;height:100%;background:#8AD9E3;border-radius:9px}
+.hw-spot.is-full .hw-bar span{background:#E5484D}
+.hw-cap em{font-style:normal;font-size:.7rem;font-weight:800;color:#fff;background:#E5484D;padding:1px 7px;border-radius:99px}
+.hw-list{display:flex;flex-direction:column}
+.hw-p{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;min-height:48px}
+.hw-p+.hw-p{border-top:1px solid var(--line)}.hw-p:hover{background:var(--soft)}.hw-p:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.hw-lane.none .hw-p{background:var(--surface);border-radius:12px;color:var(--ink)}.hw-lane.none .hw-p+.hw-p{border-top:0;margin-top:6px}
+.hw-av{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#0A2540;color:#8AD9E3;font-size:.75rem;font-weight:800;box-shadow:inset 0 0 0 1.5px rgba(138,217,227,.5)}
+.hw-pm{flex:1;min-width:0;display:flex;flex-direction:column}.hw-pm strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hw-pm small{color:var(--muted);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hw-ins{flex:none;max-width:40%;font-size:.78rem;font-weight:700;padding:3px 9px;border-radius:99px;background:rgba(138,217,227,.18);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tphoto{position:relative;aspect-ratio:240/132;overflow:hidden;border-radius:12px;background:#0b2a3d}
 .tphoto>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .tphoto.is-full>img{filter:saturate(.85)}
@@ -1080,14 +1122,47 @@ function gsRender(){
     '<div class="gs-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+st.length+'" aria-valuenow="'+done+'"><i style="width:'+Math.round(done/st.length*100)+'%"></i></div>'+
     '<ol class="gs-list">'+st.map((x,i)=>'<li class="'+(x[3]?'ok':'')+'"><button type="button" data-act="gsGo" data-k="'+x[0]+'" data-a="'+x[4]+'"'+(x[3]?' aria-label="'+esc(x[1])+' (done)"':'')+'><span class="gs-n" aria-hidden="true">'+(x[3]?'✓':(i+1))+'</span><span class="gs-t"><b>'+esc(x[1])+'</b><small>'+esc(x[2])+'</small></span><svg class="gs-a" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></li>').join('')+'</ol>';
 }
+/* ---- Home: today, who goes where ---- */
+const HW_BOAT='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15h18l-3 4H6zM6 15V9h7l3 6M9 9V5M9 5l4 2-4 2"/></svg>';
+const HW_PIN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
+function hwIni(n){const p=String(n||'?').trim().split(/\s+/);return ((p[0]||'?')[0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()}
+function hwPerson(b,cr){const c=S.clients[b.clientId]||{},L=legsOf(b),nx=L.length>1?L.filter((l,i)=>i!==b.__leg).map(l=>slotTime(slotNorm(l.c))+' '+legWhere(l)).join(', '):'';
+  return '<button type="button" class="hw-p" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="hw-av" aria-hidden="true">'+esc(hwIni(c.nom))+'</span><span class="hw-pm"><strong>'+esc(c.nom||'Deleted customer')+'</strong><small>'+esc(b.tarifNom||'')+(nx?' · also '+esc(nx):'')+'</small></span>'+
+    (b.instructeurId?'<span class="hw-ins">'+esc(staffName(b.instructeurId))+'</span>':'<span class="pill st-none">No instructor</span>')+'</button>'}
+function hwSpot(x,cr,t){const n=x.list.length,full=!!x.cap&&n>=x.cap,pct=x.cap?Math.min(100,Math.round(n*100/x.cap)):0,site=x.type==='boat'?tripSiteOf(t,cr,x):'';
+  return '<div class="hw-spot'+(full?' is-full':'')+'"><button type="button" class="hw-sh" data-act="hwTrip" data-k="'+esc(x.k)+'" data-cr="'+esc(cr)+'" aria-label="'+esc('Open '+x.name+', '+cr)+'">'+
+    '<span class="hw-th">'+(x.photo?'<img src="'+x.photo+'" alt="">':(x.type==='pool'?POOL_SVG:HW_BOAT))+'</span>'+
+    '<span class="hw-nm"><b>'+esc(x.name)+'</b>'+(x.type==='boat'?'<small class="'+(site?'':'muted')+'">'+HW_PIN+esc(site||'No dive site yet')+'</small>':'')+'</span>'+
+    '<span class="hw-cap"><b>'+n+(x.cap?'<i>/'+x.cap+'</i>':'')+'</b>'+(x.cap?'<span class="hw-bar"><span style="width:'+pct+'%"></span></span>':'')+(full?'<em>Full</em>':'')+'</span></button>'+
+    '<div class="hw-list">'+x.list.map(b=>hwPerson(b,cr)).join('')+'</div></div>'}
+function hwSimple(name,type,list,cr){return '<div class="hw-spot"><div class="hw-sh static"><span class="hw-th">'+(type==='pool'?POOL_SVG:HW_BOAT)+'</span><span class="hw-nm"><b>'+esc(name)+'</b></span><span class="hw-cap"><b>'+list.length+'</b></span></div><div class="hw-list">'+list.map(b=>hwPerson(b,cr)).join('')+'</div></div>'}
+function homeWhere(t,tod){
+  const sp=SPOTS();let sea=0,pool=0,none=0,html='';
+  CRENEAUX.forEach(cr=>{
+    if(!tod.some(b=>legsOf(b).some(x=>slotNorm(x.c)===cr)))return;
+    let seaH='',poolH='',noneL=[];
+    if(sp.length){const tm=tripMap(t,cr);
+      tm.spots.forEach(x=>{if(!x.list.length)return;if(x.type==='pool'){pool+=x.list.length;poolH+=hwSpot(x,cr,t)}else{sea+=x.list.length;seaH+=hwSpot(x,cr,t)}});
+      noneL=tm.none;none+=noneL.length;
+    }else{const L=[];tod.forEach(b=>{const ls=legsOf(b);ls.forEach((l,i)=>{if(slotNorm(l.c)===cr)L.push(legView(b,l,i,ls.length))})});
+      const P=L.filter(b=>b.__w==='pool'||(!b.__w&&isPoolAct(b))),Se=L.filter(b=>P.indexOf(b)<0);pool+=P.length;sea+=Se.length;
+      if(Se.length)seaH=hwSimple('Sea','boat',Se,cr);if(P.length)poolH=hwSimple('Pool','pool',P,cr)}
+    const tot=(seaH?1:0)+(poolH?1:0)+(noneL.length?1:0);
+    html+='<div class="hw-slot"><div class="hw-time"><b>'+esc(cr)+'</b></div><div class="hw-lanes n'+tot+'">'+
+      (seaH?'<section class="hw-lane sea"><h3>'+SEA_SVG+'<span>Sea</span></h3>'+seaH+'</section>':'')+
+      (poolH?'<section class="hw-lane pool"><h3>'+POOL_SVG+'<span>Pool</span></h3>'+poolH+'</section>':'')+
+      (noneL.length?'<section class="hw-lane none"><h3><span>Not placed yet</span><button type="button" class="btn ghost sm" data-act="hwTrip" data-k="none" data-cr="'+esc(cr)+'">Place them</button></h3><div class="hw-list">'+noneL.map(b=>hwPerson(b,cr)).join('')+'</div></section>':'')+
+      '</div></div>'});
+  const sum=(sea?'<span class="hw-chip sea">'+SEA_SVG+'Sea <b>'+sea+'</b></span>':'')+(pool?'<span class="hw-chip pool">'+POOL_SVG+'Pool <b>'+pool+'</b></span>':'')+(none?'<span class="hw-chip none">Not placed <b>'+none+'</b></span>':'');
+  return{html,sum}}
 V.home={
  shell(m){
   m.innerHTML='<div class="head"><div><h1 id="hTitleOut">Today</h1><p class="sub" id="hDate"></p><p class="sub" id="hWelcome" style="font-weight:700;color:var(--ink)"></p></div></div>'+
    '<section class="card gs" id="gsCard" hidden></section>'+
    '<div class="kpis" id="kpis"></div>'+
-   '<div class="grid2"><section class="card"><h2>On the schedule</h2><div id="todayList"></div></section>'+
-   '<section class="card"><h2>To collect</h2><div id="dueList"></div></section></div>'+
-   '<section class="card"><h2>Reminders for tomorrow</h2><div id="remList"></div></section>'+
+   '<section class="card hw"><div class="hw-top"><h2>Today: who goes where</h2><div class="hw-sum" id="hwSum"></div></div><div id="todayList"></div></section>'+
+   '<div class="grid2"><section class="card"><h2>To collect</h2><div id="dueList"></div></section>'+
+   '<section class="card"><h2>Reminders for tomorrow</h2><div id="remList"></div></section></div>'+
    '<section class="card"><h2>Check-ins and online requests to book</h2><div id="ciList"></div></section>'+
    '<section class="card"><h2>Next 7 days</h2><div class="week" id="week"></div></section>';
  },
@@ -1095,7 +1170,7 @@ V.home={
   const t=today();$('#hDate').textContent=fmtLong(t);
   {const hm=(S.config&&S.config.home)||{},hd=hm.hide||{};$('#hTitleOut').textContent=hm.title||'Today';$('#hWelcome').textContent=hm.msg||'';$('#hWelcome').hidden=!hm.msg;
    $('#kpis').hidden=!!hd.kpis;$('#todayList').closest('section').hidden=!!hd.today;$('#dueList').closest('section').hidden=!!hd.due;$('#ciList').closest('section').hidden=!!hd.ci;$('#remList').closest('section').hidden=!!hd.rem;$('#week').closest('section').hidden=!!hd.week;
-   const g=$('#todayList').closest('.grid2');if(g)g.hidden=!!(hd.today&&hd.due)}
+   const g=$('#dueList').closest('.grid2');if(g)g.hidden=!!(hd.due&&hd.rem)}
   if(loading()){$('#kpis').innerHTML='';$('#todayList').innerHTML=emptyBox('Loading…','Fetching the shared data.');return}
   gsRender();
   const B=Object.values(S.bookings).filter(b=>b.statut!=='Cancelled');
@@ -1112,15 +1187,7 @@ V.home={
    '<div class="kpi'+(unas?' warn':'')+'"><span>No instructor</span><b>'+unas+'</b></div>'+
    '<div class="kpi"><span>New customers</span><b>'+newc+'</b></div>'+
    (feeOpen?'<div class="kpi warn"><span>Marine fees unpaid</span><b>'+feeOpen+'</b></div>':'');
-  let h='';
-  CRENEAUX.forEach(cr=>{
-    const l=tod.filter(b=>legsOf(b).some(x=>slotNorm(x.c)===cr));
-    if(!l.length)return;
-    h+='<div class="ghead" style="margin:6px -16px 0;padding-inline:16px"><span>'+esc(cr)+'</span><small>'+l.length+(capOf(cr)?' / '+capOf(cr)+(l.length>=capOf(cr)?' · Full':''):'')+'</small></div>'+fleetMini(t,cr);
-    l.forEach(b=>{const c=S.clients[b.clientId]||{};
-      h+='<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(c.nom||'Deleted customer')+'</strong>'+stPill(b.statut)+'</span><span class="r2">'+esc(b.tarifNom||'')+(legsOf(b).length>1?' · '+esc(legWhere(legsOf(b).find(x=>slotNorm(x.c)===cr)||{}))+' <span class="legmini">'+esc(legLine(b))+'</span>':'')+'</span></button><div class="r-side">'+(b.instructeurId?esc(staffName(b.instructeurId)):'<span class="pill st-none">To assign</span>')+'</div></div>';
-    });
-  });
+  const HW=homeWhere(t,tod);$('#hwSum').innerHTML=HW.sum;const h=HW.html;{const k=$('#kpis'),hc=document.querySelector('.card.hw');if(k&&hc&&k.nextElementSibling!==hc)k.after(hc)}
   $('#todayList').innerHTML=h||emptyBox('Nothing scheduled today','Add a booking with the button at the top.');
   const due=B.map(b=>({b,k:calc(b)})).filter(x=>x.k.due>0&&x.b.date<=t).sort((a,b)=>a.b.date<b.b.date?-1:1);
   $('#dueList').innerHTML=due.length?due.slice(0,8).map(x=>{const c=S.clients[x.b.clientId]||{};
@@ -2727,6 +2794,7 @@ function openTarif(id){
 const armed=(t,label)=>{if(t.dataset.arm==='1')return true;t.dataset.arm='1';t.dataset.label=t.textContent;t.textContent=label||'Confirm deletion';setTimeout(()=>{if(t.isConnected){t.dataset.arm='';t.textContent=t.dataset.label}},4000);return false};
 const ACT={
  go(t){go(t.dataset.v)},
+ hwTrip(t){ST.date=today();openTrip(t.dataset.k,t.dataset.cr)},
  gearPick(t){document.querySelectorAll('.gpick-t').forEach(b=>b.setAttribute('aria-checked',String(b===t)));const c=t.dataset.cat,w=document.getElementById('g-catw'),i=document.getElementById('g-cat');
    if(c==='Other'){w.hidden=false;if(GEAR_TYPES.includes(i.value))i.value='';i.focus()}else{w.hidden=true;i.value=c}
    const n=document.getElementById('g-nom');if(n)n.placeholder=GEAR_HINT[c]||'Size or name';const u=document.getElementById('g-unit');if(u&&!MODAL.id)u.value=/lead/i.test(c)?'kg':'pcs'},
