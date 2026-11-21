@@ -612,7 +612,7 @@ main{gap:20px;padding-block:28px 56px}
 .hw-pm{flex:1;min-width:0;display:flex;flex-direction:column}.hw-pm strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hw-pm small{color:var(--muted);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hw-ins{flex:none;max-width:40%;font-size:.78rem;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--soft);box-shadow:inset 0 0 0 1px var(--hw-pool2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.setnav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:6px;border-radius:20px;background:var(--surface);box-shadow:var(--shadow)}
+.setnav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding:6px;border-radius:20px;background:var(--surface);box-shadow:var(--shadow)}
 .setnav-b{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:68px;padding:8px 4px;border-radius:15px;cursor:pointer;text-align:center;font-weight:700;font-size:.86rem;line-height:1.15;color:var(--muted);transition:background .15s,color .15s}
 .setnav-b svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .setnav-b:hover{background:var(--soft);color:var(--ink)}
@@ -620,7 +620,7 @@ main{gap:20px;padding-block:28px 56px}
 .setnav-b:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .setdesc{margin:-4px 4px 0;color:var(--muted);font-size:.95rem}
 .setpane{display:flex;flex-direction:column;gap:inherit}.setpane[hidden]{display:none}
-@media(max-width:520px){.setnav{gap:3px;padding:4px}.setnav-b{min-height:62px;font-size:.74rem;padding:7px 2px;gap:5px}.setnav-b svg{width:22px;height:22px}}
+@media(max-width:520px){.setnav{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px}.setnav-b{min-height:62px;font-size:.74rem;padding:7px 2px;gap:5px}.setnav-b svg{width:22px;height:22px}}
 @media(prefers-reduced-motion:reduce){.setnav-b{transition:none}}
 .tphoto{position:relative;aspect-ratio:240/132;overflow:hidden;border-radius:12px;background:#0b2a3d}
 .tphoto>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -1460,9 +1460,16 @@ function interestList(t){
 }
 const PAYROLLSHEET={id:'1jFZnUyEbE_97zGPKLw6aVLVtKN6MLYpsoMLGbPX8-jw'};
 const PAYSHEET={id:'155h_LSbcxGNDciMu6Dhlp4VWnt4QS3H0cIYl7E0iXwg',tab:'Payments'};
+/* check-in answer ("Fun dive(s)", "Open Water course"…) -> the matching price */
+const INT_RULES=[[/fun ?dive/,/fun ?dive/],[/discover|try ?dive|dsd/,/discover|try ?dive|dsd/],[/scuba diver/,/scuba diver/],[/open water/,/open water/],[/advanced/,/advanced/],[/refresh|tune ?up|review/,/refresh|tune ?up|review/],[/rescue|efr|first aid/,/rescue|efr|first aid/],[/divemaster|dive ?master|\bpro\b/,/divemaster|dive ?master/],[/nitrox/,/nitrox/],[/deep/,/deep/],[/wreck/,/wreck/],[/specialty|speciality/,/specialty|speciality|nitrox|deep|wreck/],[/snorkel/,/snorkel/],[/night/,/night/]];
+function guessTarif(interest){const L=tarifs().list||[];if(!interest||!L.length)return null;const parts=String(interest).split(/,\s*/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+  for(const p of parts){const ex=L.find(x=>String(x.nom).toLowerCase()===p);if(ex)return ex;
+    for(const r of INT_RULES){if(r[0].test(p)){const m=L.filter(x=>r[1].test(String(x.nom).toLowerCase()));if(m.length)return m.slice().sort((a,b)=>String(a.nom).length-String(b.nom).length)[0]}}}
+  return null}
+const srcList=()=>{const c=S.config&&S.config.sources;return Array.isArray(c)&&c.length?c:SRC};
 function normSrc(t){
   t=String(t||'').trim();if(!t)return 'Unknown';
-  const l=t.toLowerCase(),ex=SRC.find(x=>x.toLowerCase()===l);if(ex)return ex;
+  const l=t.toLowerCase(),ex=srcList().find(x=>String(x).toLowerCase()===l)||SRC.find(x=>x.toLowerCase()===l);if(ex)return ex;
   if(/insta|\big\b/.test(l))return 'Instagram';
   if(/google|maps|search/.test(l))return 'Google / Google Maps';
   if(/booking/.test(l))return 'Booking.com';
@@ -1683,6 +1690,7 @@ const SET_CATS=[
  ['trips','Trips','Dive sites, boats, pool and departure times.','<path d="M3 15h18l-3 4H6zM6 15V9h7l3 6M9 9V5M9 5l4 2-4 2"/>',['fleetCard','slotCard','capCard']],
  ['book','Bookings','Online booking, the check-in form and your customer lists.','<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3"/>',['bkoCard','ciSet','cfgLists']],
  ['money','Money','Park and eco fees, commissions, agency costs and payment protection.','<circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2c-.5-1-1.6-1.6-2.8-1.6-1.6 0-2.8.9-2.8 2.2 0 3 5.6 1.6 5.6 4.5 0 1.3-1.2 2.2-2.8 2.2-1.3 0-2.4-.6-2.9-1.7M12 6v1.6M12 16.4V18"/>',['cfgFees','feeCard']],
+ ['mkt','Marketing','How customers hear about you: the list in the check-in form.','<path d="M4 10v4a1 1 0 0 0 1 1h2l5 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',['srcCard']],
  ['team','Team','Access code, accounts and what each role can see.','<circle cx="9" cy="8.5" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.5 14.4c3 .1 5.5 2.4 5.5 5.6"/>',['joinCard','teamAcc','roleCard']]];
 let SET_CAT=(()=>{try{return localStorage.getItem('dd-setcat')||'center'}catch(e){return 'center'}})();
 function setCatInit(m){
@@ -1746,6 +1754,7 @@ V.settings={
    '</div>'+
    '<label class="fld check full"><input type="checkbox" id="cLock"><span>Protect payments: a collected payment cannot be deleted, and neither can a paid booking, unless the customer was refunded in full first. Deleting a fully refunded payment removes the payment and its refund together.</span></label>'+
    '<div class="actions"><button type="button" class="btn" data-act="saveCfg" id="cSave">Save fees and commission</button></div></section>'+
+   '<section class="card" id="srcCard"><h2>How customers hear about you</h2><p class="hint">The choices in the check-in form (“How did you hear about us?”) and on each customer. One per line, in the order you want. Customers pick from this list, they cannot type.</p><label class="fld">Choices (one per line)<textarea id="srcList" rows="10"></textarea></label><div class="actions"><button type="button" class="btn ghost" data-act="srcReset">Use the standard list</button><button type="button" class="btn" data-act="srcSave" id="srcSave">Save the list</button></div></section>'+
    '<section class="card" id="cfgLists"><h2>Agents, hotels and levels</h2><p class="hint">The lists offered when you add a customer or a booking.</p><div class="gf"><label class="fld">Agents and hotels (one per line)<textarea id="cAgents" rows="6"></textarea></label><label class="fld">Certification levels (one per line)<textarea id="cNiv" rows="6"></textarea></label></div><div class="actions"><button type="button" class="btn" data-act="saveCfg" id="cSave2">Save lists</button></div></section>';
   V.settings.cfgLoaded=false;V.settings.accLoaded=false;V.settings.ciLoaded=false;
   setCatInit(m);
@@ -1758,7 +1767,7 @@ V.settings={
     $('#cLock').checked=c.lockPay;V.settings.cfgLoaded=true;
     const br=(S.config&&S.config.brand)||{};$('#bName').value=br.name||'';$('#bNavy').value=br.navy||'#0A2540';$('#bAcc').value=br.lime||((br.accent&&!['#0b7285','#2e799e','#8ad9e3'].includes(String(br.accent).toLowerCase()))?br.accent:'#FF7A5C');$('#bPrevImg').src=br.logo||LOGO0;V.settings.pendLogo=undefined;
   }
-  ciFill();subRender();fleetFill();slotFill();capFill();bkoFill();
+  ciFill();subRender();fleetFill();slotFill();capFill();bkoFill();{const sl=document.getElementById('srcList');if(sl&&document.activeElement!==sl&&!sl.dataset.dirty)sl.value=srcList().join('\n');if(sl){sl.disabled=!canEdit;sl.oninput=()=>{sl.dataset.dirty='1'}}const sv=document.getElementById('srcSave');if(sv)sv.hidden=!canEdit}
   $$('#bName,#bNavy,#bAcc,#bFile').forEach(e=>e.disabled=!canEdit);$('#brandCard').hidden=!canEdit;joinRender();{const ta=document.getElementById('teamAcc');if(ta){const ok=!!(window.DD_STANDALONE&&canEdit&&(window.DD_SHIM||window.claude).admin&&!/[?&]demo/.test(location.search));ta.hidden=!ok;if(ok&&!ta.dataset.loaded){ta.dataset.loaded='1';loadAccounts()}}}
   $$('#cCp,#cCf,#cEco,#cPe,#cPl,#cSites,#cAgents,#cNiv,#cLock').forEach(e=>e.disabled=!canEdit);
   $('#cSave').hidden=!canEdit;{const c2=document.getElementById('cSave2');if(c2)c2.hidden=!canEdit}
@@ -2287,7 +2296,7 @@ function openClient(id,opts){
    '<label class="fld">Certification no.<input id="c-cert" value="'+esc(v.numCert||'')+'"></label>'+
    '<label class="fld">Emergency contact<input id="c-un" value="'+esc(v.urgenceNom||'')+'"></label>'+
    '<label class="fld">Emergency phone<input id="c-ut" type="tel" value="'+esc(v.urgenceTel||'')+'"></label>'+
-   '<label class="fld full">How they heard about us<input id="c-heard" list="dl-src" value="'+esc(v.heard||'')+'"><datalist id="dl-src">'+SRC.map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist></label>'+
+   '<label class="fld full">How they heard about us<select id="c-heard">'+opt('','—',!v.heard)+srcList().map(x=>opt(x,x,x===v.heard)).join('')+(v.heard&&!srcList().includes(v.heard)?opt(v.heard,v.heard,true):'')+'</select></label>'+
    '<label class="fld full">Wants to do<input id="c-interest" value="'+esc(v.interest||'')+'" placeholder="Open Water course, Fun dive(s)…"></label>'+
    '<label class="fld">Planned date<input id="c-planned" type="date" value="'+esc(v.plannedDate||'')+'"></label>'+
    '<label class="fld">Preferred time<select id="c-pslot">'+opt('','—',!v.plannedSlot)+CRENEAUX.map(x=>opt(x,x,x===v.plannedSlot)).join('')+'</select></label></div>'+
@@ -2299,7 +2308,7 @@ function openClient(id,opts){
    '</div>'+
    (v.checkinAnswers?'<div class="fld full"><span class="hint">Check-in answers</span><div style="white-space:pre-wrap;padding:8px 10px;border:1px solid var(--line,#ccc);border-radius:8px">'+esc(String(v.checkinAnswers).split(' | ').join('\n'))+'</div></div>':'')+
    '<label class="fld">Notes<textarea id="c-notes">'+esc(v.notes||'')+'</textarea></label>'+
-   (id?'<hr class="sep"><h3>Bookings</h3>'+(hist.length?hist.map(b=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(fmtShort(b.date))+'</strong>'+stPill(b.statut)+'</span><span class="r2">'+esc(b.tarifNom||'')+'</span></button><div class="r-side">'+(calc(b).due>0?'<span class="due">Due '+fmt(calc(b).due)+'</span>':'')+'</div></div>').join(''):'<p class="hint">No bookings for this customer.</p>'):'')+
+   (id?'<hr class="sep"><h3>Bookings</h3>'+(hist.length?hist.map(b=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" data-act="editBooking" data-id="'+esc(b.id)+'"><span class="r1"><strong>'+esc(fmtShort(b.date))+'</strong>'+stPill(b.statut)+'</span><span class="r2">'+esc(b.tarifNom||'')+'</span></button><div class="r-side">'+payBadge(calc(b),b)+((+b.frais||0)>0?feeBadge(!!b.fraisPaye):'')+'</div></div>').join(''):'<p class="hint">No bookings for this customer.</p>'):'')+
    '<div class="err" id="c-err" role="alert"></div>'+
    '<div class="actions">'+(id&&canEdit?'<button type="button" class="btn danger push" data-act="delClient">Delete</button>':'')+
    (id&&waOk(v.tel)?'<a class="btn ghost" href="'+esc(waLink(v.tel,helloMsg(v)))+'" target="_blank" rel="noopener">WhatsApp</a>':'')+
@@ -2828,6 +2837,10 @@ function openTarif(id){
 const armed=(t,label)=>{if(t.dataset.arm==='1')return true;t.dataset.arm='1';t.dataset.label=t.textContent;t.textContent=label||'Confirm deletion';setTimeout(()=>{if(t.isConnected){t.dataset.arm='';t.textContent=t.dataset.label}},4000);return false};
 const ACT={
  go(t){go(t.dataset.v)},
+ async srcSave(){const sl=document.getElementById('srcList');const L=Array.from(new Set(sl.value.split('\n').map(x=>x.trim().slice(0,60)).filter(Boolean))).slice(0,40);
+   if(!L.length){toast('Add at least one choice.','bad');return}
+   const ok=await W(()=>S.config?db.doc('config/main').update({sources:L}):db.doc('config/main').set({sources:L}),'List saved. The check-in form shows it now.');if(ok){delete sl.dataset.dirty;sl.value=L.join('\n')}},
+ async srcReset(){const sl=document.getElementById('srcList');sl.value=SRC.join('\n');sl.dataset.dirty='1';toast('Standard list filled in. Press Save the list to keep it.')},
  setCat(t){setCatShow(t.dataset.c);const n=document.querySelector('.setnav');if(n&&n.getBoundingClientRect().top<0)n.scrollIntoView({block:'start'})},
  hwTrip(t){ST.date=today();openTrip(t.dataset.k,t.dataset.cr)},
  gearPick(t){document.querySelectorAll('.gpick-t').forEach(b=>b.setAttribute('aria-checked',String(b===t)));const c=t.dataset.cat,w=document.getElementById('g-catw'),i=document.getElementById('g-cat');
@@ -3061,7 +3074,7 @@ const ACT={
  staffAddDone(t){const id=t.dataset.id,d=(inPer(today())?today():PER.from);openBooking(null,{instructeurId:id,date:d})},
 
  commSrc(t){openCommSrc(t.dataset.k)},
- checkinBook(t){const c=S.clients[t.dataset.id]||{};const T=c.interest&&tarifs().list.find(x=>String(x.nom).toLowerCase()===String(c.interest).toLowerCase());const d={clientId:t.dataset.id,date:(c.plannedDate&&c.plannedDate>=today())?c.plannedDate:today(),creneau:c.plannedSlot||'Morning 9:00'};if(T){d.tarifId=T.id;d.prixUnit=T.prix}if(c.bookOnline){d.statut='Confirmed';d.notes=['Online request'+(+c.bookPeople>1?' for '+(+c.bookPeople)+' people':''),c.bookNotes].filter(Boolean).join(' · ')}openBooking(null,d)},
+ checkinBook(t){const c=S.clients[t.dataset.id]||{};const T=guessTarif(c.interest);const d={clientId:t.dataset.id,date:(c.plannedDate&&c.plannedDate>=today())?c.plannedDate:today(),creneau:c.plannedSlot||'Morning 9:00'};if(T){d.tarifId=T.id;d.prixUnit=T.prix}if(c.bookOnline){d.statut='Confirmed';d.notes=['Online request'+(+c.bookPeople>1?' for '+(+c.bookPeople)+' people':''),c.bookNotes].filter(Boolean).join(' · ')}openBooking(null,d)},
  payXlsx(){
   if(!dl){toast('Export is not available in this view.','bad');return}
   const rows=payRowsAll();
@@ -3155,7 +3168,7 @@ const ACT={
 };
 /* ---- customer check-in: QR code, poster, editable questions ---- */
 const CI_INTS=['Fun dive(s)','Discovery Scuba Dive (try dive)','Scuba Diver course','Open Water course','Advanced course','Refresher (Scuba Tune Up)','Specialty course (Nitrox, Deep, Wreck...)','Rescue / EFR course','Divemaster / pro course','Not sure yet, I need advice'];
-const CI_FIELDS=[['first','First name',1,1],['last','Last name',1,1],['email','Email',1,1],['phone','Phone / WhatsApp',0,1],['nat','Nationality',0,1],['lang','Preferred language',0,0],['local','Do you live in Indonesia?',0,1],['interest','Activities ("What would you like to do with us?")',0,0],['planned','Planned date (if you know)',0,0],['time','Preferred start time',0,0],['level','Certification level',0,1],['certNo','Certification number',0,0],['emName','Emergency contact name',0,1],['emPhone','Emergency contact phone',0,1],['bcd','BCD size',0,0],['wetsuit','Wetsuit size',0,0],['fins','Fins size (EU shoe size)',0,0],['plombs','Weight belt (kg of lead)',0,0],['heard','How did you hear about us?',0,0]];
+const CI_FIELDS=[['first','First name',1,1],['last','Last name',1,1],['email','Email',1,1],['phone','Phone / WhatsApp',0,1],['nat','Nationality',0,1],['lang','Preferred language',0,0],['local','Do you live in Indonesia?',0,1],['interest','Activities ("What would you like to do with us?")',0,0],['planned','Planned date (if you know)',0,0],['level','Certification level',0,1],['certNo','Certification number',0,0],['emName','Emergency contact name',0,1],['emPhone','Emergency contact phone',0,1],['bcd','BCD size',0,0],['wetsuit','Wetsuit size',0,0],['fins','Fins size (EU shoe size)',0,0],['plombs','Weight belt (kg of lead)',0,0],['heard','How did you hear about us?',0,0]];
 function qrMake(text){
   const bytes=Array.from(new TextEncoder().encode(text));
   const ECC=[0,10,16,26,18,24,16,18,22,22,26],NB=[0,1,1,1,2,2,4,4,4,5,5];
@@ -3963,15 +3976,15 @@ async function write(fn,n,apply){
   finally{STATE.inflight--;STATE.seq++}
 }
 async function mirrorBrand(n,id,d){
-  if(DEMO||!CENTRE||n!=='config'||id!=='main'||!d||(d.brand===undefined&&d.checkinForm===undefined&&d.booking===undefined))return;
-  const cur=Object.assign({},colOf(n)[id]||{},d),pub=Object.assign({},cur.brand||{});if(cur.checkinForm)pub.form=cur.checkinForm;if(window.__bookPublic)pub.book=window.__bookPublic(cur);
+  if(DEMO||!CENTRE||n!=='config'||id!=='main'||!d||(d.brand===undefined&&d.checkinForm===undefined&&d.booking===undefined&&d.sources===undefined))return;
+  const cur=Object.assign({},colOf(n)[id]||{},d),pub=Object.assign({},cur.brand||{});if(cur.checkinForm)pub.form=cur.checkinForm;if(Array.isArray(cur.sources)&&cur.sources.length)pub.sources=cur.sources;if(window.__bookPublic)pub.book=window.__bookPublic(cur);
   try{await api('/rest/v1/public_info?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{id:String(CENTRE),data:pub}})}catch(e){}
 }
 window.__pubPublic=()=>publishPublic();
 async function publishPublic(){
   if(DEMO||!CENTRE||ROLE!=='manager'||window.__viewC)return;
   const cur=colOf('config').main||{};if(!cur.booking)return;
-  const pub=Object.assign({},cur.brand||{});if(cur.checkinForm)pub.form=cur.checkinForm;if(window.__bookPublic)pub.book=window.__bookPublic(cur);
+  const pub=Object.assign({},cur.brand||{});if(cur.checkinForm)pub.form=cur.checkinForm;if(Array.isArray(cur.sources)&&cur.sources.length)pub.sources=cur.sources;if(window.__bookPublic)pub.book=window.__bookPublic(cur);
   try{await api('/rest/v1/public_info?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{id:String(CENTRE),data:pub}})}catch(e){}
 }
 function docRef(n,id){

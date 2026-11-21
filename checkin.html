@@ -51,8 +51,7 @@ fieldset{border-top:3px solid var(--accent)}
 </fieldset>
 <fieldset><legend>What would you like to do with us?</legend>
 <div id="ints"></div>
-<div class="two"><label class="f">Planned date (if you know)<input name="planned" type="date"></label>
-<label class="f">Preferred start time<select name="time"><option value="">—</option><option>9:00 (morning)</option><option>11:00 (late morning)</option><option>Afternoon</option></select></label></div>
+<label class="f">Planned date (if you know)<input name="planned" type="date"></label>
 </fieldset>
 <fieldset><legend>Diving</legend>
 <label class="f">Certification level *<select name="level" required><option value="">—</option><option>None (beginner)</option><option>Scuba Diver</option><option>Open Water Diver</option><option>Advanced Adventurer</option><option>Advanced Open Water</option><option>Stress &amp; Rescue</option><option>Dive Guide / Divemaster</option><option>Assistant Instructor</option><option>Instructor</option><option>Other</option></select></label>
@@ -71,7 +70,7 @@ fieldset{border-top:3px solid var(--accent)}
 <p class="hint">Not sure? Leave it empty and we will work it out with you at the dive shop.</p>
 </fieldset>
 <fieldset><legend>Last step</legend>
-<label class="f">How did you hear about us? (hotel, agent, friend, online…)<input name="heard"></label>
+<label class="f">How did you hear about us?<select name="heard"><option value="">—</option><option>Instagram</option><option>Google / Google Maps</option><option>Booking.com</option><option>Facebook</option><option>TikTok</option><option>Tripadvisor</option><option>Website</option><option>Hotel / accommodation</option><option>Travel agent / other dive shop</option><option>Friend / recommendation</option><option>Walk-in (passing by)</option><option>Returning customer</option><option>Other</option></select></label>
 <label class="chk"><input type="checkbox" name="consent" required><span>I agree that this dive center stores these details to organise my dive. *</span></label>
 </fieldset>
 <div id="err" role="alert"></div>
@@ -116,6 +115,7 @@ function applyForm(fc){
     if(/^#[0-9a-f]{6}$/i.test(b.accent||'')){document.documentElement.style.setProperty('--accent',b.accent);document.documentElement.style.setProperty('--gbtn',b.accent);document.documentElement.style.setProperty('--gbtn-on','#fff')}
     if(b.logo&&/^data:image\//.test(b.logo)){var lg=document.getElementById('lg');lg.src=b.logo;lg.style.display='inline';document.getElementById('wm').style.display='none'}
     if(b.legacy){var rs=document.documentElement.style;rs.setProperty('--bg','#F3F5F6');rs.setProperty('--line','#c9d9df');rs.setProperty('--muted','#566f7e');rs.setProperty('--ink','#101820');rs.setProperty('--gbtn','var(--accent)');rs.setProperty('--gbtn-on','#fff')}
+    if(Array.isArray(b.sources)&&b.sources.length){const h=document.querySelector('[name=heard]');if(h&&h.tagName==='SELECT')h.innerHTML='<option value="">—</option>'+b.sources.slice(0,40).map(x=>'<option>'+esc(String(x))+'</option>').join('')}
     if(b.form)applyForm(b.form);
     if(b.name){document.title=b.name+' · Check-in';document.getElementById('lg').alt=b.name}
     if(b.name&&b.name!=='Scubook'&&!b.logo){var w=document.getElementById('wm');w.className='wm plain';w.innerHTML='<i></i>';w.firstChild.textContent=b.name}
@@ -126,7 +126,7 @@ const f=document.getElementById('f'),err=document.getElementById('err'),go=docum
 f.addEventListener('submit',async e=>{
   e.preventDefault();err.textContent='';
   const fd=new FormData(f),d={};
-  ['first','last','email','phone','nat','lang','local','planned','time','level','certNo','emName','emPhone','bcd','wetsuit','fins','plombs','heard'].forEach(k=>d[k]=String(fd.get(k)||'').trim());
+  ['first','last','email','phone','nat','lang','local','planned','level','certNo','emName','emPhone','bcd','wetsuit','fins','plombs','heard'].forEach(k=>d[k]=String(fd.get(k)||'').trim());
   d.interest=[...f.querySelectorAll('.int:checked')].map(x=>x.value).join(', ');
   d.custom=((FC&&FC.custom)||[]).map(q=>({q:String(q.label),a:String(fd.get('x_'+q.id)||'').trim()})).filter(x=>x.a);
   const miss=[...f.elements].filter(el=>el.required&&!el.disabled&&el.type!=='checkbox'&&!String(el.value).trim());
