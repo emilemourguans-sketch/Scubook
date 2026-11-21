@@ -612,6 +612,16 @@ main{gap:20px;padding-block:28px 56px}
 .hw-pm{flex:1;min-width:0;display:flex;flex-direction:column}.hw-pm strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hw-pm small{color:var(--muted);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hw-ins{flex:none;max-width:40%;font-size:.78rem;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--soft);box-shadow:inset 0 0 0 1px var(--hw-pool2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.setnav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:6px;border-radius:20px;background:var(--surface);box-shadow:var(--shadow)}
+.setnav-b{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:68px;padding:8px 4px;border-radius:15px;cursor:pointer;text-align:center;font-weight:700;font-size:.86rem;line-height:1.15;color:var(--muted);transition:background .15s,color .15s}
+.setnav-b svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.setnav-b:hover{background:var(--soft);color:var(--ink)}
+.setnav-b[aria-selected="true"]{background:var(--lime);color:var(--on-lime)}
+.setnav-b:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.setdesc{margin:-4px 4px 0;color:var(--muted);font-size:.95rem}
+.setpane{display:flex;flex-direction:column;gap:inherit}.setpane[hidden]{display:none}
+@media(max-width:520px){.setnav{gap:3px;padding:4px}.setnav-b{min-height:62px;font-size:.74rem;padding:7px 2px;gap:5px}.setnav-b svg{width:22px;height:22px}}
+@media(prefers-reduced-motion:reduce){.setnav-b{transition:none}}
 .tphoto{position:relative;aspect-ratio:240/132;overflow:hidden;border-radius:12px;background:#0b2a3d}
 .tphoto>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .tphoto.is-full>img{filter:saturate(.85)}
@@ -1668,9 +1678,32 @@ function subRender(){
   el.innerHTML='<h2>Subscription</h2><div class="subg"><div><span class="hint">Plan</span><b>'+esc(plan)+'</b></div><div><span class="hint">Status</span><b>'+esc(st)+'</b></div>'+(nb?'<div><span class="hint">Billing</span><b>'+esc(nb)+'</b></div>':'')+'</div>'+
     (b.customer_id?'<div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="subPortal">Manage subscription</button></div><p class="hint" style="margin:0">Change your card, see your invoices or cancel. Opens our secure payment partner, Paddle.</p>':'<p class="hint" style="margin:0">Questions about billing? Write to <a href="mailto:contact@scubook.app">contact@scubook.app</a>.</p>');
 }
+const SET_CATS=[
+ ['center','Your center','Name, logo, colours, home page, currency and subscription.','<path d="M4 21V5l8-3 8 3v16"/><path d="M9 21v-5h6v5M8 9h2M14 9h2M8 13h2M14 13h2"/>',['subCard','brandCard','homeSetCard','curCard']],
+ ['trips','Trips','Dive sites, boats, pool and departure times.','<path d="M3 15h18l-3 4H6zM6 15V9h7l3 6M9 9V5M9 5l4 2-4 2"/>',['fleetCard','slotCard','capCard']],
+ ['book','Bookings','Online booking, the check-in form and your customer lists.','<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3"/>',['bkoCard','ciSet','cfgLists']],
+ ['money','Money','Park and eco fees, commissions, agency costs and payment protection.','<circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2c-.5-1-1.6-1.6-2.8-1.6-1.6 0-2.8.9-2.8 2.2 0 3 5.6 1.6 5.6 4.5 0 1.3-1.2 2.2-2.8 2.2-1.3 0-2.4-.6-2.9-1.7M12 6v1.6M12 16.4V18"/>',['cfgFees','feeCard']],
+ ['team','Team','Access code, accounts and what each role can see.','<circle cx="9" cy="8.5" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.5 14.4c3 .1 5.5 2.4 5.5 5.6"/>',['joinCard','teamAcc','roleCard']]];
+let SET_CAT=(()=>{try{return localStorage.getItem('dd-setcat')||'center'}catch(e){return 'center'}})();
+function setCatInit(m){
+  const head=m.querySelector('.head');m.querySelectorAll('.set-group').forEach(e=>e.remove());
+  const nav=document.createElement('div');nav.className='setnav';nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Settings topics');
+  nav.innerHTML=SET_CATS.map(c=>'<button type="button" role="tab" class="setnav-b" data-act="setCat" data-c="'+c[0]+'" aria-controls="setp-'+c[0]+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+c[3]+'</svg><span>'+c[1]+'</span></button>').join('');
+  const desc=document.createElement('p');desc.className='setdesc';desc.id='setDesc';
+  if(head){head.after(nav);nav.after(desc)}else{m.prepend(desc);m.prepend(nav)}
+  let last=desc;const used=new Set();
+  SET_CATS.forEach(c=>{const p=document.createElement('div');p.className='setpane';p.id='setp-'+c[0];p.dataset.cat=c[0];p.setAttribute('role','tabpanel');
+    c[4].forEach(id=>{const el=m.querySelector('#'+id);if(el){p.appendChild(el);used.add(el)}});last.after(p);last=p});
+  const cp=m.querySelector('#setp-center');m.querySelectorAll(':scope > section.card').forEach(el=>{if(!used.has(el)&&cp)cp.appendChild(el)});
+  setCatShow(SET_CAT)}
+function setCatShow(k){if(!SET_CATS.some(c=>c[0]===k))k='center';SET_CAT=k;try{localStorage.setItem('dd-setcat',k)}catch(e){}
+  const c=SET_CATS.find(x=>x[0]===k);document.querySelectorAll('.setnav-b').forEach(b=>{const on=b.dataset.c===k;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1});
+  document.querySelectorAll('.setpane').forEach(p=>{p.hidden=p.dataset.cat!==k});const d=document.getElementById('setDesc');if(d)d.textContent=c[2]}
+document.addEventListener('keydown',e=>{const b=e.target&&e.target.closest&&e.target.closest('.setnav-b');if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();
+  const i=SET_CATS.findIndex(c=>c[0]===b.dataset.c),n=SET_CATS[(i+(e.key==='ArrowRight'?1:SET_CATS.length-1))%SET_CATS.length][0];setCatShow(n);const nb=document.querySelector('.setnav-b[data-c="'+n+'"]');if(nb)nb.focus()});
 V.settings={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Settings</h1><p class="sub">Branding, home page, access and business rules. Managers only.</p></div></div>'+
+  m.innerHTML='<div class="head"><div><h1>Settings</h1><p class="sub">Sorted by topic: choose one below. Managers only.</p></div></div>'+
    '<section class="card" id="subCard" hidden></section>'+'<p class="set-group">Trips and boats</p>'+'<section class="card" id="fleetCard" hidden><h2>Boats, pool and dive sites</h2><p class="hint">Where your customers go. Everything here is saved together.</p><div class="ftabs" role="tablist" aria-label="Boats, pool and dive sites"><button type="button" role="tab" class="ftab" data-act="ftab" data-p="sites" aria-selected="true">Dive sites</button><button type="button" role="tab" class="ftab" data-act="ftab" data-p="boats" aria-selected="false">Boats</button><button type="button" role="tab" class="ftab" data-act="ftab" data-p="pools" aria-selected="false">Pool</button></div><input type="file" id="flPhotoIn" accept="image/*" hidden><div class="fpanel" data-p="sites"><div class="site-chips" id="flSites"></div><div class="site-add"><input id="flSiteNew" maxlength="40" placeholder="Add a dive site, e.g. Blue Corner" aria-label="New dive site"><button type="button" class="btn ghost sm" data-act="flSiteAdd">Add</button></div><p class="hint" style="margin:0">Used for bookings, boats and the Schedule.</p></div><div class="fpanel" data-p="boats" hidden><div id="flBoats" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="boat">+ Add a boat</button><p class="hint" style="margin:0">Tap the picture to add a photo of the boat. Tap the dive sites each boat usually goes to: they are suggested first when you book.</p></div><div class="fpanel" data-p="pools" hidden><div id="flPools" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="flAdd" data-t="pool">+ Add a pool</button><p class="hint" style="margin:0">Tap the picture to add a photo of the pool. Activities with “pool” in their name go to the pool automatically. You can always change it when you book.</p></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="flSave">Save</button></div></section>'+'<section class="card" id="slotCard" hidden><h2>Trip times</h2><p class="hint">Your departure times, in order. Rename them to match your day (for example “Morning 8:30”), add or remove some. Bookings follow a renamed time.</p><div id="slotList" class="fl-list"></div><button type="button" class="btn ghost sm" data-act="slotAdd">+ Add a time</button><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="slotSave">Save trip times</button></div></section>'+'<section class="card" id="capCard" hidden><h2>Limit per time slot</h2><p class="hint">Optional: the most customers per time slot, all boats and pools together. Leave empty for no limit.</p><div class="gf3" id="capGrid"></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="capSave">Save places</button></div></section>'+'<section class="card" id="bkoCard" hidden><h2>Online booking</h2><p class="hint">Customers request a booking from your own page. Requests appear on Home, ready to confirm in one tap.</p><label class="fld check"><input type="checkbox" id="bko-on"> Accept booking requests online</label><div id="bko-body" hidden><div class="gf"><label class="fld">Earliest date<select id="bko-notice"><option value="0">Same day</option><option value="1">From tomorrow</option><option value="2">2 days ahead</option><option value="3">3 days ahead</option></select></label><label class="fld">Latest date<select id="bko-ahead"><option value="30">1 month ahead</option><option value="60">2 months ahead</option><option value="90">3 months ahead</option><option value="180">6 months ahead</option><option value="365">1 year ahead</option></select></label><label class="fld full">Message on your booking page (optional)<textarea id="bko-msg" maxlength="400" rows="2" placeholder="For example: we reply within a few hours on WhatsApp."></textarea></label></div><p class="hint" style="margin:10px 0 4px">Activities customers can choose</p><div id="bko-acts" class="bko-acts"></div><div class="bko-link"><input id="bko-url" readonly aria-label="Your booking page link"><button type="button" class="btn ghost sm" data-act="bkoCopy">Copy link</button><a class="btn ghost sm" id="bko-open" target="_blank" rel="noopener">Open page</a></div><p class="hint" style="margin:6px 0 0">Share this link on your website, Instagram, Google profile or WhatsApp.</p></div><div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="bkoSave">Save online booking</button></div></section>'+
    '<section class="card" id="teamAcc"><h2>Team and access rights</h2><p class="hint">Everyone who can open <strong>your company space</strong>, with their role and last sign-in. Employees join with your access code (above) or by email below. Nobody outside your company can see your data.</p><form id="addPerson" style="display:grid;grid-template-columns:2fr 1.4fr 1fr auto;gap:8px;align-items:end;margin:12px 0"><label class="f" style="display:grid;gap:4px">Employee email<input id="apEmail" type="email" required autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Name<input id="apName" maxlength="60" autocomplete="off" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"></label><label class="f" style="display:grid;gap:4px">Role<select id="apRole" style="padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"><option value="staff">Staff</option><option value="instructor">Instructor</option><option value="viewer">Read-only</option><option value="manager">Manager</option></select></label><button class="btn" type="submit">Add</button></form><p class="hint">Or add someone by email: when they create their account with this same email, they land directly in your company space.</p><div id="accPending"></div><div class="tablewrap"><table><thead><tr><th>Person</th><th>Role</th><th>Last sign-in</th><th></th></tr></thead><tbody id="accRows"></tbody></table></div></section>'+
    '<section class="card" id="joinCard" hidden></section>'+
@@ -1681,7 +1714,7 @@ V.settings={
    '<label class="fld">Logo (PNG or JPG)<input type="file" id="bFile" accept="image/*"></label>'+
    '<div class="fld full"><span class="hint">Preview</span><div id="bPrev" style="background:var(--navy);padding:12px;border-radius:10px;display:inline-block"><img id="bPrevImg" alt="" style="max-height:60px;max-width:240px;display:block"></div></div></div>'+
    '<div class="actions"><button type="button" class="btn" data-act="saveBrand" id="bSave">Save branding</button><button type="button" class="btn ghost" data-act="resetBrand" id="bReset">Back to default</button></div></section>'+
-   '<section class="card" id="ciSet" hidden><h2>Customer check-in</h2><p class="hint">Customers fill in this form on their phone before diving. Their answers arrive in Customers automatically. Colours and name come from Branding above.</p>'+
+   '<section class="card" id="ciSet" hidden><h2>Customer check-in</h2><p class="hint">Customers fill in this form on their phone before diving. Their answers arrive in Customers automatically. Colours and name come from Branding, in the Your center tab.</p>'+
    '<label class="fld full">Check-in link<span style="display:flex;gap:8px"><input id="ciLink2" readonly onclick="this.select()" style="flex:1;padding:10px;border:1px solid var(--line,#ccc);border-radius:8px"><button type="button" class="btn ghost" data-act="ciCopy">Copy</button></span></label>'+
    '<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin:12px 0"><div id="ciQrBox" style="background:#fff;padding:8px;border-radius:10px;border:1px solid var(--line,#ccc)"></div>'+
    '<div style="display:grid;gap:8px;min-width:220px;flex:1"><button type="button" class="btn" data-act="ciQrPng">Download QR code (PNG)</button><button type="button" class="btn ghost" data-act="ciPosterPng">Download poster (PNG)</button><button type="button" class="btn ghost" data-act="ciPrint">Print poster</button>'+
@@ -1693,29 +1726,29 @@ V.settings={
    '<label class="fld full" style="margin-top:10px">Activities list (one per line)<textarea id="ciInts" rows="6"></textarea></label>'+
    '<h3>Your own questions</h3><p class="hint">Extra questions appear in a “More questions” section. Answers are saved on the customer’s record.</p><div id="ciCustom"></div><button type="button" class="btn ghost" data-act="ciAddQ">+ Add a question</button>'+
    '<div class="actions"><button type="button" class="btn" data-act="ciSave">Save check-in form</button><button type="button" class="btn ghost" data-act="ciReset">Back to default</button></div></section>'+
-   '<section class="card"><h2>Home page</h2><p class="hint">What your team sees first.</p><div class="gf">'+
+   '<section class="card" id="homeSetCard"><h2>Home page</h2><p class="hint">What your team sees first.</p><div class="gf">'+
    '<label class="fld">Page title<input id="hTitle" maxlength="40" placeholder="Today"></label>'+
    '<label class="fld">Welcome message<input id="hMsg" maxlength="140" placeholder="e.g. Briefing at 7:30 at the shop"></label></div>'+
    '<div class="gf" id="hShow" style="margin-top:6px">'+HOME_KEYS.map(k=>'<label class="fld check"><input type="checkbox" id="hs-'+k[0]+'"><span>Show: '+k[1]+'</span></label>').join('')+'</div>'+
    '<div class="actions"><button type="button" class="btn" data-act="saveHome">Save home page</button></div></section>'+
    '<section class="card" id="feeCard"><h2>Agency fees and costs</h2><p class="hint">For each course, enter what your center owes the certification agency (PADI, SSI…) and other costs such as tank rental, <strong>per person</strong>. They are subtracted from the price <strong>before</strong> the instructor commission: commission = % × (price − fees − costs). Leave 0 if there is none. Fun dives are not affected.</p><div class="tablewrap"><table><thead><tr><th>Course</th><th class="n">Price</th><th class="n">Agency fee</th><th class="n">Other costs</th><th class="n">Base for commission</th></tr></thead><tbody id="feeRows"></tbody></table></div><div class="actions"><button type="button" class="btn" data-act="saveFees">Save fees</button></div></section>'+
-   '<section class="card"><h2>Access by role</h2><p class="hint">Choose what each role can see or change. Managers always have full access. “Edit” lets them add and change data; “View” is read-only; “Hidden” removes the tab.</p><div class="tablewrap"><table><thead><tr><th>Section</th><th>Staff</th><th>Read-only</th><th>Instructor</th></tr></thead><tbody>'+
+   '<section class="card" id="roleCard"><h2>Access by role</h2><p class="hint">Choose what each role can see or change. Managers always have full access. “Edit” lets them add and change data; “View” is read-only; “Hidden” removes the tab.</p><div class="tablewrap"><table><thead><tr><th>Section</th><th>Staff</th><th>Read-only</th><th>Instructor</th></tr></thead><tbody>'+
    SECS.map(k=>'<tr><td><strong>'+k[1]+'</strong></td>'+['staff','viewer','instructor'].map(r=>'<td><select id="ac-'+r+'-'+k[0]+'">'+[['edit','Edit'],['view','View'],['none','Hidden']].filter(o=>!(o[0]==='edit'&&(r==='viewer'||k[0]==='prices'||(r==='instructor'&&!['team','leave'].includes(k[0]))))).map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join('')+'</select></td>').join('')+'</tr>').join('')+
    '</tbody></table></div><p class="hint">Prices can only ever be changed by managers. Access is set per role. To give someone a role, use <strong id="accHintTxt">the Share menu (Editor = Manager, Contributor = Staff, Viewer = Read-only)</strong>.</p>'+
    '<div class="actions"><button type="button" class="btn" data-act="saveAccess">Save access</button></div></section>'+
    '<section class="card" id="curCard"><h2>Currency</h2><p class="hint">All amounts in the app are shown in this currency. Changing it does not convert amounts already entered.</p><div class="gf"><label class="fld">Currency<select id="cCur">'+Object.keys(CURS).map(k=>'<option value="'+k+'">'+k+' · '+CURS[k][0]+'</option>').join('')+'</select></label></div><div class="actions"><button type="button" class="btn" data-act="saveCur">Save currency</button></div></section>'+
-   '<section class="card"><h2>Settings</h2><p class="hint" id="cfgHint"></p><div class="gf">'+
+   '<section class="card" id="cfgFees"><h2>Fees and commission</h2><p class="hint" id="cfgHint"></p><div class="gf">'+
    '<label class="fld">Eco / conservation fee ('+CUR()+', per diver)<input type="number" id="cEco" min="0" step="'+STEP()+'"></label>'+
    '<label class="fld">Marine Park fee, foreign ('+CUR()+')<input type="number" id="cPe" min="0" step="'+STEP()+'"></label>'+
    '<label class="fld">Marine Park fee, local ('+CUR()+')<input type="number" id="cPl" min="0" step="'+STEP()+'"></label><span></span>'+
    '<label class="fld">Commission on courses (%)<input type="number" id="cCp" min="0" max="100" step="0.5"></label>'+
    '<label class="fld">Commission per fun dive ('+CUR()+')<input type="number" id="cCf" min="0" step="'+STEP()+'"></label>'+
-   '<p class="hint fld" style="align-self:center">Dive sites, boats and pool are in “Boats, pool and dive sites” at the top of Settings.</p>'+
-   '<label class="fld">Agents and hotels (one per line)<textarea id="cAgents" rows="6"></textarea></label>'+
-   '<label class="fld full">Certification levels (one per line)<textarea id="cNiv" rows="6"></textarea></label></div>'+
+   '</div>'+
    '<label class="fld check full"><input type="checkbox" id="cLock"><span>Protect payments: a collected payment cannot be deleted, and neither can a paid booking, unless the customer was refunded in full first. Deleting a fully refunded payment removes the payment and its refund together.</span></label>'+
-   '<div class="actions"><button type="button" class="btn" data-act="saveCfg" id="cSave">Save settings</button></div></section>';
+   '<div class="actions"><button type="button" class="btn" data-act="saveCfg" id="cSave">Save fees and commission</button></div></section>'+
+   '<section class="card" id="cfgLists"><h2>Agents, hotels and levels</h2><p class="hint">The lists offered when you add a customer or a booking.</p><div class="gf"><label class="fld">Agents and hotels (one per line)<textarea id="cAgents" rows="6"></textarea></label><label class="fld">Certification levels (one per line)<textarea id="cNiv" rows="6"></textarea></label></div><div class="actions"><button type="button" class="btn" data-act="saveCfg" id="cSave2">Save lists</button></div></section>';
   V.settings.cfgLoaded=false;V.settings.accLoaded=false;V.settings.ciLoaded=false;
+  setCatInit(m);
  },
  fill(){
   if(!V.settings.cfgLoaded&&(LOADED.config||!db)){
@@ -1728,7 +1761,7 @@ V.settings={
   ciFill();subRender();fleetFill();slotFill();capFill();bkoFill();
   $$('#bName,#bNavy,#bAcc,#bFile').forEach(e=>e.disabled=!canEdit);$('#brandCard').hidden=!canEdit;joinRender();{const ta=document.getElementById('teamAcc');if(ta){const ok=!!(window.DD_STANDALONE&&canEdit&&(window.DD_SHIM||window.claude).admin&&!/[?&]demo/.test(location.search));ta.hidden=!ok;if(ok&&!ta.dataset.loaded){ta.dataset.loaded='1';loadAccounts()}}}
   $$('#cCp,#cCf,#cEco,#cPe,#cPl,#cSites,#cAgents,#cNiv,#cLock').forEach(e=>e.disabled=!canEdit);
-  $('#cSave').hidden=!canEdit;
+  $('#cSave').hidden=!canEdit;{const c2=document.getElementById('cSave2');if(c2)c2.hidden=!canEdit}
   $('#cfgHint').textContent=canEdit?'Paid in cash by each diver and passed on to the authorities. Tracked separately from the dive price.':'Managers only.';
   if(!V.settings.feesLoaded&&(LOADED.tarifs||!db)){
     const fl=tarifs().list.filter(x=>!isFun({categorie:x.categorie}));
@@ -2795,6 +2828,7 @@ function openTarif(id){
 const armed=(t,label)=>{if(t.dataset.arm==='1')return true;t.dataset.arm='1';t.dataset.label=t.textContent;t.textContent=label||'Confirm deletion';setTimeout(()=>{if(t.isConnected){t.dataset.arm='';t.textContent=t.dataset.label}},4000);return false};
 const ACT={
  go(t){go(t.dataset.v)},
+ setCat(t){setCatShow(t.dataset.c);const n=document.querySelector('.setnav');if(n&&n.getBoundingClientRect().top<0)n.scrollIntoView({block:'start'})},
  hwTrip(t){ST.date=today();openTrip(t.dataset.k,t.dataset.cr)},
  gearPick(t){document.querySelectorAll('.gpick-t').forEach(b=>b.setAttribute('aria-checked',String(b===t)));const c=t.dataset.cat,w=document.getElementById('g-catw'),i=document.getElementById('g-cat');
    if(c==='Other'){w.hidden=false;if(GEAR_TYPES.includes(i.value))i.value='';i.focus()}else{w.hidden=true;i.value=c}
@@ -2849,7 +2883,7 @@ const ACT={
  async subPortal(t){t.disabled=true;const w=window.open('about:blank','_blank');
    try{const r=await window.__fn('billing-portal',{});const u=r.ok&&r.j.url;if(!u)throw new Error(r.j.error||'x');if(w)w.location.href=u;else location.href=u}
    catch(e){if(w)w.close();toast('Could not open the subscription page. Please try again or write to contact@scubook.app.','bad')}t.disabled=false},
- gsGo(t){const a=t.dataset.a,k=t.dataset.k;if(a==='book'){openBooking(null);return}if(a==='qr'){go('settings');setTimeout(()=>{const c=document.getElementById('ciSet');if(c&&!c.hidden)c.scrollIntoView({behavior:'smooth',block:'start'})},300);if(db&&S.config&&!S.config.qrShared)db.doc('config/main').update({qrShared:true}).catch(()=>{});return}go(k)},
+ gsGo(t){const a=t.dataset.a,k=t.dataset.k;if(a==='book'){openBooking(null);return}if(k==='settings')SET_CAT='center';if(a==='qr'){SET_CAT='book';go('settings');setTimeout(()=>{const c=document.getElementById('ciSet');if(c&&!c.hidden)c.scrollIntoView({behavior:'smooth',block:'start'})},300);if(db&&S.config&&!S.config.qrShared)db.doc('config/main').update({qrShared:true}).catch(()=>{});return}go(k)},
  async gsHide(){await W(()=>S.config?db.doc('config/main').update({onboardDone:true}):db.doc('config/main').set({onboardDone:true}),'Hidden. You can find everything in the menus.')},
  navMore(){
    const tm=document.querySelector('#navIn .tabMore'),hid=((tm&&tm.dataset.h)||'').split(',').filter(Boolean);
