@@ -543,6 +543,32 @@ main{gap:20px;padding-block:28px 56px}
 .fleet-mini{display:block;margin:2px 0 4px;font-size:.78rem;color:var(--muted)}
 .fl-h{margin:12px 0 6px!important;font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 .fl-list{display:grid;gap:8px;margin-bottom:8px}
+.gico{width:28px;height:28px;flex:none}
+.gtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.gtiles:empty{display:none}
+.gtile{all:unset;box-sizing:border-box;position:relative;display:grid;justify-items:center;gap:4px;padding:12px 8px 10px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);cursor:pointer;text-align:center;transition:transform .15s}
+.gtile:hover{transform:translateY(-2px)}.gtile:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.gtile .gico{width:44px;height:44px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.18))}
+.gt-n{font-weight:700;font-size:.86rem;line-height:1.2}
+.gt-q{font-family:var(--f-display);font-weight:600;font-size:1.2rem;font-variant-numeric:tabular-nums}.gt-q small{font-family:var(--f-body);font-size:.72rem;color:var(--muted);font-weight:600}
+.gt-dot{position:absolute;top:9px;right:9px;width:9px;height:9px;border-radius:50%;background:#f0b54a;box-shadow:0 0 0 2px var(--surface)}
+.gear-h span:first-child{display:inline-flex;align-items:center;gap:10px;font-weight:700}
+.gear-h .gico{width:32px;height:32px}
+.qstep{display:inline-flex;align-items:center;border-radius:12px;background:var(--soft);padding:3px}
+.qstep .gq,.qstep #g-qte{width:64px;text-align:center;border:0;background:transparent;font-weight:700;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.qstep input::-webkit-outer-spin-button,.qstep input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qb{all:unset;box-sizing:border-box;display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:var(--surface);font-size:1.25rem;font-weight:700;cursor:pointer;color:var(--ink)}
+.qb:active{transform:scale(.94)}.qb:focus-visible{outline:2px solid var(--accent)}
+.qstep.big{width:100%;justify-content:space-between;margin-top:4px}.qstep.big .qb{width:46px;height:46px}.qstep.big #g-qte{flex:1}
+.gpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-height:300px;overflow:auto;padding:2px}
+.gpick-t{all:unset;box-sizing:border-box;display:grid;justify-items:center;gap:4px;padding:10px 6px;border-radius:14px;background:var(--soft);border:2px solid transparent;cursor:pointer;text-align:center;font-size:.8rem;font-weight:600;line-height:1.15}
+.gpick-t .gico{width:38px;height:38px}
+.gpick-t[aria-checked="true"]{border-color:var(--accent);background:var(--surface);box-shadow:0 4px 12px -6px rgba(0,0,0,.4)}
+.gpick-t:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.gtile .gico,.gpick-t .gico,.gear-h .gico{box-sizing:border-box;padding:4px;border-radius:50%;background:radial-gradient(circle,rgba(138,217,227,.30) 0 64%,rgba(138,217,227,0) 66%)}
+.gtile .gico{width:52px;height:52px}.gpick-t .gico{width:44px;height:44px}.gear-h .gico{width:36px;height:36px}
+.gear-h small{white-space:normal}
+@media(prefers-reduced-motion:reduce){.gtile{transition:none}.gtile:hover{transform:none}.qb:active{transform:none}}
 .tphoto{position:relative;aspect-ratio:240/132;overflow:hidden;border-radius:12px;background:#0b2a3d}
 .tphoto>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .tphoto.is-full>img{filter:saturate(.85)}
@@ -1438,7 +1464,38 @@ async function pushPaySheet(btn){
 }
 
 /* ---------- gear inventory ---------- */
-const GEAR_CATS=['BCD','Wetsuit','Fins','Lead weights','Weight belts','Regulators','Masks','Tanks','Straps','Other'];
+const GEAR_TYPES=['BCD','Wetsuit','Fins','Masks','Snorkels','Regulators','Tanks','Lead weights','Weight belts','Computers','Torches','Boots','Gloves','Hoods','SMB','Bags','Straps','Knives','Compasses','Other'];
+const GEAR_LABEL={BCD:'BCD',Wetsuit:'Wetsuit',Fins:'Fins',Masks:'Mask',Snorkels:'Snorkel',Regulators:'Regulator',Tanks:'Tank','Lead weights':'Lead weights','Weight belts':'Weight belt',Computers:'Dive computer',Torches:'Torch',Boots:'Boots',Gloves:'Gloves',Hoods:'Hood',SMB:'SMB buoy',Bags:'Bag',Straps:'Straps',Knives:'Knife',Compasses:'Compass',Other:'Other'};
+const GEAR_HINT={BCD:'XS, S, M, L…',Wetsuit:'S, M, L, 3 mm, shorty…',Fins:'EU 40-41',Masks:'Adult, kids, prescription…',Snorkels:'Standard',Regulators:'Set 1, with octopus…',Tanks:'12 L alu, 15 L steel…','Lead weights':'Total lead, 1 kg, 2 kg…','Weight belts':'Belt',Computers:'Model or number',Torches:'Main, backup…',Boots:'EU 40-41',Gloves:'S, M, L',Hoods:'S, M, L',SMB:'Orange',Bags:'Mesh bag',Straps:'Tank strap',Knives:'Cutter',Compasses:'Wrist',Other:'Name'};
+const GI={
+ bcd:'<path d="M14 8h20l5 9v21a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V17z" fill="#22313f"/><path d="M14 8h7v35h-7a5 5 0 0 1-5-5V17z" fill="#2f4456"/><path d="M18 8v11M30 8v11" stroke="#f6c343" stroke-width="3"/><rect x="9" y="29" width="30" height="4.5" fill="#f6c343"/><rect x="21" y="27.5" width="6" height="7.5" rx="1.5" fill="#cfd8de"/><path d="M35 11c7 3 7 12 1 16" stroke="#9aa9b3" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="36" cy="27" r="2.4" fill="#FF7A5C"/>',
+ suit:'<path d="M17 6h14l4 6 6 18-4.5 1.5L31 19v25h-5.5L24 30l-1.5 14H17V19l-5.5 12.5L7 30l6-18z" fill="#1d2329"/><path d="M17 6l3.5 6h7L31 6z" fill="#3aa6b9"/><path d="M24 8v17" stroke="#FF7A5C" stroke-width="2"/><path d="M13 12l4 7M35 12l-4 7" stroke="#3aa6b9" stroke-width="2"/>',
+ fins:'<g transform="rotate(-10 16 24)"><path d="M16 5c5 0 7 3 7 7l2 27c0 4-4 6-9 6s-9-2-9-6l2-27c0-4 2-7 7-7z" fill="#f6c343"/><path d="M11 6h10v9a5 5 0 0 1-10 0z" fill="#1d2329"/><path d="M13 22l-1 18M19 22l1 18" stroke="#d9a51e" stroke-width="1.4"/></g><g transform="rotate(12 33 24)"><path d="M33 5c5 0 7 3 7 7l2 27c0 4-4 6-9 6s-9-2-9-6l2-27c0-4 2-7 7-7z" fill="#ffd45e"/><path d="M28 6h10v9a5 5 0 0 1-10 0z" fill="#1d2329"/><path d="M30 22l-1 18M36 22l1 18" stroke="#d9a51e" stroke-width="1.4"/></g>',
+ mask:'<path d="M3 21c-2 0-2 7 0 7M45 21c2 0 2 7 0 7" stroke="#1d2329" stroke-width="3.4" stroke-linecap="round"/><path d="M6 19c0-4 3-7 7-7h22c4 0 7 3 7 7v6c0 6-4 10-9 10-3 0-5-2-6-5h-6c-1 3-3 5-6 5-5 0-9-4-9-10z" fill="#2fb3c8"/><path d="M10 19h11v8c0 3-2 5-5.5 5S10 30 10 26.5z" fill="#c8eef5"/><path d="M27 19h11v7.5C38 30 35.5 32 32.5 32S27 30 27 27z" fill="#c8eef5"/><path d="M12 20.5l4 0-4 6z" fill="#fff" fill-opacity=".7"/><path d="M29 20.5l4 0-4 6z" fill="#fff" fill-opacity=".7"/>',
+ snorkel:'<path d="M30 6v25a9 9 0 0 1-9 9h-5" stroke="#FF7A5C" stroke-width="5.5" fill="none" stroke-linecap="round"/><rect x="26.5" y="2.5" width="7" height="6" rx="2.5" fill="#1d2329"/><rect x="9" y="35" width="9" height="9" rx="3.5" fill="#1d2329"/><path d="M30 14v14" stroke="#fff" stroke-opacity=".45" stroke-width="1.6" stroke-linecap="round"/>',
+ reg:'<path d="M15 35c-7 5-7 9-2 12" stroke="#1d2329" stroke-width="3.6" fill="none" stroke-linecap="round"/><circle cx="21" cy="23" r="13" fill="#cfd8de"/><circle cx="21" cy="23" r="8.5" fill="#9fb0bb"/><circle cx="21" cy="23" r="4.5" fill="#1d2329"/><rect x="31" y="20" width="11" height="7" rx="3.5" fill="#1d2329"/><path d="M12 15a12 12 0 0 1 9-5" stroke="#fff" stroke-opacity=".7" stroke-width="2" fill="none" stroke-linecap="round"/>',
+ tank:'<rect x="19" y="3" width="10" height="7" rx="2" fill="#7b8a95"/><rect x="14.5" y="4.5" width="19" height="3.2" rx="1.6" fill="#4b5862"/><rect x="14" y="9" width="20" height="36" rx="10" fill="#f6c343"/><rect x="14" y="19" width="20" height="4.5" fill="#1b4a70"/><rect x="18" y="13" width="3.4" height="28" rx="1.7" fill="#fff" fill-opacity=".45"/>',
+ lead:'<path d="M6 30l5-8h18l5 8v11H6z" fill="#6b7680"/><path d="M11 22h18l5 8H6z" fill="#929da6"/><text x="20" y="38.5" font-size="8" text-anchor="middle" fill="#eef2f5" font-weight="800" font-family="Inter,system-ui,sans-serif">2kg</text><path d="M26 18l4-6h12l4 6v9H26z" fill="#5d6870"/><path d="M30 12h12l4 6H26z" fill="#87929b"/>',
+ belt:'<rect x="3" y="21" width="42" height="8" rx="3" fill="#1d2329"/><rect x="9" y="16" width="8" height="18" rx="2" fill="#7b8790"/><rect x="21" y="16" width="8" height="18" rx="2" fill="#7b8790"/><rect x="36" y="18" width="9" height="14" rx="2" fill="#cfd8de"/><rect x="38.5" y="21" width="4" height="8" rx="1" fill="#1d2329"/>',
+ comp:'<rect x="18" y="3" width="12" height="42" rx="4" fill="#1d2329"/><rect x="11" y="12.5" width="26" height="23" rx="8" fill="#3a4a56"/><rect x="15" y="16.5" width="18" height="15" rx="4.5" fill="#8be0ec"/><text x="24" y="27.5" font-size="7.5" text-anchor="middle" fill="#0A2540" font-weight="800" font-family="Inter,system-ui,sans-serif">18m</text>',
+ torch:'<path d="M35 17l11-6v27l-11-6z" fill="#ffe08a" fill-opacity=".9"/><rect x="5" y="19" width="25" height="11" rx="4.5" fill="#1d2329"/><rect x="29" y="16.5" width="7" height="16" rx="2" fill="#3a4a56"/><rect x="12" y="22" width="6" height="5" rx="1.5" fill="#FF7A5C"/>',
+ boots:'<path d="M14 6h13v22l12 6c3 1.5 4 4 3 7l-1 2H12a2 2 0 0 1-2-2V12c0-3.5 2-6 4-6z" fill="#1d2329"/><path d="M10 40h32v3.5H10z" fill="#3a4a56"/><path d="M22.5 8v19" stroke="#FF7A5C" stroke-width="1.8"/>',
+ gloves:'<path d="M14 44V25l-4.5-8c-1.2-2.4 2.2-4.2 3.6-2l5 8V9c0-3.4 4.4-3.4 4.4 0v12V6.5c0-3.4 4.4-3.4 4.4 0V21V9c0-3.4 4.4-3.4 4.4 0v14l2.2-6c1.2-3.2 5.4-2 4.5 1.2L39 30v14z" fill="#1d2329"/><rect x="13" y="38" width="27" height="6" rx="2" fill="#3aa6b9"/>',
+ hood:'<path d="M24 4c10 0 17 8 17 19v21H7V23C7 12 14 4 24 4z" fill="#1d2329"/><ellipse cx="24" cy="23" rx="9.5" ry="11.5" fill="#f1c7a3"/><path d="M15 21c3-4 15-4 18 0" stroke="#0d3b4f" stroke-width="4" fill="none"/>',
+ smb:'<rect x="17.5" y="3" width="13" height="36" rx="6.5" fill="#FF7A5C"/><rect x="17.5" y="12" width="13" height="3.4" fill="#fff"/><path d="M21 7v28" stroke="#fff" stroke-opacity=".35" stroke-width="1.6"/><circle cx="24" cy="43" r="4.2" fill="#3a4a56"/><path d="M24 39v-1" stroke="#9aa9b3" stroke-width="1.5"/>',
+ bag:'<path d="M17 16c0-7 14-7 14 0" stroke="#1d2329" stroke-width="3.2" fill="none"/><path d="M9 16h30l-3.5 28h-23z" fill="#3aa6b9"/><path d="M13 23h22M12.5 31h23M13.5 39h21M18 16l-2 28M24 16v28M30 16l2 28" stroke="#fff" stroke-opacity=".5" stroke-width="1"/>',
+ strap:'<path d="M6 31c8-15 28-15 36 0" stroke="#1d2329" stroke-width="6.5" fill="none" stroke-linecap="round"/><rect x="19.5" y="15" width="9" height="9" rx="2" fill="#cfd8de"/><rect x="22" y="17.5" width="4" height="4" rx="1" fill="#1d2329"/>',
+ knife:'<path d="M12 37L35 9c3-2.4 6.6.8 4.4 4L15 41z" fill="#d6dde2"/><path d="M14.5 39L36 13" stroke="#fff" stroke-opacity=".7" stroke-width="1.2"/><path d="M8 39.5l6 4.5-4.5 4.2-6-4.5z" fill="#FF7A5C"/>',
+ compass:'<circle cx="24" cy="24" r="18" fill="#1d2329"/><circle cx="24" cy="24" r="13.5" fill="#eef2f5"/><path d="M24 12l3.5 12-3.5 12-3.5-12z" fill="#E5484D"/><path d="M24 24l3.5 0-3.5 12-3.5-12z" fill="#3a4a56"/><circle cx="24" cy="24" r="2" fill="#1d2329"/>',
+ other:'<path d="M7 16l17-8 17 8v19l-17 8-17-8z" fill="#c9a26b"/><path d="M7 16l17 8 17-8" fill="#ddb985"/><path d="M7 16l17 8 17-8M24 24v19" stroke="#8a6a43" stroke-width="1.5" fill="none"/>'};
+function gearKey(cat){const c=String(cat||'').toLowerCase();
+  if(/bcd|jacket|stab|wing/.test(c))return 'bcd';if(/wet|suit|shorty|rash/.test(c))return 'suit';if(/fin/.test(c))return 'fins';if(/mask/.test(c))return 'mask';if(/snork/.test(c))return 'snorkel';
+  if(/reg|octo/.test(c))return 'reg';if(/tank|cylinder|bottle|nitrox/.test(c))return 'tank';if(/belt/.test(c))return 'belt';if(/lead|weight/.test(c))return 'lead';if(/comput|watch/.test(c))return 'comp';
+  if(/torch|light|lamp/.test(c))return 'torch';if(/boot|shoe/.test(c))return 'boots';if(/glove/.test(c))return 'gloves';if(/hood/.test(c))return 'hood';if(/smb|buoy|sausage|marker/.test(c))return 'smb';
+  if(/bag/.test(c))return 'bag';if(/strap/.test(c))return 'strap';if(/kni|cutter/.test(c))return 'knife';if(/compass/.test(c))return 'compass';return 'other'}
+const gearIcon=(cat,cls)=>'<svg viewBox="0 0 48 48" class="gico'+(cls?' '+cls:'')+'" aria-hidden="true">'+GI[gearKey(cat)]+'</svg>';
+const GQ_T={};
+const GEAR_CATS=GEAR_TYPES;
 const GEAR_SEED=[].concat(
   T_BCD.filter(Boolean).map(x=>['BCD',x,'pcs']),
   T_COMBI.filter(Boolean).map(x=>['Wetsuit',x,'pcs']),
@@ -1456,7 +1513,7 @@ async function gearStamp(g,id,from,to,kind){
 V.gear={
  shell(m){
   m.innerHTML='<div class="head"><div><h1>Inventory</h1><p class="sub" id="gSub"></p></div><div class="toolbar">'+exBtns('gear')+'<button type="button" class="btn ghost" data-act="gearSeed" id="gSeed">Add standard sizes</button><button type="button" class="btn" data-act="gearNew" id="gNew">+ Item</button></div></div>'+
-   '<div id="gSum"></div><div id="gList" style="display:flex;flex-direction:column;gap:14px"></div>'+
+   '<div id="gSum"></div><div class="gtiles" id="gTiles"></div><div id="gList" style="display:flex;flex-direction:column;gap:14px"></div>'+
    '<section class="card"><h2>Recent activity</h2><div id="gLog"></div></section>';
   $('#gNew').hidden=!canWrite;$('#gSeed').hidden=!canWrite;
  },
@@ -1468,18 +1525,20 @@ V.gear={
   const cut=Date.now()-30*864e5,stale=items.filter(g=>!g.checkedAt||new Date(g.checkedAt).getTime()<cut).length;
   $('#gSub').textContent=pl(items.length,'item')+' · '+(last?'last check '+fmtWhen(last.checkedAt)+' by '+last.checkedBy:'never checked');
   $('#gSum').innerHTML=items.length&&stale?'<div class="note warn">'+pl(stale,'item')+' not checked in the last 30 days.</div>':'';
-  if(!items.length){$('#gList').innerHTML=emptyBox('No inventory yet',canWrite?'Tap "Add standard sizes" to create BCD, wetsuit and fin sizes, then enter how many you have.':'Ask a team member with edit access to add the inventory.');}
+  if(!items.length){$('#gTiles').innerHTML='';$('#gList').innerHTML=emptyBox('No inventory yet',canWrite?'Tap "Add standard sizes" to create BCD, wetsuit and fin sizes, then enter how many you have.':'Ask a team member with edit access to add the inventory.');}
   else{
     const g={};items.forEach(x=>{(g[x.categorie||'Other']=g[x.categorie||'Other']||[]).push(x)});
     const ci=k=>{const i=GEAR_CATS.indexOf(k);return i<0?99:i};
     const cats=Object.keys(g).sort((a,b)=>ci(a)-ci(b)||a.localeCompare(b));
+  $('#gTiles').innerHTML=cats.map(k=>{const l=g[k],tot=Math.round(sum(l,x=>x.qte)*10)/10,un=(l[0]&&l[0].unite)||'pcs',old=l.some(x=>!x.checkedAt||new Date(x.checkedAt).getTime()<cut);
+    return '<button type="button" class="gtile" data-act="gearJump" data-cat="'+esc(k)+'">'+gearIcon(k)+'<span class="gt-n">'+esc(GEAR_LABEL[k]||k)+'</span><span class="gt-q">'+tot+' <small>'+esc(un)+'</small></span>'+(old?'<span class="gt-dot" title="Not checked in the last 30 days"></span>':'')+'</button>'}).join('');
     $('#gList').innerHTML=cats.map(k=>{
       const l=g[k].sort((a,b)=>(a.ordre||0)-(b.ordre||0)||String(a.nom).localeCompare(String(b.nom),undefined,{numeric:true}));
       const unit=l[0].unite||'pcs',tot=sum(l,x=>x.qte);
       const lc=l.filter(x=>x.checkedAt).sort((a,b)=>a.checkedAt<b.checkedAt?1:-1)[0];
-      return '<section class="group"><div class="ghead"><span>'+esc(k)+'</span><small>'+(Math.round(tot*10)/10)+' '+esc(unit)+' in total'+(lc?' · checked '+esc(fmtWhen(lc.checkedAt))+' by '+esc(lc.checkedBy||''):'')+'</small></div>'+
+      return '<section class="group" id="gg-'+esc(gearKey(k)+'-'+k.toLowerCase().replace(/[^a-z0-9]+/g,'-'))+'"><div class="ghead gear-h"><span>'+gearIcon(k)+esc(k)+'</span><small>'+(Math.round(tot*10)/10)+' '+esc(unit)+' in total'+(lc?' · checked '+esc(fmtWhen(lc.checkedAt))+' by '+esc(lc.checkedBy||''):'')+'</small></div>'+
        l.map(x=>'<div class="row"><button type="button" class="row-main" data-act="gearEdit" data-id="'+esc(x.id)+'"><span class="r1"><strong>'+esc(x.nom)+'</strong></span><span class="hint">'+(x.checkedAt?'Checked '+esc(fmtWhen(x.checkedAt))+' by '+esc(x.checkedBy||''):'<span class="due">Never checked</span>')+(x.notes?' · '+esc(x.notes):'')+'</span></button>'+
-        '<div class="r-side" style="display:flex;align-items:center;gap:8px"><input class="gq" type="number" min="0" step="'+((x.unite||'pcs')==='kg'?'0.5':'1')+'" value="'+esc(x.qte||0)+'" data-id="'+esc(x.id)+'" aria-label="Quantity of '+esc(x.nom)+'"'+(canWrite?'':' disabled')+'><span class="hint">'+esc(x.unite||'pcs')+'</span>'+(canWrite?'<button type="button" class="btn ghost sm" data-act="gearCheck" data-id="'+esc(x.id)+'" title="Mark as checked">✓</button>':'')+'</div></div>').join('')+
+        '<div class="r-side" style="display:flex;align-items:center;gap:8px"><span class="qstep">'+(canWrite?'<button type="button" class="qb" data-act="gqStep" data-id="'+esc(x.id)+'" data-d="-1" aria-label="One less '+esc(x.nom)+'">−</button>':'')+'<input class="gq" type="number" min="0" step="'+((x.unite||'pcs')==='kg'?'0.5':'1')+'" value="'+esc(x.qte||0)+'" data-id="'+esc(x.id)+'" aria-label="Quantity of '+esc(x.nom)+'"'+(canWrite?'':' disabled')+'>'+(canWrite?'<button type="button" class="qb" data-act="gqStep" data-id="'+esc(x.id)+'" data-d="1" aria-label="One more '+esc(x.nom)+'">+</button>':'')+'</span><span class="hint">'+esc(x.unite||'pcs')+'</span>'+(canWrite?'<button type="button" class="btn ghost sm" data-act="gearCheck" data-id="'+esc(x.id)+'" title="Mark as checked">✓</button>':'')+'</div></div>').join('')+
        (canWrite?'<div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost sm" data-act="gearCheckCat" data-cat="'+esc(k)+'">Mark all '+esc(k)+' as checked</button></div>':'')+'</section>';
     }).join('');
   }
@@ -2343,11 +2402,12 @@ function openGear(id){
   if(!canWrite){toast('You have read-only access.','bad');return}
   const g=id?S.gear[id]:{categorie:'BCD',unite:'pcs',qte:0};
   MODAL={kind:'gear',id:id||null};
-  const cats=Array.from(new Set(GEAR_CATS.concat(Object.values(S.gear).map(x=>x.categorie))));
+  const cur=g.categorie||'BCD',known=GEAR_TYPES.includes(cur),others=Array.from(new Set(Object.values(S.gear).map(x=>x.categorie).filter(x=>x&&!GEAR_TYPES.includes(x))));
   openModal(id?'Edit inventory item':'New inventory item',
-   '<div class="gf"><label class="fld">Category<input id="g-cat" list="dl-gcat" value="'+esc(g.categorie||'')+'"><datalist id="dl-gcat">'+cats.map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist></label>'+
-   '<label class="fld">Size or name<input id="g-nom" value="'+esc(g.nom||'')+'" placeholder="M, EU 40-41, Total lead…"></label>'+
-   '<label class="fld">Quantity<input id="g-qte" type="number" min="0" step="0.5" value="'+esc(g.qte||0)+'"></label>'+
+   '<p class="fgroup">What is it?</p><div class="gpick" role="radiogroup" aria-label="Type of equipment">'+GEAR_TYPES.concat(others).map(t=>'<button type="button" class="gpick-t" role="radio" data-act="gearPick" data-cat="'+esc(t)+'" aria-checked="'+(t===cur||(t==='Other'&&!known&&!others.includes(cur))?'true':'false')+'">'+gearIcon(t)+'<span>'+esc(GEAR_LABEL[t]||t)+'</span></button>').join('')+'</div>'+
+   '<div class="gf"><label class="fld full" id="g-catw"'+(known||others.includes(cur)?' hidden':'')+'>Name of this kind of equipment<input id="g-cat" value="'+esc(cur)+'" placeholder="For example: Reels"></label>'+
+   '<label class="fld">Size or name<input id="g-nom" value="'+esc(g.nom||'')+'" placeholder="'+esc(GEAR_HINT[cur]||'M, EU 40-41, Total lead…')+'"></label>'+
+   '<div class="fld">Quantity<span class="qstep big"><button type="button" class="qb" data-act="gModStep" data-d="-1" aria-label="Less">−</button><input id="g-qte" type="number" min="0" step="0.5" value="'+esc(g.qte||0)+'" aria-label="Quantity"><button type="button" class="qb" data-act="gModStep" data-d="1" aria-label="More">+</button></span></div>'+
    '<label class="fld">Unit<select id="g-unit">'+['pcs','kg'].map(x=>opt(x,x==='pcs'?'pieces':'kilograms',x===(g.unite||'pcs'))).join('')+'</select></label>'+
    '<label class="fld full">Notes<input id="g-notes" value="'+esc(g.notes||'')+'" placeholder="Condition, needs repair…"></label></div>'+
    (id&&g.checkedAt?'<p class="hint">Last checked '+esc(fmtWhen(g.checkedAt))+' by '+esc(g.checkedBy||'')+'. Changing the quantity counts as a new check.</p>':'')+
@@ -2667,6 +2727,13 @@ function openTarif(id){
 const armed=(t,label)=>{if(t.dataset.arm==='1')return true;t.dataset.arm='1';t.dataset.label=t.textContent;t.textContent=label||'Confirm deletion';setTimeout(()=>{if(t.isConnected){t.dataset.arm='';t.textContent=t.dataset.label}},4000);return false};
 const ACT={
  go(t){go(t.dataset.v)},
+ gearPick(t){document.querySelectorAll('.gpick-t').forEach(b=>b.setAttribute('aria-checked',String(b===t)));const c=t.dataset.cat,w=document.getElementById('g-catw'),i=document.getElementById('g-cat');
+   if(c==='Other'){w.hidden=false;if(GEAR_TYPES.includes(i.value))i.value='';i.focus()}else{w.hidden=true;i.value=c}
+   const n=document.getElementById('g-nom');if(n)n.placeholder=GEAR_HINT[c]||'Size or name';const u=document.getElementById('g-unit');if(u&&!MODAL.id)u.value=/lead/i.test(c)?'kg':'pcs'},
+ gModStep(t){const i=document.getElementById('g-qte');if(!i)return;const st=(document.getElementById('g-unit')||{}).value==='kg'?0.5:1;i.value=Math.max(0,Math.round(((+i.value||0)+st*(+t.dataset.d))*10)/10)},
+ gqStep(t){const i=document.querySelector('.gq[data-id="'+t.dataset.id+'"]');if(!i)return;const st=+i.step||1;i.value=Math.max(0,Math.round(((+i.value||0)+st*(+t.dataset.d))*10)/10);
+   clearTimeout(GQ_T[t.dataset.id]);GQ_T[t.dataset.id]=setTimeout(()=>i.dispatchEvent(new Event('change',{bubbles:true})),700)},
+ gearJump(t){const k=t.dataset.cat,el=document.getElementById('gg-'+gearKey(k)+'-'+k.toLowerCase().replace(/[^a-z0-9]+/g,'-'));if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'})},
  flPhoto(t){FL_PH_ROW=t.closest('.fl-row');const i=document.getElementById('flPhotoIn');if(i)i.click()},
  tripPickInst(t){const all=[...document.querySelectorAll('.trip-pick')].filter(x=>x.dataset.i===t.dataset.i);const on=!all.every(x=>x.checked);all.forEach(x=>{x.checked=on});tripBulkUpdate()},
  async tripBulkMove(t){const P=[...document.querySelectorAll('.trip-pick:checked')],to=(document.getElementById('tbTo')||{}).value;if(!P.length||!to)return;const k=MODAL.k,cr=MODAL.cr,tm=tripMap(ST.date,cr),dest=tm.spots.find(y=>y.k===to);
