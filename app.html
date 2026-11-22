@@ -696,6 +696,16 @@ main{gap:20px;padding-block:28px 56px}
 .lv-over{color:#b42318}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lvb.over .lvb-big,:root:not([data-theme="light"]) .lv-cnt.over,:root:not([data-theme="light"]) .lv-left.over,:root:not([data-theme="light"]) .lv-over{color:#ff8a80}}
 :root[data-theme="dark"] .lvb.over .lvb-big,:root[data-theme="dark"] .lv-cnt.over,:root[data-theme="dark"] .lv-left.over,:root[data-theme="dark"] .lv-over{color:#ff8a80}
+/* ---- link logins to team profiles ---- */
+.st-link{box-shadow:inset 0 0 0 1.5px #f0b54a}
+.st-lrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.st-link .hint+.st-lrow{border-top:0}
+.st-lrow .chm-av{flex:none;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:.85rem}
+.st-lmain{flex:1;min-width:180px;display:flex;flex-direction:column}.st-lmain small{color:var(--muted);font-size:.8rem;overflow-wrap:anywhere}
+.st-lacts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
+.st-lsel{min-height:40px;max-width:170px}
+.lvr-link{margin:0 0 6px}
+@media(max-width:760px){.st-lacts{width:100%;margin-left:50px}.st-lsel{flex:1;max-width:none}}
 /* ---- leave requests ---- */
 .lvg td.here{background:var(--soft);color:var(--muted)}
 .lvg td.away{background:#DDF3E4;color:#1F7A44}
@@ -1268,7 +1278,10 @@ function toast(msg,kind){const t=$('#toast');t.textContent=msg;t.className='toas
 async function W(fn,ok){
   if(!db){toast('Shared database unavailable: open this page from Claude, signed in.','bad');return false}
   try{await fn();if(ok)toast(ok);return true}
-  catch(e){console.error(e);toast((OFFLINE||!navigator.onLine)?'You are offline. Changes can be saved again once the connection is back.':e&&e.code==='invalid_argument'?'Save refused: read-only access or invalid data.':'Save failed. Please try again.','bad');return false}
+  catch(e){console.error(e);const em=String(e&&e.message||'');
+    if(/own days off/.test(em)){toast('You can only ask for days off in your own line. Your manager needs to link your login to your name in Team.','bad');return false}
+    if(/accepted day off/.test(em)){toast('Only a manager can change a day off that is already accepted.','bad');return false}
+    toast((OFFLINE||!navigator.onLine)?'You are offline. Changes can be saved again once the connection is back.':e&&e.code==='invalid_argument'?'Save refused: read-only access or invalid data.':'Save failed. Please try again.','bad');return false}
 }
 function openModal(title,html){$('#mBody').oninput=$('#mBody').onchange=null;$('#mTitle').textContent=title;$('#mBody').innerHTML=html;$('#modal').hidden=false;document.body.classList.add('noscroll');$('#mBody').scrollTop=0}
 function closeModal(){$('#modal').hidden=true;document.body.classList.remove('noscroll');MODAL={}}
@@ -1953,6 +1966,7 @@ V.team={
   }
   m.innerHTML='<div class="head"><div><h1>Team</h1><p class="sub">Instructors and reception. Commissions are in the Commission tab.</p></div><div class="toolbar">'+exBtns('staff')+'<button type="button" class="btn" data-act="staffNew" id="stNew">+ Member</button></div></div>'+
    '<section class="card"><h2>Staff</h2><div id="stList"></div></section>'+
+   '<section class="card st-link" id="stLink" hidden></section>'+
    perBar()+
    '<section class="card"><h2>Bookings by agent or hotel</h2><div class="tablewrap" id="agTable"></div></section>';
   perBind(m,()=>V.team.fill());
@@ -1969,6 +1983,7 @@ V.team={
   }
   const st=Object.values(S.staff).sort(byNom);
   $('#stList').innerHTML=st.length?st.map(s=>'<div class="row" style="padding-inline:0"><button type="button" class="row-main" '+(canEdit?'data-act="staffEdit" data-id="'+esc(s.id)+'"':'')+'><span class="r1"><strong>'+flag(s.pays)+esc(s.nom)+'</strong>'+(s.actif===false?'<span class="pill st-cancelled">Inactive</span>':'')+'</span><span class="r2">'+esc(s.role||'')+(s.tel?' · '+esc(s.tel):'')+'</span></button><div class="r-side">'+(s.actif!==false&&leaveAllow(s.id)!=null?(()=>{const b=leaveBal(s.id,monthNow());return '<span class="lv-left'+(b.left<0?' over':'')+'" title="'+b.taken+' of '+b.allow+' days off used this month">🏖️ '+esc(leaveLeftTxt(b))+'</span>'})():'')+(s.commission?'<span>'+esc(s.commission)+'% courses</span>':'')+'</div></div>').join(''):emptyBox('No members yet','Add your instructors so you can assign customers to them.'+(canEdit?'':' Only a manager can do this.'));
+  stLinkRender();
   const m=PER.from,act=Object.values(S.bookings).filter(b=>inPer(b.date)&&(b.statut==='Confirmed'||b.statut==='Completed'));
   const ag={};act.forEach(b=>{if(b.agent){const a=ag[b.agent]=ag[b.agent]||{n:0,net:0};a.n++;a.net+=calc(b).net}});
   const ak=Object.keys(ag).sort((a,b)=>ag[b].n-ag[a].n);
@@ -3292,7 +3307,7 @@ function lvReqRender(){const el=$('#lvReq');if(!el)return;const t=today();el.cla
       return '<div class="lvr-row"><span class="chm-av" aria-hidden="true" style="background:'+chatColor(x.nom)+'">'+esc(chatIni(x.nom))+'</span><div class="lvr-main"><b>'+esc(x.nom)+'</b><span>'+esc(lvRange(g))+' · '+pl(g.ids.length,'day')+'</span><small>'+(at?'Asked '+esc(fmtShort(at.slice(0,10)))+(by&&by!==x.nom?' by '+esc(by):''):'')+(bal?(at?' · ':'')+bal:'')+'</small></div>'+
         '<div class="lvr-acts"><button type="button" class="btn ghost sm lvr-no" data-act="leaveDecide" data-v="refused" data-ids="'+esc(g.ids.join(','))+'">Refuse</button><button type="button" class="btn sm lvr-yes" data-act="leaveDecide" data-v="approved" data-ids="'+esc(g.ids.join(','))+'">Accept</button></div></div>'}).join('')+'</div>';
     return}
-  const me=myStaff();if(!me){el.hidden=true;return}
+  const me=myStaff();if(!me){if(!canWrite){el.hidden=true;return}el.hidden=false;el.innerHTML='<h2>My days off</h2><p class="lvr-link">To ask for days off, your login <b>'+esc(window.__email||'')+'</b> must be linked to your name in the team.</p><p class="hint">Ask your manager to open <b>Team</b>: your name is listed under “Logins without a team profile”. One tap and you can ask for days off here.</p>';return}
   const mine=Object.values(S.leaves).filter(l=>l.staffId===me.id&&(lvSt(l)!=='approved'?l.date>=addDays(t,-31):l.date>=t));
   const G=lvGroups(mine),b=leaveBal(me.id,monthNow());
   el.hidden=false;el.innerHTML='<h2>My days off</h2>'+(b.allow!=null?'<p class="lvr-bal">'+(b.left>=0?'<b>'+pl(b.left,'day')+' off left</b> in '+esc(lvMonthName(monthNow())):'<b class="lv-over">'+pl(-b.left,'day')+' over</b> in '+esc(lvMonthName(monthNow())))+' · '+b.taken+' of '+b.allow+' used</p>':'')+
@@ -3416,6 +3431,18 @@ function openStaffMonth(id){
    '<p class="hint">This list comes from the bookings assigned to '+esc(s.nom)+' in Schedule. To change who led an activity, open the booking and change the instructor.</p>'+
    '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Close</button>'+(canWrite?'<button type="button" class="btn" data-act="staffAddDone" data-id="'+esc(id)+'">+ Add an activity</button>':'')+'</div>');
 }
+const ST_LINK={at:0,list:null,busy:false};
+async function stLinkRender(force){const el=document.getElementById('stLink');if(!el)return;
+  if(!canEdit||/[?&]demo/.test(location.search)||window.__viewC||!window.__api){el.hidden=true;return}
+  if((force||!ST_LINK.list||Date.now()-ST_LINK.at>60e3)&&!ST_LINK.busy){ST_LINK.busy=true;try{const L=await window.__api('/rest/v1/rpc/team_overview',{method:'POST',body:{}});if(Array.isArray(L)){ST_LINK.list=L;ST_LINK.at=Date.now()}}catch(e){}finally{ST_LINK.busy=false}}
+  const L=ST_LINK.list||[],linked=new Set(Object.values(S.staff).map(x=>(x.email||'').toLowerCase()).filter(Boolean));
+  const U=L.filter(m=>m&&m.email&&m.role!=='manager'&&!linked.has(String(m.email).toLowerCase()));
+  if(!U.length){el.hidden=true;el.innerHTML='';return}
+  const free=Object.values(S.staff).filter(x=>!x.email&&x.actif!==false).sort(byNom);
+  el.hidden=false;el.innerHTML='<h2>Logins without a team profile</h2><p class="hint">These people can sign in to Scubook but are not linked to a name in your team yet, so they cannot ask for days off or see their own commissions. Link them to their name, or create their profile.</p>'+
+   U.map(m=>{const nm=m.name||String(m.email).split('@')[0];return '<div class="st-lrow"><span class="chm-av" aria-hidden="true" style="background:'+chatColor(nm)+'">'+esc(chatIni(nm))+'</span><div class="st-lmain"><b>'+esc(nm)+'</b><small>'+esc(m.email)+' · '+esc(m.role==='instructor'?'Instructor access':m.role==='staff'?'Staff access':'Read-only access')+'</small></div>'+
+     '<div class="st-lacts">'+(free.length?'<label class="sr" for="stl-'+esc(m.email)+'">Link '+esc(nm)+' to</label><select id="stl-'+esc(m.email)+'" class="st-lsel"><option value="">This is…</option>'+free.map(x=>opt(x.id,x.nom)).join('')+'</select><button type="button" class="btn ghost sm" data-act="stLinkTo" data-email="'+esc(m.email)+'">Link</button>':'')+
+     '<button type="button" class="btn sm" data-act="stLinkNew" data-email="'+esc(m.email)+'" data-name="'+esc(nm)+'" data-role="'+esc(m.role||'')+'">Create profile</button></div></div>'}).join('')}
 function openStaff(id){
   const s=id?S.staff[id]:{actif:true,role:'Instructor'};
   MODAL={kind:'st',id:id||null};
@@ -3710,6 +3737,12 @@ const ACT={
    if(ok){if(MODAL.kind==='lvd')closeModal();if(v==='approved')leaveWarn(sid,[...new Set(ids.map(id=>id.slice(-10,-3)))]);V.leave.fill()}else t.disabled=false},
  async leaveCancel(t){const me=myStaff();const ids=String(t.dataset.ids||'').split(',').filter(id=>S.leaves[id]&&me&&S.leaves[id].staffId===me.id&&lvSt(S.leaves[id])!=='approved');if(!ids.length)return;
    await W(async()=>{for(const id of ids)await col('leaves').doc(id).delete()},'Done')},
+ async stLinkNew(t){if(!canEdit)return;const email=String(t.dataset.email||'').toLowerCase(),nom=String(t.dataset.name||'').slice(0,60)||email.split('@')[0];
+   const d={nom,email,role:t.dataset.role==='instructor'?'Instructor':'Reception',actif:true,pays:''};t.disabled=true;
+   const ok=await W(()=>col('staff').doc().set(d),'Profile created: '+nom+' can now ask for days off');if(ok)stLinkRender(true);else t.disabled=false},
+ async stLinkTo(t){if(!canEdit)return;const email=String(t.dataset.email||'').toLowerCase(),sel=document.getElementById('stl-'+t.dataset.email),id=sel&&sel.value;
+   if(!id){toast('Choose the name of this person first.','bad');if(sel)sel.focus();return}
+   const x=S.staff[id];t.disabled=true;const ok=await W(()=>col('staff').doc(id).update({email}),'Linked: '+(x?x.nom:'')+' can now ask for days off');if(ok)stLinkRender(true);else t.disabled=false},
  leaveNew(){openLeave()},
  leaveAllowEdit(t){openLeaveAllow(t.dataset.id)},
  async leaveCfgSave(){if(!canEdit)return;const raw=$('#lv-pm').value.trim();const leave={perMonth:raw===''?null:Math.min(31,Math.max(0,Math.round(+raw)||0))};
