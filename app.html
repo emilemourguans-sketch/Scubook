@@ -635,8 +635,8 @@ main{gap:20px;padding-block:28px 56px}
 .cbadge{position:absolute;top:2px;right:calc(50% - 22px);min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:99px;background:#E5484D;color:#fff;font:700 11px/18px Inter,system-ui,sans-serif;font-style:normal;text-align:center;box-shadow:0 0 0 2px var(--navy)}
 #navIn .tab{position:relative}
 @media(min-width:761px){.cbadge{top:4px;right:4px}}
-.chat-box{gap:10px;padding:12px}
-.chat-list{height:clamp(320px,calc(100dvh - 360px),900px);overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:2px;padding:6px 4px;border-radius:14px;background:var(--soft)}
+.chat-box{display:flex;flex-direction:column}
+.chat-list{overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;padding:8px 0 12px}
 .chat-empty{margin:auto;color:var(--muted);text-align:center;padding:20px}
 .chat-day{display:flex;justify-content:center;margin:10px 0 6px}.chat-day span{font-size:.75rem;font-weight:700;color:var(--muted);background:var(--surface);padding:3px 10px;border-radius:99px}
 .chm{display:flex;flex-direction:column;align-items:flex-start;max-width:82%;margin-top:6px}.chm.grp{margin-top:1px}
@@ -647,8 +647,7 @@ main{gap:20px;padding-block:28px 56px}
 .chm.mine .chm-b{background:var(--lime);color:var(--on-lime);border-radius:16px 16px 5px 16px}
 .chm-t{position:absolute;right:10px;bottom:3px;font-size:.68rem;opacity:.7}
 .chm.pend .chm-b{opacity:.65}
-.chat-form{display:flex;align-items:flex-end;gap:8px;scroll-margin-bottom:calc(var(--navh) + 14px)}
-@media(max-width:760px){.chat-list{height:clamp(260px,calc(100dvh - 330px),700px)}.chat-box{padding:8px}}
+.chat-form{display:flex;align-items:flex-end;gap:8px}
 .chat-form textarea{flex:1;min-height:46px;max-height:160px;resize:none;border-radius:22px;padding:12px 16px;line-height:1.35}
 .chat-send{all:unset;box-sizing:border-box;flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--on-lime);cursor:pointer}
 .chat-send svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
@@ -667,7 +666,6 @@ main{gap:20px;padding-block:28px 56px}
 .chat-atti svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .chat-attn{display:flex;flex-direction:column;min-width:0}.chat-attn b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.9rem}.chat-attn small{opacity:.75;font-size:.76rem}
 .chat-att{display:flex;align-items:center;gap:10px;padding:8px;border-radius:14px;background:var(--soft)}
-.chat-box:has(.chat-att:not([hidden])) .chat-list{height:clamp(220px,calc(100dvh - 420px),640px)}
 .chat-att img{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none}
 .chat-att .chat-attn{flex:1}.chat-att.busy{opacity:.6}.chat-att.busy .chat-attn small::after{content:' · sending…'}
 .chat-attx{all:unset;box-sizing:border-box;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
@@ -682,6 +680,151 @@ main{gap:20px;padding-block:28px 56px}
 .chat-attm svg{width:22px;height:22px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .chat-send:disabled{opacity:.5;cursor:default}
 .chat-view{display:grid;place-items:center;background:#000;border-radius:12px;overflow:hidden}.chat-view img{max-width:100%;max-height:70vh;display:block}
+/* ---- documents ---- */
+.doc-search{position:relative;display:flex;align-items:center;flex:1 1 220px;min-width:0;max-width:340px}
+.doc-search input{width:100%}
+@media(min-width:761px){.head>.doc-tools{flex:1 1 560px;justify-content:flex-end;flex-wrap:nowrap}.doc-tools .btn{white-space:nowrap}}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
+.doc-tile{all:unset;box-sizing:border-box;position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:16px;border-radius:18px;background:var(--surface);border:1px solid var(--line);cursor:pointer;min-height:132px;transition:transform .15s ease,box-shadow .15s ease}
+.doc-tile:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(10,37,64,.10)}
+.doc-tile:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.doc-emo{font-size:2.4rem;line-height:1.1;margin-bottom:6px}
+.doc-tn{font-weight:700;font-size:1rem;line-height:1.25}
+.doc-tc{font-size:.8rem;color:var(--muted)}
+.doc-dot{position:absolute;top:14px;right:14px;width:10px;height:10px;border-radius:50%;background:#E5484D}
+.doc-add{border-style:dashed;background:transparent}.doc-add .doc-emo{color:var(--accent);font-weight:300}
+.doc-first{margin-top:14px}
+.doc-alert{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.doc-alink{all:unset;cursor:pointer;text-decoration:underline;font-size:.88rem;padding:4px 0}
+.doc-fhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.doc-ftitle{flex:1;min-width:0;display:flex;align-items:center;gap:10px}.doc-ftitle h2{margin:0;font-size:1.35rem;overflow-wrap:anywhere}.doc-femo{font-size:2rem;line-height:1}
+.doc-fact{display:flex;gap:8px}
+.doc-list{padding:6px 0}.doc-list>h2{padding:10px 16px 0;margin:0;font-size:1rem}
+.doc-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}
+.doc-list>.doc-row:first-child,.doc-list>h2+.doc-row{border-top:0}
+.doc-row.flash{animation:docFlash 1.6s ease}
+@keyframes docFlash{0%,40%{background:color-mix(in srgb,var(--accent) 18%,transparent)}100%{background:transparent}}
+.doc-ext{flex:none;width:46px;height:54px;border-radius:9px;display:grid;place-items:center;font-size:.68rem;font-weight:800;letter-spacing:.03em;color:#fff;background:#6b7a8c}
+.doc-ext.k-pdf{background:#d9534f}.doc-ext.k-img{background:#2e9fb4}.doc-ext.k-doc{background:#2f6fd0}.doc-ext.k-xls{background:#2f9e62}
+.doc-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.doc-main b{font-size:.98rem;line-height:1.3;overflow-wrap:anywhere}
+.doc-main small{font-size:.8rem;color:var(--muted)}
+.doc-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}
+.doc-exp{font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:99px}
+.doc-exp.e-ok{background:var(--soft);color:var(--muted)}.doc-exp.e-warn{background:var(--warn-bg);color:var(--warn)}.doc-exp.e-bad{background:#fde8e8;color:#b42318}
+.doc-note{font-size:.78rem;color:var(--muted);font-style:italic}
+.doc-acts{flex:none;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.doc-b{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:58px;min-height:48px;padding:4px 6px;border-radius:12px;cursor:pointer;color:var(--ink);font-size:.72rem;font-weight:600}
+.doc-b svg{width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.doc-b:hover{background:var(--soft)}.doc-b:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.doc-b:disabled,.doc-b.is-wait{opacity:.45;cursor:default}
+.doc-epick{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;max-height:260px;overflow:auto;padding:2px}
+.doc-e{all:unset;box-sizing:border-box;height:48px;border-radius:12px;display:grid;place-items:center;font-size:1.6rem;cursor:pointer;background:var(--soft);border:2px solid transparent}
+.doc-e[aria-checked="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+.doc-e:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.doc-drop{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:22px 14px;border:2px dashed var(--line);border-radius:16px;text-align:center;cursor:pointer;background:var(--soft)}
+.doc-drop:hover,.doc-drop:focus-within{border-color:var(--accent)}
+.doc-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.doc-drop small{color:var(--muted);font-size:.8rem}.doc-drop .doc-emo{font-size:2rem;margin:0}
+.doc-pick{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.doc-pick li{display:flex;align-items:center;gap:10px;font-size:.9rem;min-width:0}.doc-pick li span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc-pick .doc-ext{width:34px;height:40px;font-size:.6rem}.doc-pick small{color:var(--muted)}
+.doc-send{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.doc-sb{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px;border-radius:14px;background:var(--soft);cursor:pointer;color:var(--ink);text-decoration:none;min-height:88px}
+.doc-sb>span{font-size:1.6rem;line-height:1.1;margin-bottom:4px}.doc-sb small{color:var(--muted);font-size:.78rem}
+.doc-sb:hover{box-shadow:inset 0 0 0 2px var(--accent)}.doc-sb:focus-visible{outline:3px solid var(--accent)}
+.doc-sb:disabled,.doc-sb.is-wait,.doc-sb.is-off{opacity:.45;pointer-events:none}
+.doc-print{position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden}
+@media(max-width:760px){
+  .doc-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .doc-tile{min-height:120px;padding:14px}
+  .doc-search{max-width:none;flex:1 1 100%}
+  .doc-back{flex-basis:100%;justify-content:flex-start;max-width:max-content}
+  .doc-ftitle{flex:1 1 100%}.doc-fact{flex:1 1 100%}.doc-fact .btn{flex:1;justify-content:center}
+  .doc-row{flex-wrap:wrap;padding:12px}
+  .doc-acts{width:100%;justify-content:space-between;padding-left:58px;gap:2px}
+  .doc-b{flex:1;min-width:0}
+}
+@media(prefers-reduced-motion:reduce){.doc-tile{transition:none}.doc-tile:hover{transform:none}.doc-row.flash{animation:none}}
+/* ---- full-screen team chat ---- */
+.chat-page{display:flex;flex-direction:column;background:var(--surface);min-height:0}
+.chat-hd{flex:none;display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.chat-hash{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--soft);color:var(--accent);font:700 1.25rem/1 var(--f-display)}
+.chat-hd-t{flex:1;min-width:0}.chat-hd h1{margin:0;font-size:1.15rem;line-height:1.2;letter-spacing:-.01em}
+.chat-hd-s{margin:2px 0 0;font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-bell{all:unset;box-sizing:border-box;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.chat-bell svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.chat-bell.on{color:var(--accent)}.chat-bell.on svg{fill:color-mix(in srgb,var(--accent) 22%,transparent)}
+.chat-bell:hover{background:var(--soft)}.chat-bell:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chat-page>.chat-notif{flex:none;margin:8px 12px 0;border-radius:12px}
+.chat-nx{all:unset;box-sizing:border-box;flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.chat-nx svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.chat-nx:focus-visible{outline:3px solid var(--accent)}
+.chat-body{flex:1;min-height:0;display:flex}
+.chat-main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
+.chat-box{flex:1;min-height:0}
+.chat-listw{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+.chat-list{flex:1;min-height:0}.chat-list>:first-child{margin-top:auto}
+.chat-join{margin:auto;max-width:420px;padding:28px 20px;text-align:center}.chat-join h2{margin:6px 0 4px}
+.chat-join-ic{font-size:2.6rem;line-height:1}.chat-join .chat-joinf{justify-content:center;text-align:left;margin-top:14px}
+.chat-compose{flex:none;display:flex;flex-direction:column;gap:8px;padding:8px 12px 10px;border-top:1px solid var(--line);background:var(--surface)}
+.chat-ro{margin:0;padding:10px 16px;border-top:1px solid var(--line)}
+.chat-form textarea{background:var(--soft);border-color:transparent}
+.chat-form textarea:focus{background:var(--surface);border-color:var(--accent)}
+.chat-day{display:flex;align-items:center;gap:10px;margin:14px 16px 6px}
+.chat-day::before,.chat-day::after{content:"";flex:1;height:1px;background:var(--line)}
+.chat-day span{background:transparent;padding:0;font-size:.75rem}
+/* message rows */
+.chm{display:flex;flex-direction:row;align-items:flex-start;gap:10px;max-width:none;width:100%;box-sizing:border-box;padding:6px 16px 2px;margin:0}
+.chm.grp{padding-top:1px;margin:0}.chm.mine{align-self:stretch;align-items:flex-start}
+.chm:hover{background:color-mix(in srgb,var(--soft) 60%,transparent)}
+.chm-av{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:.9rem;letter-spacing:.02em}
+.chm-tg{flex:none;width:36px;padding-top:3px;text-align:right;font-size:.66rem;color:var(--muted);opacity:0;font-variant-numeric:tabular-nums}
+.chm:hover .chm-tg,.chm:focus-within .chm-tg{opacity:1}
+.chm-c{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.chm-h{display:flex;align-items:baseline;gap:6px;min-width:0}
+.chm-n{margin:0;font-size:.92rem;color:var(--ink)}
+.chm-you{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.chm-t{position:static;font-size:.72rem;color:var(--muted);opacity:1;font-variant-numeric:tabular-nums}
+.chm-b,.chm.mine .chm-b,.chm.grp .chm-b{position:static;padding:0;border-radius:0;background:none;color:var(--ink);box-shadow:none;min-width:0;max-width:100%;line-height:1.45}
+.chm-b.has-att{padding:0;max-width:100%}.chm-b.has-att .chm-x{display:block;padding:6px 0 0}
+.chm-b.only-att{padding:0}
+.chm-img{margin-top:4px;width:min(320px,70vw);max-height:360px;border:1px solid var(--line)}
+.chm-file{margin-top:4px;background:var(--soft);border:1px solid var(--line);max-width:340px}
+.chm .chm-file .chat-atti{background:var(--surface);color:var(--accent)}
+.chm.pend .chm-b{opacity:.6}.chm-pd{font-size:.7rem;color:var(--muted)}
+.chat-empty{padding:40px 20px}
+.chat-jump{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:9px 16px;border:0;border-radius:99px;background:var(--accent);color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);min-height:40px}
+.chat-jump svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.chat-jump[hidden]{display:none}
+/* people list (wide screens) */
+.chat-side{display:none}
+@media(min-width:1100px){.chat-side{display:block;flex:none;width:230px;border-left:1px solid var(--line);padding:14px 14px;overflow-y:auto}
+  .chat-side h2{margin:0 0 10px;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .chat-side ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  .chat-side li{display:flex;align-items:center;gap:10px;min-width:0}.chat-side li .chm-av{width:30px;height:30px;font-size:.78rem;border-radius:8px}
+  .chat-side li>span:last-child{display:flex;flex-direction:column;min-width:0}.chat-side b{font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chat-side b small{font-weight:500;color:var(--muted)}
+  .chat-side li small{font-size:.74rem;color:var(--muted)}.chat-side-e{color:var(--muted);font-size:.85rem}}
+/* desktop: the chat fills the window under the menu */
+@media(min-width:761px){
+  body.v-chat #main{height:calc(100dvh - var(--chatTop,140px));min-height:440px;box-sizing:border-box;padding-block:16px 20px}
+  body.v-chat .chat-page{height:100%;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+}
+/* phone: a real chat screen between the top of the screen and the menu */
+@media(max-width:760px){
+  body.v-chat #app:not([hidden]){overflow:hidden;bottom:auto;height:100%}
+  body.v-chat #app>header.top{display:none}
+  body.v-chat #app>#main{flex:1 1 auto;min-height:0;padding:0;gap:0;display:flex;flex-direction:column;max-width:none}
+  body.v-chat .chat-page{flex:1;min-height:0}
+  body.v-chat .chat-hd{padding:calc(8px + env(safe-area-inset-top,0px)) 8px 8px 14px;background:var(--navy);color:var(--on-navy);border-bottom:0}
+  body.v-chat .chat-hd-s{color:color-mix(in srgb,var(--on-navy) 70%,transparent)}
+  body.v-chat .chat-hash{background:rgba(255,255,255,.12);color:var(--on-navy)}
+  body.v-chat .chat-bell{color:color-mix(in srgb,var(--on-navy) 80%,transparent)}body.v-chat .chat-bell.on{color:var(--aqua,#8AD9E3)}
+  body.v-chat .chat-bell:hover{background:rgba(255,255,255,.1)}
+  .chm{padding-inline:12px}
+  .chat-compose{padding:8px 8px 8px}
+  body.kb #nav{display:none}
+  body.kb .chat-compose{padding-bottom:8px}
+}
 .chat-notif{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--soft);font-size:.9rem;line-height:1.35}
 .chat-notif>svg{flex:none;width:22px;height:22px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .chat-notif span{flex:1;min-width:0}.chat-notif .btn{flex:none}
@@ -930,6 +1073,7 @@ const T0=[
 const DEFAULT_TARIFS=T0.map((t,i)=>({id:'t'+pad(i+1),categorie:t[0],nom:t[1],prix:t[2],plongees:t[3],note:t[4]||'',ordre:i+1}));
 
 const IC={
+docs:'<path d="M3 7.5A2.5 2.5 0 015.5 5H9l2 2.2h7.5A2.5 2.5 0 0121 9.7v7.8a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 17.5z"/><path d="M3 10.5h18"/>',
 chat:'<path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1z"/><path d="M8 10h8M8 13h5"/>',
 home:'<path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/>',
 schedule:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
@@ -942,12 +1086,12 @@ comm:'<path d="M3 10v4h3l7 4V6L6 10H3z"/><path d="M16.5 9a4 4 0 010 6M19 6.5a8 8
 leave:'<path d="M3 20h18M5 20v-8a7 7 0 0114 0v8"/><path d="M12 5V3M8 20v-5h8v5"/>',
 prices:'<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.3"/>'
 };
-const NAV=[['home','Home'],['schedule','Schedule'],['customers','Customers'],['payments','Payments'],['chat','Chat'],['prices','Prices'],['comm','Marketing'],['gear','Inventory'],['team','Team'],['commission','Commission'],['leave','Leave']];
+const NAV=[['home','Home'],['schedule','Schedule'],['customers','Customers'],['payments','Payments'],['chat','Chat'],['prices','Prices'],['comm','Marketing'],['gear','Inventory'],['docs','Documents'],['team','Team'],['commission','Commission'],['leave','Leave']];
 
 const HOME_KEYS=[['kpis','Today\'s figures'],['today','On the schedule'],['due','To collect'],['rem','Reminders for tomorrow'],['ci','New check-ins to book'],['week','Next 7 days']];
 const SECS=NAV.map(n=>[n[0],n[1]]);
 let BASE_WRITE=true;
-const ACC_DEF={staff:{chat:'edit',home:'edit',schedule:'edit',customers:'edit',payments:'edit',prices:'view',comm:'edit',gear:'edit',team:'edit',commission:'view',leave:'edit'},viewer:{},instructor:{chat:'edit',home:'view',schedule:'view',customers:'view',payments:'none',prices:'none',comm:'none',gear:'view',team:'edit',commission:'none',leave:'edit'}};
+const ACC_DEF={staff:{chat:'edit',home:'edit',schedule:'edit',customers:'edit',payments:'edit',prices:'view',comm:'edit',gear:'edit',docs:'edit',team:'edit',commission:'view',leave:'edit'},viewer:{},instructor:{chat:'edit',home:'view',schedule:'view',customers:'view',payments:'none',prices:'none',comm:'none',gear:'view',docs:'view',team:'edit',commission:'none',leave:'edit'}};
 SECS.forEach(k=>ACC_DEF.viewer[k[0]]='view');
 function accessCfg(){const c=(S.config&&S.config.access)||{},o={staff:{},viewer:{},instructor:{}};['staff','viewer','instructor'].forEach(r=>SECS.forEach(k=>{const v=c[r]&&c[r][k[0]];o[r][k[0]]=['edit','view','none'].includes(v)?v:ACC_DEF[r][k[0]]}));return o}
 function accessLevel(v){
@@ -971,7 +1115,7 @@ function buildNav(){
 /* ---------- state ---------- */
 let db=null,dl=null,canEdit=false,canWrite=true;
 const ME={name:'',level:''};
-const S={clients:{},bookings:{},payments:{},expenses:{},staff:{},tarifs:{},gear:{},gearLog:{},declarations:{},leaves:{},removed:{},trips:{},config:null};
+const S={clients:{},bookings:{},payments:{},expenses:{},staff:{},tarifs:{},gear:{},gearLog:{},docFolders:{},docFiles:{},declarations:{},leaves:{},removed:{},trips:{},config:null};
 const LOADED={};
 const IDX={pay:{},byClient:{}};
 const ST={view:'home',date:today(),sel:new Set(),month:monthNow(),payTab:'due'};
@@ -1299,15 +1443,36 @@ function chatStart(){if(CHAT.timer||!window.__chat)return;try{CHAT.msgs=JSON.par
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')chatPoll()});window.addEventListener('online',()=>chatPoll())}
 const BELL='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
 let PUSH_ST='';
-async function chatNotifRender(force){const el=document.getElementById('chatNotif');if(!el||!window.__push)return;
+async function chatNotifRender(force){const el=document.getElementById('chatNotif'),bell=document.getElementById('chatBell');if(!el||!window.__push)return;
   let st=PUSH_ST;if(force||!st){try{st=await window.__push.state()}catch(e){st='unsupported'}PUSH_ST=st}
-  const msg={on:['Notifications are on for this device.','Turn off','pushOff'],off:['Get a notification on this device when a colleague writes, even when Scubook is closed.','Turn on','pushOn'],
+  if(bell){bell.hidden=!['on','off','denied','ios-install'].includes(st);bell.disabled=false;bell.classList.toggle('on',st==='on');bell.setAttribute('aria-pressed',st==='on'?'true':'false');
+    const bl=st==='on'?'Notifications are on for this device. Tap to turn them off.':'Turn on notifications on this device';bell.setAttribute('aria-label',bl);bell.title=bl}
+  const msg={off:['Get a notification on this device when a colleague writes, even when Scubook is closed.','Turn on','pushOn'],
     'ios-install':['To get notifications on iPhone: tap the Share button, then “Add to Home Screen”. Open Scubook from your home screen and turn notifications on here.','',''],
     denied:['Notifications are blocked for Scubook. Allow them in your phone or browser settings, then come back here.','',''],
     demo:['In your own Scubook account, the team gets a notification on their phone for each new message.','','']}[st];
-  if(!msg){el.hidden=true;return}
+  if(!msg||chatLS.get('nhide:'+st)==='1'){el.hidden=true;return}
   el.hidden=false;el.className='chat-notif st-'+st;
-  el.innerHTML=BELL+'<span>'+esc(msg[0])+'</span>'+(msg[1]?'<button type="button" class="btn sm'+(st==='on'?' ghost':'')+'" data-act="'+msg[2]+'">'+msg[1]+'</button>':'')}
+  el.innerHTML=BELL+'<span>'+esc(msg[0])+'</span>'+(msg[1]?'<button type="button" class="btn sm" data-act="'+msg[2]+'">'+msg[1]+'</button>':'')+'<button type="button" class="chat-nx" data-act="chatNotifHide" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'}
+function chatCentre(){return BN()!=='Scubook'?BN():((window.__centre&&window.__centre.name)||BN())}
+function chatIni(n){const p=String(n||'?').trim().split(/\s+/);return ((p[0]||'?')[0]+(p[1]?p[1][0]:'')).toUpperCase()}
+function chatPeople(all){const ul=document.getElementById('chatPeople');const me=window.__chat.me();const seen={};
+  all.forEach(m=>{if(!m.author_name)return;const k=m.author_email||m.author_name;seen[k]={n:m.author_name,at:m.created_at,me:m.author_email===me}});
+  const L=Object.values(seen).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  const sub=document.getElementById('chatSub');if(sub)sub.textContent=chatCentre()+' · '+(L.length>1?L.length+' people':'only your team')+' · kept 6 months';
+  if(ul)ul.innerHTML=L.map(p=>'<li><span class="chm-av" aria-hidden="true" style="background:'+chatColor(p.n)+'">'+esc(chatIni(p.n))+'</span><span><b>'+esc(p.n)+(p.me?' <small>(you)</small>':'')+'</b><small>'+esc(chatDay(p.at)==='Today'?'Today '+chatTime(p.at):chatDay(p.at))+'</small></span></li>').join('')||'<li class="chat-side-e">Nobody has written yet.</li>'}
+/* full-screen chat: desktop panel height and phone keyboard */
+function chatFit(){const on=ST.view==='chat';document.body.classList.toggle('v-chat',on);
+  if(on&&!matchMedia('(max-width:760px)').matches){const mn=document.getElementById('main');if(mn){const top=mn.getBoundingClientRect().top+(window.scrollY||0);document.documentElement.style.setProperty('--chatTop',Math.max(0,Math.round(top))+'px')}}
+  chatVV()}
+function chatVV(){const vv=window.visualViewport,ap=document.getElementById('app');if(!ap)return;
+  const on=document.body.classList.contains('v-chat')&&matchMedia('(max-width:760px)').matches;
+  if(!on||!vv){ap.style.height='';ap.style.transform='';document.body.classList.remove('kb');return}
+  const kb=(window.innerHeight-vv.height)>120;document.body.classList.toggle('kb',kb);
+  ap.style.height=Math.round(vv.height)+'px';ap.style.transform=vv.offsetTop>0?'translateY('+Math.round(vv.offsetTop)+'px)':'';ap.scrollTop=0;
+  const el=document.getElementById('chatList');if(el&&kb)el.scrollTop=el.scrollHeight}
+if(window.visualViewport){visualViewport.addEventListener('resize',()=>chatVV());visualViewport.addEventListener('scroll',()=>chatVV())}
+window.addEventListener('resize',()=>{if(ST.view==='chat')chatFit()});
 function chatRender(){
   const el=document.getElementById('chatList');if(!el)return;const me=window.__chat.me(),nm=chatName();
   const join=document.getElementById('chatJoin'),box=document.getElementById('chatBox');
@@ -1321,8 +1486,13 @@ function chatRender(){
   if(CHAT.msgs.some(m=>m.attachment&&!chatAttUrl(m.attachment))&&!CHAT.signing){CHAT.signing=true;chatSign().then(ch=>{CHAT.signing=false;if(ch)chatRender()})}
   all.forEach(m=>{const d=chatDay(m.created_at);if(d!==day){day=d;h+='<div class="chat-day"><span>'+esc(d)+'</span></div>';prev=null}
     const mine=m.author_email===me,grp=prev&&prev.author_email===m.author_email&&(new Date(m.created_at)-new Date(prev.created_at))<5*60e3;
-    h+='<div class="chm'+(mine?' mine':'')+(grp?' grp':'')+(m.pending?' pend':'')+'">'+(!mine&&!grp?'<b class="chm-n" style="color:'+chatColor(m.author_name)+'">'+esc(m.author_name)+'</b>':'')+'<div class="chm-b'+(m.attachment?' has-att':'')+(m.attachment&&!m.body?' only-att':'')+'">'+chatAttHtml(m)+(m.body?'<span class="chm-x">'+esc(m.body)+'</span>':'')+'<span class="chm-t">'+(m.pending?'Sending…':esc(chatTime(m.created_at)))+'</span></div></div>';prev=m});
-  el.innerHTML=h;el.dataset.ready='1';if(near)el.scrollTop=el.scrollHeight;
+    const tm=m.pending?'Sending…':esc(chatTime(m.created_at));
+    h+='<div class="chm'+(mine?' mine':'')+(grp?' grp':'')+(m.pending?' pend':'')+'">'+(grp?'<span class="chm-tg" aria-hidden="true">'+(m.pending?'':tm)+'</span>':'<span class="chm-av" aria-hidden="true" style="background:'+chatColor(m.author_name)+'">'+esc(chatIni(m.author_name))+'</span>')+
+      '<div class="chm-c">'+(grp?'':'<div class="chm-h"><b class="chm-n">'+esc(m.author_name)+'</b>'+(mine?'<span class="chm-you">you</span>':'')+'<span class="chm-t">'+tm+'</span></div>')+
+      '<div class="chm-b'+(m.attachment?' has-att':'')+(m.attachment&&!m.body?' only-att':'')+'">'+chatAttHtml(m)+(m.body?'<span class="chm-x">'+esc(m.body)+'</span>':'')+'</div>'+(grp&&m.pending?'<span class="chm-pd">Sending…</span>':'')+'</div></div>';prev=m});
+  const cnt=all.length,grew=el.dataset.ready&&cnt>(+el.dataset.n||0);el.dataset.n=String(cnt);
+  el.innerHTML=h;el.dataset.ready='1';if(near)el.scrollTop=el.scrollHeight;else if(grew){const j=document.getElementById('chatJump');if(j)j.hidden=false}
+  chatPeople(all);
   const f=document.getElementById('chatForm');if(f)f.hidden=!window.__chat.canSend()||!canWrite;
   const ro=document.getElementById('chatRo');if(ro)ro.hidden=window.__chat.canSend()&&canWrite;
   if(ST.view==='chat'&&document.visibilityState==='visible'&&CHAT.last){chatLS.set('seen',String(CHAT.last));chatBadge()}}
@@ -1343,25 +1513,149 @@ async function chatSend(){
     const out=chatOutbox();out.push({name,body,at:new Date().toISOString()});chatLS.set('out',JSON.stringify(out));toast('You are offline. The message will be sent when the connection is back.')}
   chatRender();const el=document.getElementById('chatList');if(el)el.scrollTop=el.scrollHeight;ta.focus()}
 function chatGrow(){const ta=document.getElementById('chatIn');if(!ta)return;ta.style.height='auto';ta.style.height=Math.min(160,ta.scrollHeight)+'px'}
+/* ---------- documents ---------- */
+const DOC_DEF=[['medical','🩺','Medical'],['certs','🎓','Certifications'],['insurance','🛡️','Insurance'],['licences','📜','Licences & permits'],['boats','🚤','Boats'],['maintenance','🔧','Maintenance'],
+  ['emergency','🆘','Emergency & safety'],['waivers','✍️','Forms & waivers'],['staffdocs','👥','Staff'],['invoices','🧾','Invoices'],['sites','🗺️','Dive sites'],['suppliers','📦','Suppliers']];
+const DOC_EMOJI=['🩺','💊','🏥','🚑','🎓','📜','🪪','🛡️','⚖️','🔒','🚤','⛵','⚓','🛥️','🔧','🛠️','⚙️','🧯','🆘','🛟','✍️','📋','📝','📄','👥','🧑‍🏫','🧾','💶','💳','🏦','📊','📅','🗺️','📍','🏝️','🌊','🤿','🐠','🐢','🦈','🐙','🪸','🫧','🧪','🌡️','📦','🚚','🛒','📸','📣','⭐','📁'];
+const DOC_TYPES=['application/pdf','image/jpeg','image/png','image/webp','image/heic','image/heif','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','text/csv','text/plain'];
+const DOC_ACCEPT='.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*,application/pdf';
+const DOC_MAX=20971520;
+const DOC_DEMO=()=>/[?&]demo/.test(location.search);
+const DOCS={folder:'',q:'',urls:{},signing:false};
+function docFolders(){const st=Object.values(S.docFolders||{});if(!st.length)return DOC_DEF.map((d,i)=>({id:d[0],emoji:d[1],name:d[2],ordre:i,virtual:true}));
+  return st.filter(f=>!f.hidden).sort((a,b)=>(a.ordre||0)-(b.ordre||0)||String(a.name).localeCompare(String(b.name)))}
+async function docSeed(){if(Object.keys(S.docFolders||{}).length)return;await col('docFolders').doc('_seed').set({hidden:true,at:nowIso()});
+  for(let i=0;i<DOC_DEF.length;i++){const d=DOC_DEF[i];await col('docFolders').doc(d[0]).set({emoji:d[1],name:d[2],ordre:i,createdAt:nowIso(),by:whoAmI()})}}
+function docFilesIn(fid){return Object.values(S.docFiles||{}).filter(f=>f.folder===fid).sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')))}
+function docExt(f){const n=String(f.name||''),m=n.match(/\.([a-z0-9]{2,5})$/i);if(m)return m[1].toUpperCase().replace('JPEG','JPG');const t=f.type||'';return t==='application/pdf'?'PDF':/^image\//.test(t)?'IMG':/word/.test(t)?'DOC':/sheet|excel|csv/.test(t)?'XLS':'FILE'}
+function docKind(f){const e=docExt(f);return e==='PDF'?'pdf':/^(JPG|PNG|WEBP|HEIC|HEIF|IMG|GIF)$/.test(e)?'img':/^(DOC|DOCX)$/.test(e)?'doc':/^(XLS|XLSX|CSV)$/.test(e)?'xls':'txt'}
+function docDate(d){if(!d)return '';const x=new Date(d+(String(d).length===10?'T12:00:00':''));return isNaN(x)?'':x.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
+function docExp(f){if(!f.expires)return null;const days=Math.round((new Date(f.expires+'T12:00:00')-new Date(today()+'T12:00:00'))/864e5);
+  if(days<0)return {c:'bad',t:'Expired '+docDate(f.expires)};if(days===0)return {c:'bad',t:'Expires today'};if(days<=30)return {c:'warn',t:'Expires in '+pl(days,'day')};return {c:'ok',t:'Valid until '+docDate(f.expires)}}
+function docUrl(f){if(!f)return '';if(f.demo)return f.demo;const c=DOCS.urls[f.path];return c&&c.exp>Date.now()?c.u:''}
+async function docSign(list){const need=[...new Set(list.filter(f=>f.path&&!f.demo&&!docUrl(f)).map(f=>f.path))];if(!need.length||DOCS.signing)return;DOCS.signing=true;
+  try{const o=await window.__lib.sign(need.slice(0,100));Object.keys(o).forEach(p=>{DOCS.urls[p]={u:o[p],exp:Date.now()+50*60e3}});if(Object.keys(o).length&&ST.view==='docs')V.docs.fill()}catch(e){}finally{DOCS.signing=false}}
+function docDl(u,name){if(!u)return '';if(/^(data|blob):/.test(u))return u;return u+(u.includes('?')?'&':'?')+'download='+encodeURIComponent(name||'document')}
+function docRow(f,showFolder){const u=docUrl(f),ex=docExp(f),k=docKind(f),fo=showFolder?docFolders().find(x=>x.id===f.folder):null;
+  return '<div class="doc-row" id="dr-'+esc(f.id)+'"><span class="doc-ext k-'+k+'" aria-hidden="true">'+esc(docExt(f))+'</span>'+
+   '<div class="doc-main"><b>'+esc(f.title||f.name||'Document')+'</b><small>'+(fo?esc(fo.emoji+' '+fo.name)+' · ':'')+esc(fmtSize(+f.size||0))+' · added '+esc(fmtShort((f.at||'').slice(0,10)))+(f.by?' by '+esc(f.by):'')+'</small>'+
+   (ex||f.note?'<span class="doc-meta">'+(ex?'<span class="doc-exp e-'+ex.c+'">'+esc(ex.t)+'</span>':'')+(f.note?'<span class="doc-note">'+esc(f.note)+'</span>':'')+'</span>':'')+'</div>'+
+   '<div class="doc-acts">'+
+    (u?'<a class="doc-b" href="'+esc(u)+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/><circle cx="12" cy="12" r="3"/></svg><span>Open</span></a>'+
+       '<a class="doc-b" href="'+esc(docDl(u,f.name))+'" download="'+esc(f.name||'document')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg><span>Download</span></a>'
+      :'<span class="doc-b is-wait"><span>Loading…</span></span>')+
+    '<button type="button" class="doc-b" data-act="docPrint" data-id="'+esc(f.id)+'"'+(u?'':' disabled')+'><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3.5h10V9M7 17H4.5V10a1 1 0 011-1h13a1 1 0 011 1v7H17"/><path d="M7 14h10v6.5H7z"/></svg><span>Print</span></button>'+
+    '<button type="button" class="doc-b" data-act="docSend" data-id="'+esc(f.id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></svg><span>Send</span></button>'+
+    (canWrite?'<button type="button" class="doc-b" data-act="docEdit" data-id="'+esc(f.id)+'" aria-label="Edit '+esc(f.title||f.name||'document')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span>Edit</span></button>':'')+
+   '</div></div>'}
+V.docs={
+ shell(m){
+  m.innerHTML='<div class="head"><div><h1>Documents</h1><p class="sub" id="dSub"></p></div><div class="toolbar doc-tools">'+
+   '<label class="doc-search"><span class="sr">Search documents</span><input id="dQ" type="search" placeholder="Search documents" autocomplete="off"></label>'+
+   '<button type="button" class="btn ghost" data-act="docNewF" id="dNewF">+ Folder</button><button type="button" class="btn" data-act="docUp" id="dUp">+ Add document</button></div></div>'+
+   '<div id="dAlert"></div><div id="dBody"></div>';
+  $('#dNewF').hidden=!canWrite;$('#dUp').hidden=!canWrite;
+  const q=$('#dQ');q.value=DOCS.q;q.oninput=()=>{DOCS.q=q.value;V.docs.fill()};
+ },
+ fill(){const body=$('#dBody');if(!body)return;
+  if(!db||!LOADED.docFiles||!LOADED.docFolders){body.innerHTML=emptyBox('Loading…');return}
+  const F=docFolders(),all=Object.values(S.docFiles||{});
+  $('#dSub').textContent=pl(all.length,'document')+' · '+pl(F.length,'folder');
+  const soon=all.filter(f=>{const e=docExp(f);return e&&e.c!=='ok'}).sort((a,b)=>String(a.expires).localeCompare(String(b.expires)));
+  $('#dAlert').innerHTML=soon.length&&!DOCS.folder&&!DOCS.q.trim()?'<div class="note warn doc-alert"><b>⏰ '+pl(soon.length,'document')+' expired or expiring within 30 days</b>'+soon.slice(0,5).map(f=>{const fo=F.find(x=>x.id===f.folder);return '<button type="button" class="doc-alink" data-act="docGo" data-f="'+esc(f.folder)+'" data-id="'+esc(f.id)+'">'+esc((fo?fo.emoji+' ':'')+(f.title||f.name))+' · '+esc(docExp(f).t)+'</button>'}).join('')+'</div>':'';
+  const q=nrm(DOCS.q).trim();
+  if(q){const L=all.filter(f=>nrm([f.title,f.name,f.note].join(' ')).includes(q)).sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')));
+    body.innerHTML='<section class="card doc-list"><h2>'+pl(L.length,'result')+'</h2>'+(L.length?L.map(f=>docRow(f,true)).join(''):emptyBox('Nothing found','Try another word.'))+'</section>';docSign(L);return}
+  const cur=DOCS.folder&&F.find(f=>f.id===DOCS.folder);
+  if(DOCS.folder&&!cur)DOCS.folder='';
+  if(!cur){
+    body.innerHTML='<div class="doc-grid">'+F.map(f=>{const n=docFilesIn(f.id).length,bad=docFilesIn(f.id).some(x=>{const e=docExp(x);return e&&e.c!=='ok'});
+      return '<button type="button" class="doc-tile" data-act="docOpenF" data-f="'+esc(f.id)+'"><span class="doc-emo" aria-hidden="true">'+esc(f.emoji||'📁')+'</span><span class="doc-tn">'+esc(f.name)+'</span><span class="doc-tc">'+(n?pl(n,'document'):'Empty')+'</span>'+(bad?'<span class="doc-dot" title="A document has expired or expires soon"></span>':'')+'</button>'}).join('')+
+      (canWrite?'<button type="button" class="doc-tile doc-add" data-act="docNewF"><span class="doc-emo" aria-hidden="true">＋</span><span class="doc-tn">New folder</span><span class="doc-tc">Choose an emoji</span></button>':'')+'</div>'+
+      (all.length?'':'<p class="hint doc-first">'+(canWrite?'Tap a folder to add your first document: a PDF, a photo of a paper, a Word or Excel file. Everyone in your team can open, download, print and send it.':'Your team has not added documents yet.')+'</p>');
+    return}
+  const L=docFilesIn(cur.id);
+  body.innerHTML='<div class="doc-fhead"><button type="button" class="btn ghost sm doc-back" data-act="docBack">‹ All folders</button><div class="doc-ftitle"><span class="doc-femo" aria-hidden="true">'+esc(cur.emoji||'📁')+'</span><h2>'+esc(cur.name)+'</h2></div>'+
+    (canWrite?'<div class="doc-fact"><button type="button" class="btn ghost sm" data-act="docEditF" data-f="'+esc(cur.id)+'">Edit folder</button><button type="button" class="btn sm" data-act="docUp" data-f="'+esc(cur.id)+'">+ Add</button></div>':'')+'</div>'+
+    '<section class="card doc-list">'+(L.length?L.map(f=>docRow(f,false)).join(''):emptyBox('No documents in this folder yet',canWrite?'Tap “+ Add” to upload a file or take a photo of a paper document.':''))+'</section>';
+  docSign(L)}
+};
+function openDocFolder(fid){
+  if(!canWrite){toast('You have read-only access.','bad');return}
+  const f=fid?docFolders().find(x=>x.id===fid):null,emo=(f&&f.emoji)||'📁';MODAL={kind:'docf',id:fid||null,emoji:emo};
+  openModal(f?'Edit folder':'New folder','<label class="fld">Folder name<input id="df-name" maxlength="40" value="'+esc(f?f.name:'')+'" placeholder="For example: Boat papers"></label>'+
+   '<p class="fgroup">Choose an emoji</p><div class="doc-epick" role="radiogroup" aria-label="Emoji">'+DOC_EMOJI.map(e=>'<button type="button" role="radio" class="doc-e" data-act="docEmo" data-e="'+esc(e)+'" aria-checked="'+(e===emo?'true':'false')+'" aria-label="'+esc(e)+'">'+e+'</button>').join('')+'</div>'+
+   '<div class="err" id="df-err" role="alert"></div><div class="actions">'+(f?'<button type="button" class="btn danger push" data-act="docDelF">Delete folder</button>':'')+'<button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="docSaveF">Save</button></div>');
+  if(!matchMedia('(pointer:coarse)').matches)setTimeout(()=>{const i=$('#df-name');if(i)i.focus()},50)}
+function openDocUpload(fid){
+  if(!canWrite){toast('You have read-only access.','bad');return}
+  const F=docFolders();MODAL={kind:'docu',files:[]};
+  openModal('Add a document','<label class="fld">Folder<select id="du-f">'+F.map(f=>opt(f.id,(f.emoji||'📁')+' '+f.name,f.id===(fid||DOCS.folder))).join('')+'</select></label>'+
+   '<label class="doc-drop" id="du-drop"><input type="file" id="du-in" multiple accept="'+DOC_ACCEPT+'"><span class="doc-emo" aria-hidden="true">📎</span><b>Choose files or take a photo</b><small>PDF, photo, Word, Excel or text · 20 MB each at most</small></label>'+
+   '<ul class="doc-pick" id="du-list"></ul>'+
+   '<div class="gf"><label class="fld">Expires on <small>(optional)</small><input type="date" id="du-exp"></label><label class="fld">Note <small>(optional)</small><input id="du-note" maxlength="140" placeholder="For example: renewal with the insurer in March"></label></div>'+
+   '<p class="hint">Useful for medical certificates, insurance and licences: Scubook shows a warning 30 days before the date.</p>'+
+   '<div class="err" id="du-err" role="alert"></div><div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="docUpSave" id="du-save" disabled>Upload</button></div>');
+  const inp=$('#du-in');inp.onchange=()=>{const bad=[];MODAL.files=[...(inp.files||[])].filter(f=>{if(f.size>DOC_MAX){bad.push(f.name+' is bigger than 20 MB');return false}if(f.type&&!DOC_TYPES.includes(f.type)&&!/\.(heic|heif)$/i.test(f.name)){bad.push(f.name+': this type of file is not supported');return false}return true});
+    $('#du-list').innerHTML=MODAL.files.map(f=>'<li><span class="doc-ext k-'+docKind({name:f.name,type:f.type})+'">'+esc(docExt({name:f.name,type:f.type}))+'</span><span>'+esc(f.name)+'</span><small>'+esc(fmtSize(f.size))+'</small></li>').join('');
+    $('#du-err').textContent=bad.join('. ');$('#du-save').disabled=!MODAL.files.length;$('#du-save').textContent=MODAL.files.length>1?'Upload '+MODAL.files.length+' files':'Upload'}}
+function openDocEdit(id){const f=S.docFiles[id];if(!f||!canWrite)return;MODAL={kind:'doce',id};
+  openModal('Edit document','<label class="fld">Name<input id="de-t" maxlength="120" value="'+esc(f.title||f.name||'')+'"></label>'+
+   '<label class="fld">Folder<select id="de-f">'+docFolders().map(x=>opt(x.id,(x.emoji||'📁')+' '+x.name,x.id===f.folder)).join('')+'</select></label>'+
+   '<div class="gf"><label class="fld">Expires on <small>(optional)</small><input type="date" id="de-exp" value="'+esc(f.expires||'')+'"></label><label class="fld">Note <small>(optional)</small><input id="de-note" maxlength="140" value="'+esc(f.note||'')+'"></label></div>'+
+   '<p class="hint">File: '+esc(f.name||'')+' · '+esc(fmtSize(+f.size||0))+'</p>'+
+   '<div class="err" id="de-err" role="alert"></div><div class="actions"><button type="button" class="btn danger push" data-act="docDel">Delete</button><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="docSave">Save</button></div>')}
+async function openDocSend(id){const f=S.docFiles[id];if(!f)return;MODAL={kind:'docs',id,link:'',file:null};
+  const canShareFiles=!!(navigator.canShare&&navigator.share);
+  openModal('Send “'+(f.title||f.name||'document')+'”','<p class="sub">Choose how to send it. The link works for 7 days, then it stops working.</p><div class="doc-send">'+
+   (canShareFiles?'<button type="button" class="doc-sb" data-act="docShare" id="ds-share" disabled><span aria-hidden="true">📤</span><b>Share the file</b><small id="ds-sh">Preparing…</small></button>':'')+
+   '<a class="doc-sb is-wait" id="ds-wa" target="_blank" rel="noopener"><span aria-hidden="true">💬</span><b>WhatsApp</b><small>Send a link</small></a>'+
+   '<a class="doc-sb is-wait" id="ds-mail"><span aria-hidden="true">✉️</span><b>Email</b><small>Send a link</small></a>'+
+   '<button type="button" class="doc-sb" data-act="docCopy" id="ds-copy" disabled><span aria-hidden="true">🔗</span><b>Copy the link</b><small>Paste it anywhere</small></button></div>'+
+   '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Close</button></div>');
+  try{let link=f.demo||'';if(!link){const o=await window.__lib.sign([f.path],604800);link=o[f.path]||''}
+    if(MODAL.kind!=='docs'||MODAL.id!==id)return;
+    if(!link||/^(data|blob):/.test(link)){['ds-wa','ds-mail','ds-copy'].forEach(k=>{const e=$('#'+k);if(e){e.classList.add('is-off');e.removeAttribute('href');const sm=e.querySelector('small');if(sm)sm.textContent=DOC_DEMO()?'In your own account':'Not available'}})}
+    else{MODAL.link=link;const name=f.title||f.name||'Document',txt=name+' ('+chatCentre()+'): '+link;
+      const wa=$('#ds-wa');wa.href='https://wa.me/?text='+encodeURIComponent(txt);wa.classList.remove('is-wait');
+      const ml=$('#ds-mail');ml.href='mailto:?subject='+encodeURIComponent(name)+'&body='+encodeURIComponent(name+'\n\n'+link+'\n\nThis link works for 7 days.');ml.classList.remove('is-wait');
+      $('#ds-copy').disabled=false}
+    if(canShareFiles){const u=docUrl(f)||link;const r=await fetch(u);const blob=await r.blob();const file=new File([blob],f.name||'document',{type:f.type||blob.type||'application/octet-stream'});
+      if(MODAL.kind!=='docs'||MODAL.id!==id)return;const b=$('#ds-share');
+      if(navigator.canShare({files:[file]})){MODAL.file=file;b.disabled=false;$('#ds-sh').textContent='WhatsApp, Mail, AirDrop…'}else{b.hidden=true}}
+  }catch(e){const b=$('#ds-share');if(b)b.hidden=true;if(!MODAL.link&&!DOC_DEMO()&&!f.demo&&MODAL.kind==='docs'&&MODAL.id===id)toast('The link could not be prepared. Please try again.','bad')}}
+async function docPrint(f){const u=docUrl(f);if(!u)return;const k=docKind(f);
+  if(k!=='pdf'&&k!=='img'||matchMedia('(pointer:coarse)').matches){window.open(u,'_blank','noopener');toast(k==='pdf'||k==='img'?'The document is open: use Share, then Print.':'The file is open: print it from the app that opens it.');return}
+  try{const r=await fetch(u);const blob=await r.blob();const ou=URL.createObjectURL(blob);const fr=document.createElement('iframe');fr.className='doc-print';fr.setAttribute('aria-hidden','true');
+    const done=()=>{try{fr.contentWindow.focus();fr.contentWindow.print()}catch(e){window.open(u,'_blank','noopener')}setTimeout(()=>{fr.remove();URL.revokeObjectURL(ou)},60000)};
+    if(k==='img'){fr.srcdoc='<!doctype html><title>'+esc(f.title||f.name||'')+'</title><style>@page{margin:12mm}html,body{margin:0}img{max-width:100%;max-height:100vh;display:block;margin:auto}</style><img src="'+ou+'">';fr.onload=()=>{const im=fr.contentDocument.querySelector('img');if(im&&!im.complete)im.onload=done;else done()}}
+    else{fr.src=ou;fr.onload=()=>setTimeout(done,300)}
+    document.body.appendChild(fr)}catch(e){window.open(u,'_blank','noopener')}}
 V.chat={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Team chat</h1><p class="sub">Only your team at '+esc(BN()!=='Scubook'?BN():((window.__centre&&window.__centre.name)||BN()))+' can read this. Messages are kept for 6 months.</p></div></div>'+
-   '<section class="card chat-join" id="chatJoin" hidden><h2>Join the chat</h2><p class="hint">Choose the name your team will see. Your first name is perfect. You choose it once.</p>'+
+  m.innerHTML='<div class="chat-page"><header class="chat-hd"><span class="chat-hash" aria-hidden="true">#</span><div class="chat-hd-t"><h1>Team chat</h1><p class="chat-hd-s" id="chatSub">'+esc(chatCentre())+' · only your team · kept 6 months</p></div><button type="button" class="chat-bell" id="chatBell" data-act="chatBell" hidden aria-pressed="false" aria-label="Turn on notifications">'+BELL+'</button></header>'+
+   '<div class="chat-notif" id="chatNotif" hidden></div><div class="chat-body"><div class="chat-main">'+
+   '<section class="chat-join" id="chatJoin" hidden><div class="chat-join-ic" aria-hidden="true">💬</div><h2>Join the chat</h2><p class="hint">Choose the name your team will see. Your first name is perfect. You choose it once.</p>'+
    '<form class="chat-joinf" id="chatJoinF"><label class="fld">Your name in the chat<input id="chatNick" maxlength="30" autocomplete="nickname" required></label><button type="submit" class="btn">Join the chat</button></form></section>'+
-   '<section class="card chat-box" id="chatBox" hidden><div class="chat-notif" id="chatNotif" hidden></div><div class="chat-list" id="chatList" role="log" aria-live="polite" aria-label="Team messages"></div>'+
-   '<p class="hint" id="chatRo" hidden style="margin:0">You can read the chat. Ask your manager if you need to write.</p>'+
+   '<section class="chat-box" id="chatBox" hidden><div class="chat-listw"><div class="chat-list" id="chatList" role="log" aria-live="polite" aria-label="Team messages"></div>'+
+   '<button type="button" class="chat-jump" id="chatJump" data-act="chatJump" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg><span>New messages</span></button></div>'+
+   '<div class="chat-compose">'+
+   '<p class="hint chat-ro" id="chatRo" hidden>You can read the chat. Ask your manager if you need to write.</p>'+
    '<div class="chat-att" id="chatAtt" hidden></div>'+
    '<form class="chat-form" id="chatForm"><div class="chat-attw"><button type="button" class="chat-clip" data-act="chatAttach" aria-haspopup="true" aria-expanded="false" aria-label="Add a photo or a file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.5l-8.2 8.2a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/></svg></button>'+
    '<div class="chat-attm" id="chatAttM" hidden role="menu"><button type="button" role="menuitem" data-act="chatPick" data-k="image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg>Photo</button><button type="button" role="menuitem" data-act="chatPick" data-k="file">'+CHAT_FILE_ICON+'File</button></div></div>'+
-   '<input type="file" id="chatPhotoIn" accept="image/*" hidden><input type="file" id="chatFileIn" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,application/pdf" hidden><label class="sr" for="chatIn">Message</label><textarea id="chatIn" rows="1" maxlength="2000" placeholder="Write a message…"></textarea><button type="submit" class="chat-send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></svg></button></form></section>';
-  const jf=document.getElementById('chatJoinF');jf.onsubmit=e=>{e.preventDefault();const v=document.getElementById('chatNick').value.trim().slice(0,30);if(!v)return;chatLS.set('name',v);chatRender();const i=document.getElementById('chatIn');if(i)i.focus();if(matchMedia('(max-width:760px)').matches)setTimeout(()=>{const f=document.getElementById('chatForm');if(f&&f.offsetParent)f.scrollIntoView({block:'end'})},60)};
+   '<input type="file" id="chatPhotoIn" accept="image/*" hidden><input type="file" id="chatFileIn" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,application/pdf" hidden><label class="sr" for="chatIn">Message</label><textarea id="chatIn" rows="1" maxlength="2000" placeholder="Write a message…"></textarea><button type="submit" class="chat-send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></svg></button></form></div></section></div>'+
+   '<aside class="chat-side" aria-label="People in this chat"><h2>People</h2><ul id="chatPeople"></ul></aside></div></div>';
+  const jf=document.getElementById('chatJoinF');jf.onsubmit=e=>{e.preventDefault();const v=document.getElementById('chatNick').value.trim().slice(0,30);if(!v)return;chatLS.set('name',v);chatRender();const i=document.getElementById('chatIn');if(i&&!matchMedia('(pointer:coarse)').matches)i.focus()};
   const f=document.getElementById('chatForm'),ta=document.getElementById('chatIn');f.onsubmit=e=>{e.preventDefault();chatSend()};
   ['chatPhotoIn','chatFileIn'].forEach(id=>{const i=document.getElementById(id);i.onchange=()=>{const f=i.files&&i.files[0];i.value='';chatOnFile(f,id==='chatPhotoIn'?'image':'file')}});
   document.addEventListener('click',e=>{const mm=document.getElementById('chatAttM');if(mm&&!mm.hidden&&!e.target.closest('.chat-attw')){mm.hidden=true;const b=document.querySelector('.chat-clip');if(b)b.setAttribute('aria-expanded','false')}});
+  const cl=document.getElementById('chatList');cl.addEventListener('scroll',()=>{if(cl.scrollHeight-cl.scrollTop-cl.clientHeight<80){const j=document.getElementById('chatJump');if(j)j.hidden=true}},{passive:true});
+  ta.addEventListener('focus',()=>setTimeout(chatVV,350));ta.addEventListener('blur',()=>setTimeout(chatVV,350));
   ta.oninput=chatGrow;ta.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!matchMedia('(pointer:coarse)').matches){e.preventDefault();chatSend()}};
   chatStart();if(window.__chat.cleanup)window.__chat.cleanup();chatAttShow();
  },
- fill(){chatRender();chatPoll();if(matchMedia('(max-width:760px)').matches)setTimeout(()=>{const f=document.getElementById('chatForm');if(f&&!f.hidden&&f.offsetParent)f.scrollIntoView({block:'end'})},60)}
+ fill(){chatRender();chatPoll();chatFit()}
 };
 V.home={
  shell(m){
@@ -2025,6 +2319,7 @@ function go(v){
   ST.view=v;
   $$('#navIn .tab').forEach(b=>{if(b.dataset.v===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   {const tm=document.querySelector('#navIn .tabMore');if(tm){if((tm.dataset.h||'').split(',').includes(v)||v==='settings')tm.setAttribute('aria-current','page');else tm.removeAttribute('aria-current')}}
+  if(v!=='chat'&&document.body.classList.contains('v-chat')){document.body.classList.remove('v-chat','kb');const ap=document.getElementById('app');if(ap){ap.style.height='';ap.style.transform=''}}
   V[v].shell($('#main'));V[v].fill();
   const at=$('#navIn .tab[aria-current="page"]');if(at&&at.scrollIntoView)try{at.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}
   window.scrollTo(0,0);{const ap=document.getElementById('app');if(ap)ap.scrollTop=0}
@@ -3043,10 +3338,48 @@ function openTarif(id){
 const armed=(t,label)=>{if(t.dataset.arm==='1')return true;t.dataset.arm='1';t.dataset.label=t.textContent;t.textContent=label||'Confirm deletion';setTimeout(()=>{if(t.isConnected){t.dataset.arm='';t.textContent=t.dataset.label}},4000);return false};
 const ACT={
  go(t){go(t.dataset.v)},
+ docOpenF(t){DOCS.folder=t.dataset.f;DOCS.q='';const q=$('#dQ');if(q)q.value='';V.docs.fill();const ap=document.getElementById('app');if(ap)ap.scrollTop=0;window.scrollTo(0,0)},
+ docBack(){DOCS.folder='';V.docs.fill()},
+ docGo(t){DOCS.folder=t.dataset.f;V.docs.fill();setTimeout(()=>{const r=document.getElementById('dr-'+t.dataset.id);if(r){r.scrollIntoView({block:'center'});r.classList.add('flash')}},80)},
+ docNewF(){openDocFolder(null)},
+ docEditF(t){openDocFolder(t.dataset.f)},
+ docEmo(t){MODAL.emoji=t.dataset.e;$$('.doc-e').forEach(b=>b.setAttribute('aria-checked',b===t?'true':'false'))},
+ async docSaveF(){const name=$('#df-name').value.trim().slice(0,40);if(!name){$('#df-err').textContent='Give the folder a name.';return}
+   const id=MODAL.id,emoji=MODAL.emoji||'📁';
+   const ok=await W(async()=>{await docSeed();if(id){await col('docFolders').doc(id).update({name,emoji})}else{const max=Math.max(0,...Object.values(S.docFolders||{}).map(f=>f.ordre||0),DOC_DEF.length);await col('docFolders').doc().set({name,emoji,ordre:max+1,createdAt:nowIso(),by:whoAmI()})}},id?'Folder saved':'Folder created');
+   if(ok)closeModal()},
+ async docDelF(t){const id=MODAL.id;if(docFilesIn(id).length){$('#df-err').textContent='This folder still has documents. Move or delete them first.';return}
+   if(!armed(t,'Confirm: delete folder'))return;
+   const ok=await W(async()=>{await docSeed();await col('docFolders').doc(id).delete()},'Folder deleted');if(ok){if(DOCS.folder===id)DOCS.folder='';closeModal()}},
+ docUp(t){openDocUpload(t.dataset.f||DOCS.folder)},
+ async docUpSave(t){const files=MODAL.files||[];if(!files.length)return;const fid=$('#du-f').value,exp=$('#du-exp').value,note=$('#du-note').value.trim().slice(0,140);
+   if(!navigator.onLine&&!DOC_DEMO()){$('#du-err').textContent='You are offline. Documents can be uploaded once the connection is back.';return}
+   t.disabled=true;let done=0,fail=0;
+   try{await docSeed()}catch(e){}
+   for(const f of files){t.textContent='Uploading '+(done+fail+1)+' of '+files.length+'…';
+     try{const type=f.type||(/\.heic$/i.test(f.name)?'image/heic':/\.heif$/i.test(f.name)?'image/heif':'application/octet-stream');const up=await window.__lib.upload(f,f.name,type);
+       const d={folder:fid,name:String(f.name||'document').slice(0,120),title:String(f.name||'document').replace(/\.[^.]+$/,'').slice(0,120),path:up.path,size:f.size,type,at:nowIso(),by:whoAmI()};
+       if(up.demo)d.demo=up.demo;if(exp)d.expires=exp;if(note)d.note=note;
+       await col('docFiles').doc().set(d);done++}catch(e){console.error(e);fail++}}
+   if(fail){$('#du-err').textContent=fail+(fail>1?' files':' file')+' could not be uploaded. Check your connection and try again.';t.disabled=false;t.textContent='Try again';MODAL.files=MODAL.files.slice(done);if(!done)return}
+   toast(done>1?done+' documents added':'Document added');if(!fail){DOCS.folder=fid;DOCS.q='';closeModal();V.docs.fill()}},
+ docEdit(t){openDocEdit(t.dataset.id)},
+ async docSave(){const id=MODAL.id,f=S.docFiles[id];if(!f)return;const title=$('#de-t').value.trim().slice(0,120);if(!title){$('#de-err').textContent='Give the document a name.';return}
+   const d={title,folder:$('#de-f').value,expires:$('#de-exp').value||'',note:$('#de-note').value.trim().slice(0,140)};
+   const ok=await W(async()=>{await docSeed();await col('docFiles').doc(id).update(d)},'Document saved');if(ok)closeModal()},
+ async docDel(t){const id=MODAL.id,f=S.docFiles[id];if(!f)return;if(!armed(t,'Confirm deletion'))return;
+   const ok=await W(async()=>{await col('docFiles').doc(id).delete();if(f.path&&!f.demo)await window.__lib.remove([f.path])},'Document deleted');if(ok)closeModal()},
+ docPrint(t){const f=S.docFiles[t.dataset.id];if(f)docPrint(f)},
+ docSend(t){openDocSend(t.dataset.id)},
+ async docShare(){const f=S.docFiles[MODAL.id];if(!MODAL.file||!f)return;try{await navigator.share({files:[MODAL.file],title:f.title||f.name})}catch(e){}},
+ async docCopy(t){if(!MODAL.link)return;try{await navigator.clipboard.writeText(MODAL.link);t.querySelector('small').textContent='Copied ✓';toast('Link copied. It works for 7 days.')}catch(e){if(!$('#ds-link')){t.closest('.doc-send').insertAdjacentHTML('afterend','<label class="fld">Link (works for 7 days)<input id="ds-link" readonly value="'+esc(MODAL.link)+'"></label>')}const i=$('#ds-link');i.focus();i.select()}},
  async pushOn(t){t.disabled=true;let st='off';try{st=await window.__push.on()}catch(e){st='error'}
    if(st==='on')toast('Notifications are on for this device.');else if(st==='denied')toast('Notifications were blocked. You can allow them in your settings.','bad');else if(st==='error')toast('Notifications could not be turned on. Please try again.','bad');
    PUSH_ST=st==='error'?'':st;chatNotifRender(st==='error')},
  async pushOff(t){t.disabled=true;try{await window.__push.off()}catch(e){}PUSH_ST='off';toast('Notifications are off for this device.');chatNotifRender()},
+ chatBell(t){if(PUSH_ST==='on')return ACT.pushOff(t);if(PUSH_ST==='off')return ACT.pushOn(t);chatLS.set('nhide:'+PUSH_ST,'0');chatNotifRender()},
+ chatNotifHide(){chatLS.set('nhide:'+PUSH_ST,'1');const el=document.getElementById('chatNotif');if(el)el.hidden=true},
+ chatJump(t){const el=document.getElementById('chatList');if(el)el.scrollTo({top:el.scrollHeight,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});t.hidden=true},
  chatAttach(t){const m=document.getElementById('chatAttM');m.hidden=!m.hidden;t.setAttribute('aria-expanded',String(!m.hidden));if(!m.hidden){const f=m.querySelector('button');if(f)f.focus()}},
  chatPick(t){document.getElementById('chatAttM').hidden=true;document.querySelector('.chat-clip').setAttribute('aria-expanded','false');document.getElementById(t.dataset.k==='image'?'chatPhotoIn':'chatFileIn').click()},
  chatAttClear(){CHAT.att=null;chatAttShow()},
@@ -3728,6 +4061,23 @@ const DEMO_KEY='dd-demo-v1';
 const URL_=String(CFG.url||'').replace(/\/+$/,''),KEY=CFG.key||'';
 const LS={get(k){try{return localStorage.getItem(k)||(k==='dd-session'?sessionStorage.getItem(k):null)}catch(e){return null}},set(k,v){try{(k==='dd-session'&&localStorage.getItem('dd-keep')==='0'?sessionStorage:localStorage).setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}try{sessionStorage.removeItem(k)}catch(e){}}};
 let SESS=null,ROLE=null,MEMBER_NAME='',CENTRE=null,CENTRE_NAME='';window.__api=(...a)=>api(...a);
+window.__lib=(function(){
+  const B='library';
+  return {
+    async upload(blob,name,type){
+      if(DEMO){const url=await new Promise(res=>{if(blob.size<350000){const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(URL.createObjectURL(blob));fr.readAsDataURL(blob)}else res(URL.createObjectURL(blob))});return {path:'demo/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),demo:url}}
+      const safe=String(name||'file').normalize('NFKD').replace(/[^\w.\-]+/g,'_').replace(/_+/g,'_').slice(-80)||'file';
+      const rnd=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.floor(performance.now()*1000).toString(36)).replace(/-/g,'').slice(0,12);
+      const path=window.__cid+'/'+Date.now().toString(36)+'-'+rnd+'-'+safe;
+      const r=await fetch(URL_+'/storage/v1/object/'+B+'/'+path.split('/').map(encodeURIComponent).join('/'),{method:'POST',headers:H({'Content-Type':type||'application/octet-stream','x-upsert':'false','cache-control':'3600'}),body:blob});
+      if(!r.ok){let t='';try{t=await r.text()}catch(e){}const e=new Error('upload '+r.status+' '+t.slice(0,160));e.status=r.status;throw e}
+      return {path}},
+    async sign(paths,secs){
+      if(DEMO||!paths.length)return {};
+      const r=await api('/storage/v1/object/sign/'+B,{method:'POST',body:{expiresIn:secs||3600,paths}});const o={};
+      (r||[]).forEach(x=>{if(x&&x.signedURL&&x.path)o[x.path]=URL_+'/storage/v1'+(x.signedURL.startsWith('/')?'':'/')+x.signedURL});return o},
+    async remove(paths){if(DEMO||!paths.length)return;try{await api('/storage/v1/object/'+B,{method:'DELETE',body:{prefixes:paths}})}catch(e){}}
+  }})();
 window.__push=(function(){
   const PUB='BCRCv7uKEFXb3qYuzXukrOmALXcFO8Wv94QnbOiIg1HwPb9n1-ZfRoluUgVw6l5WQHmxnpLXGX0BS2belRQ0bGs';
   const u8=s=>{const t=s.replace(/-/g,'+').replace(/_/g,'/'),b=atob(t+'==='.slice((t.length+3)%4)),o=new Uint8Array(b.length);for(let i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o};
@@ -4408,7 +4758,7 @@ async function ensureDemo(){
   if(st&&st.expires<=Date.now()){await demoGate(true);return false}
   if(!st||!st.data)await demoGate(false);else DEMO_STATE=st;
   Object.keys(DEMO_STATE.data).forEach(n=>{CACHE[n]=DEMO_STATE.data[n]});
-  ['clients','bookings','payments','expenses','staff','tarifs','gear','gearLog','declarations','leaves','removed','config'].forEach(n=>{colOf(n)});
+  ['clients','bookings','payments','expenses','staff','tarifs','gear','gearLog','docFolders','docFiles','declarations','leaves','removed','config'].forEach(n=>{colOf(n)});
   STATE.first=true;
   ROLE='manager';MEMBER_NAME=DEMO_STATE.lead.name||'Demo';
   demoBar();
@@ -4494,7 +4844,7 @@ if('serviceWorker' in navigator&&location.protocol==='https:'&&window.DD_STANDAL
   try{const me=await u.me();ME.name=me.name||''}catch(e){}
   ME.level=canEdit?'Manager':(window.__role==='instructor'?'Instructor':(canWrite?'Staff':'Read-only'));
   openApp();
-  ['clients','bookings','payments','expenses','staff','tarifs','gear','gearLog','declarations','leaves','removed','trips'].forEach(n=>{
+  ['clients','bookings','payments','expenses','staff','tarifs','gear','gearLog','docFolders','docFiles','declarations','leaves','removed','trips'].forEach(n=>{
     col(n).onSnapshot(snap=>{const o={};snap.docs.forEach(x=>{o[x.id]=Object.assign({},x.data(),{id:x.id})});S[n]=o;LOADED[n]=true;schedule()},err=>{console.error(n,err);if(err&&err.code==='revoked')showGate('Access removed','Your access to this workspace was withdrawn. Reload the page or ask the manager.')});
   });
   const t0=setInterval(()=>{if(LOADED.clients){clearInterval(t0);autoSync()}},500);
