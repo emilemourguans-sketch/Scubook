@@ -44,3 +44,29 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(caches.match(r, { ignoreSearch: true }).then((m) => m || fetch(r)));
   }
 });
+
+/* Team chat notifications: shown even when the app is closed. */
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (x) { d = { title: 'Scubook', body: e.data ? e.data.text() : '' }; }
+  const title = d.title || 'Scubook';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: d.body || 'New message in the team chat',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    tag: d.tag || 'chat',
+    renotify: true,
+    data: { url: d.url || '/app.html#chat' }
+  }));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || '/app.html#chat', self.location.origin).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    for (const c of list) {
+      if (c.url.indexOf('/app') !== -1 && 'focus' in c) { c.navigate ? c.navigate(url).catch(() => {}) : 0; return c.focus(); }
+    }
+    return self.clients.openWindow ? self.clients.openWindow(url) : null;
+  }));
+});
