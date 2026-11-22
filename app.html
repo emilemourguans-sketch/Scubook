@@ -696,6 +696,40 @@ main{gap:20px;padding-block:28px 56px}
 .lv-over{color:#b42318}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lvb.over .lvb-big,:root:not([data-theme="light"]) .lv-cnt.over,:root:not([data-theme="light"]) .lv-left.over,:root:not([data-theme="light"]) .lv-over{color:#ff8a80}}
 :root[data-theme="dark"] .lvb.over .lvb-big,:root[data-theme="dark"] .lv-cnt.over,:root[data-theme="dark"] .lv-left.over,:root[data-theme="dark"] .lv-over{color:#ff8a80}
+/* ---- leave requests ---- */
+.lvg td.here{background:var(--soft);color:var(--muted)}
+.lvg td.away{background:#DDF3E4;color:#1F7A44}
+.lvg td.pend{background:#FFE6BF;color:#9A5B00}
+.lvg td.ref{background:#FDE2E1;color:#B42318}
+.lvg td.all.here{background:transparent}
+.lv-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:.8rem;color:var(--muted)}
+.lv-legend span{display:inline-flex;align-items:center;gap:6px}
+.lv-legend .lg{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;font-style:normal;font-weight:800;font-size:.7rem}
+.lg.away{background:#DDF3E4;color:#1F7A44}.lg.pend{background:#FFE6BF;color:#9A5B00}.lg.ref{background:#FDE2E1;color:#B42318}.lg.here{background:var(--soft)}
+.pill.lv-ok{background:#DDF3E4;color:#1F7A44}.pill.lv-wait{background:#FFE6BF;color:#9A5B00}.pill.lv-no{background:#FDE2E1;color:#B42318}
+.lvb-wait{font-size:.8rem;font-weight:700;color:#9A5B00}
+.lvr.lvr-mgr{box-shadow:inset 0 0 0 1.5px #f0b54a}
+.lvr h2{margin:0 0 10px}.lvr-bal{margin:0 0 10px}
+.lvr-list{display:flex;flex-direction:column}
+.lvr-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.lvr-list .lvr-row:first-child{border-top:0}
+.lvr-row .chm-av{flex:none;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:.85rem}
+.lvr-main{flex:1;min-width:180px;display:flex;flex-direction:column;gap:2px}.lvr-main span{font-size:.92rem}.lvr-main small{font-size:.8rem;color:var(--muted)}
+.lvr-acts{display:flex;gap:8px;margin-left:auto}
+.lvr-acts .btn{min-height:40px;padding-inline:16px}
+.lvr-no{color:var(--bad)!important}
+.lbadge{background:#f0a020}
+.tabMore .lbadge{right:auto;left:calc(50% - 22px)}
+@media(min-width:761px){.tabMore .lbadge{left:4px}}
+@media(max-width:760px){.lvr-acts{width:100%;margin-left:50px}.lvr-acts .btn{flex:1;justify-content:center}}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lvg td.away,:root:not([data-theme="light"]) .lg.away,:root:not([data-theme="light"]) .pill.lv-ok{background:rgba(47,158,98,.25);color:#8be0ac}
+ :root:not([data-theme="light"]) .lvg td.pend,:root:not([data-theme="light"]) .lg.pend,:root:not([data-theme="light"]) .pill.lv-wait{background:rgba(240,181,74,.25);color:#f5c37a}
+ :root:not([data-theme="light"]) .lvg td.ref,:root:not([data-theme="light"]) .lg.ref,:root:not([data-theme="light"]) .pill.lv-no{background:rgba(229,72,77,.22);color:#ff8a80}
+ :root:not([data-theme="light"]) .lvb-wait{color:#f5c37a}}
+:root[data-theme="dark"] .lvg td.away,:root[data-theme="dark"] .lg.away,:root[data-theme="dark"] .pill.lv-ok{background:rgba(47,158,98,.25);color:#8be0ac}
+:root[data-theme="dark"] .lvg td.pend,:root[data-theme="dark"] .lg.pend,:root[data-theme="dark"] .pill.lv-wait{background:rgba(240,181,74,.25);color:#f5c37a}
+:root[data-theme="dark"] .lvg td.ref,:root[data-theme="dark"] .lg.ref,:root[data-theme="dark"] .pill.lv-no{background:rgba(229,72,77,.22);color:#ff8a80}
+:root[data-theme="dark"] .lvb-wait{color:#f5c37a}
 /* ---- documents ---- */
 .doc-search{position:relative;display:flex;align-items:center;flex:1 1 220px;min-width:0;max-width:340px}
 .doc-search input{width:100%}
@@ -1126,6 +1160,7 @@ function buildNav(){
     (many?'<button type="button" class="tab tabMore" data-act="navMore" data-h="'+hid.join(',')+'" aria-haspopup="dialog"'+(hid.includes(cur)||cur==='settings'?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>More</span></button>':'');
   const sb=$('#setBtn');if(sb)sb.hidden=!canEdit;const pbn=$('#platBtn');if(pbn)pbn.hidden=!window.__plat;
   if(typeof chatBadge==='function')chatBadge();
+  if(typeof lvBadge==='function')lvBadge();
 }
 
 /* ---------- state ---------- */
@@ -2341,7 +2376,7 @@ function go(v){
   window.scrollTo(0,0);{const ap=document.getElementById('app');if(ap)ap.scrollTop=0}
   if(location.hash!=='#'+v){try{history.replaceState(null,'','#'+v)}catch(e){}}
 }
-function refresh(){reindex();if(V[ST.view])V[ST.view].fill()}
+function refresh(){reindex();if(V[ST.view])V[ST.view].fill();lvBadge()}
 let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;refresh()})};
 
 /* ---------- booking ---------- */
@@ -3192,10 +3227,21 @@ V.commission={
 };
 /* ---------- leave ---------- */
 const leaveStaff=()=>Object.values(S.staff).filter(x=>x.actif!==false).sort(byNom);
-const isAway=(sid,d)=>!!S.leaves[sid+'_'+d];
+const lvSt=l=>!l?'':l.status==='pending'?'pending':l.status==='refused'?'refused':'approved';
+const isAway=(sid,d)=>lvSt(S.leaves[sid+'_'+d])==='approved';
+const myStaff=()=>{const e=String(window.__email||'').toLowerCase();return e?Object.values(S.staff).find(x=>(x.email||'').toLowerCase()===e):null};
+function leavePend(sid,m){return Object.values(S.leaves).filter(l=>l&&l.staffId===sid&&lvSt(l)==='pending'&&(!m||String(l.date||'').slice(0,7)===m)).length}
+function lvGroups(list){const by={};list.slice().sort((a,b)=>(a.staffId+a.date).localeCompare(b.staffId+b.date)).forEach(l=>{const g=by[l.staffId]=by[l.staffId]||[];const last=g[g.length-1];
+  if(last&&last.st===lvSt(l)&&addDays(last.to,1)===l.date){last.to=l.date;last.ids.push(l.staffId+'_'+l.date);last.items.push(l)}else g.push({sid:l.staffId,st:lvSt(l),from:l.date,to:l.date,ids:[l.staffId+'_'+l.date],items:[l]})});
+  return Object.values(by).flat().sort((a,b)=>a.from.localeCompare(b.from))}
+const lvD=d=>parse(d).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+const lvRange=g=>g.from===g.to?lvD(g.from):lvD(g.from)+' – '+lvD(g.to);
+function lvBadge(){const n=canEdit?lvGroups(Object.values(S.leaves||{}).filter(l=>lvSt(l)==='pending')).length:0;
+  document.querySelectorAll('#navIn .tab[data-v="leave"],#navIn .tabMore').forEach(b=>{let e=b.querySelector('.lbadge');const show=n>0&&(b.dataset.v==='leave'||((b.dataset.h||'').split(',').includes('leave')));
+    if(!show){if(e)e.remove();return}if(!e){e=document.createElement('i');e.className='cbadge lbadge';b.appendChild(e)}e.textContent=n>99?'99+':String(n);e.setAttribute('aria-label',n+' leave request'+(n>1?'s':'')+' to approve')})}
 function leaveCfg(){const c=(S.config&&S.config.leave)||{},n=c.perMonth;return{perMonth:(n===undefined||n===null||n==='')?null:Math.max(0,Math.round(+n)||0)}}
 function leaveAllow(sid){const x=S.staff[sid]||{},v=x.leaveMonth;if(v!==undefined&&v!==null&&v!=='')return Math.max(0,Math.round(+v)||0);return leaveCfg().perMonth}
-function leaveTaken(sid,m){return Object.values(S.leaves).filter(l=>l&&l.staffId===sid&&String(l.date||'').slice(0,7)===m).length}
+function leaveTaken(sid,m){return Object.values(S.leaves).filter(l=>l&&l.staffId===sid&&lvSt(l)==='approved'&&String(l.date||'').slice(0,7)===m).length}
 function leaveBal(sid,m){const a=leaveAllow(sid),t=leaveTaken(sid,m);return{allow:a,taken:t,left:a==null?null:a-t,custom:(()=>{const v=(S.staff[sid]||{}).leaveMonth;return v!==undefined&&v!==null&&v!==''})()}}
 const lvMonth=()=>PER.from.slice(0,7);
 const lvMonthName=m=>new Date(m+'-01T00:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
@@ -3203,8 +3249,8 @@ function leaveWarn(sid,months){const x=S.staff[sid];if(!x)return;for(const m of 
 function leaveLeftTxt(b){if(b.allow==null)return '';return b.left>=0?pl(b.left,'day')+' off left':'Over by '+pl(-b.left,'day')}
 V.leave={
  shell(m){
-  m.innerHTML='<div class="head"><div><h1>Leave</h1><p class="sub">Days off per month, what each person has left, and who is away.</p></div>'+(canWrite?'<div class="toolbar"><button type="button" class="btn" data-act="leaveNew">+ Days off</button></div>':'')+'</div>'+
-   '<div id="lvBanner"></div>'+perBar()+
+  m.innerHTML='<div class="head"><div><h1>Leave</h1><p class="sub">Days off per month, what each person has left, and who is away.</p></div>'+(canEdit?'<div class="toolbar"><button type="button" class="btn" data-act="leaveNew">+ Days off</button></div>':canWrite?'<div class="toolbar"><button type="button" class="btn" data-act="leaveNew">+ Ask for days off</button></div>':'')+'</div>'+
+   '<section class="card lvr" id="lvReq" hidden></section><div id="lvBanner"></div>'+perBar()+
    '<section class="card" id="lvBal"></section>'+
    '<section class="card"><h2>Calendar</h2><p class="hint" id="lvHint"></p><div class="tablewrap" id="lvGrid"></div></section>'+
    '<section class="card"><h2>Days off in this period</h2><div id="lvSum"></div></section>';
@@ -3215,16 +3261,17 @@ V.leave={
   const st=leaveStaff(),t=today(),sd=ST.lvDay||t,away=st.filter(x=>isAway(x.id,sd)),dl_=sd===t?'today':'on '+parse(sd).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
   $('#lvBanner').innerHTML=!st.length?'':away.length?'<div class="lv-banner off"><span class="dot"></span><span>'+esc(away.map(x=>x.nom).join(', '))+(away.length>1?' are':' is')+' away '+dl_+'</span></div>':'<div class="lv-banner ok"><span class="dot"></span><span>Everyone is here '+dl_+'</span></div>';
   let days=[];for(let d=PER.from,n=0;d<=PER.to&&n<62;d=addDays(d,1),n++)days.push(d);
-  $('#lvHint').textContent=(canWrite?'Tap a square to mark a day off (tap again to undo). ':'')+'Showing '+perLabel()+(days.length>=62?' (first 62 days)':'')+'.';
+  const ME_=myStaff();$('#lvHint').textContent=(canEdit?'Tap a square to give a day off (tap again to undo). Orange squares are requests waiting for you: tap one to accept or refuse it. ':canWrite?(ME_?'Tap a square in your own line to ask for a day off. Your manager accepts or refuses it. ':'Your sign-in is not linked to a team profile yet: ask your manager to add your email to your profile in Team. '):'')+'Showing '+perLabel()+(days.length>=62?' (first 62 days)':'')+'.';
   if(!st.length){$('#lvGrid').innerHTML=emptyBox('No staff','Add team members in the Team tab.');$('#lvSum').innerHTML='';$('#lvBal').innerHTML='<h2>Days off</h2>'+emptyBox('No staff','Add team members in the Team tab.');return}
-  lvBalRender(st);
+  lvBalRender(st);lvReqRender();
   const dn=['S','M','T','W','T','F','S'];
   const head='<tr><th class="nm"></th>'+days.map(d=>{const dt=parse(d);return '<th class="'+(d===t?'td':'')+'"><button type="button" class="lvh'+(d===sd?' sel':'')+'" data-act="leaveDay" data-d="'+d+'">'+dn[dt.getDay()]+'<br>'+dt.getDate()+'</button></th>'}).join('')+'</tr>';
   const all='<tr><td class="nm">Team</td>'+days.map(d=>{const n=st.filter(x=>isAway(x.id,d)).length;return '<td class="c all '+(n?'away':'here')+'" title="'+(n?n+' away':'Everyone here')+'">'+(n||'')+'</td>'}).join('')+'</tr>';
-  const LM=lvMonth(),rows=st.map(x=>{const b=leaveBal(x.id,LM);return '<tr><td class="nm">'+esc(x.nom)+(b.allow!=null?' <small class="lv-cnt'+(b.left<0?' over':'')+'" title="Days off used in '+esc(lvMonthName(LM))+'">'+b.taken+'/'+b.allow+'</small>':'')+'</td>'+days.map(d=>{const a=isAway(x.id,d);return '<td class="c '+(a?'away':'here')+'"><button type="button" class="lvc" '+(canWrite?'':'disabled ')+'data-act="leaveToggle" data-s="'+esc(x.id)+'" data-d="'+d+'" aria-label="'+esc(x.nom+' '+d+(a?' on leave':' present'))+'">'+(a?'✕':'')+'</button></td>'}).join('')+'</tr>'}).join('');
+  const LM=lvMonth(),rows=st.map(x=>{const b=leaveBal(x.id,LM);return '<tr><td class="nm">'+esc(x.nom)+(b.allow!=null?' <small class="lv-cnt'+(b.left<0?' over':'')+'" title="Days off used in '+esc(lvMonthName(LM))+'">'+b.taken+'/'+b.allow+'</small>':'')+'</td>'+days.map(d=>{const k=lvSt(S.leaves[x.id+'_'+d]),cls=k==='approved'?'away':k==='pending'?'pend':k==='refused'?'ref':'here',can=canEdit||(canWrite&&ME_&&ME_.id===x.id);return '<td class="c '+cls+'"><button type="button" class="lvc" '+(can?'':'disabled ')+'data-act="leaveToggle" data-s="'+esc(x.id)+'" data-d="'+d+'" aria-label="'+esc(x.nom+' '+d+(k==='approved'?' day off':k==='pending'?' day off asked, waiting for the manager':k==='refused'?' day off refused':' at work'))+'">'+(k==='approved'?'✓':k==='pending'?'?':k==='refused'?'✕':'')+'</button></td>'}).join('')+'</tr>'}).join('');
   $('#lvGrid').innerHTML='<table class="lvg"><thead>'+head+'</thead><tbody>'+all+rows+'</tbody></table>';
-  const sm=st.map(x=>({x,n:days.filter(d=>isAway(x.id,d)).length})).filter(o=>o.n);
-  $('#lvSum').innerHTML=sm.length?'<div class="chips">'+sm.map(o=>'<span class="pill st-cancelled">'+esc(o.x.nom)+' · '+pl(o.n,'day')+' off</span>').join('')+'</div>':'<p class="hint">Nobody is on leave in this period.</p>';
+  {const lg=document.getElementById('lvLegend');const html='<span><i class="lg away">✓</i>Day off</span><span><i class="lg pend">?</i>Waiting for the manager</span><span><i class="lg ref">✕</i>Refused</span><span><i class="lg here"></i>At work</span>';if(lg)lg.innerHTML=html;else $('#lvGrid').insertAdjacentHTML('afterend','<div class="lv-legend" id="lvLegend">'+html+'</div>')}
+  const sm=st.map(x=>({x,n:days.filter(d=>isAway(x.id,d)).length,p:days.filter(d=>lvSt(S.leaves[x.id+'_'+d])==='pending').length})).filter(o=>o.n||o.p);
+  $('#lvSum').innerHTML=sm.length?'<div class="chips">'+sm.map(o=>(o.n?'<span class="pill lv-ok">'+esc(o.x.nom)+' · '+pl(o.n,'day')+' off</span>':'')+(o.p?'<span class="pill lv-wait">'+esc(o.x.nom)+' · '+o.p+' waiting</span>':'')).join('')+'</div>':'<p class="hint">Nobody is on leave in this period.</p>';
  }
 };
 function lvBalRender(st){const el=$('#lvBal');if(!el)return;const m=lvMonth(),c=leaveCfg(),multi=PER.from.slice(0,7)!==PER.to.slice(0,7);
@@ -3234,8 +3281,26 @@ function lvBalRender(st){const el=$('#lvBal');if(!el)return;const m=lvMonth(),c=
   h+='<div class="lvb-grid">'+st.map(x=>{const b=leaveBal(x.id,m),over=b.allow!=null&&b.left<0,pc=b.allow?Math.min(100,Math.round(b.taken/b.allow*100)):(b.taken?100:0);
     return '<div class="lvb'+(over?' over':'')+(b.allow!=null&&b.left===0?' full':'')+'"><div class="lvb-top"><b>'+esc(x.nom)+'</b>'+(canEdit?'<button type="button" class="btn ghost sm" data-act="leaveAllowEdit" data-id="'+esc(x.id)+'">Change</button>':'')+'</div>'+
       (b.allow==null?'<span class="lvb-big">'+b.taken+'<small> '+(b.taken===1?'day':'days')+' off</small></span><span class="lvb-sub">No number of days off set</span>'
-        :'<span class="lvb-big">'+(over?'+'+(-b.left):b.left)+'<small> '+(over?'over':'left')+'</small></span><div class="lvb-bar" role="img" aria-label="'+b.taken+' of '+b.allow+' days off used"><i style="width:'+pc+'%"></i></div><span class="lvb-sub">'+b.taken+' of '+b.allow+' days off used'+(b.custom?' · own number':'')+'</span>')+'</div>'}).join('')+'</div>';
+        :'<span class="lvb-big">'+(over?'+'+(-b.left):b.left)+'<small> '+(over?'over':'left')+'</small></span><div class="lvb-bar" role="img" aria-label="'+b.taken+' of '+b.allow+' days off used"><i style="width:'+pc+'%"></i></div><span class="lvb-sub">'+b.taken+' of '+b.allow+' days off used'+(b.custom?' · own number':'')+'</span>')+(()=>{const p=leavePend(x.id,m);return p?'<span class="lvb-wait">⏳ '+p+' waiting for approval</span>':''})()+'</div>'}).join('')+'</div>';
   el.innerHTML=h}
+function lvReqRender(){const el=$('#lvReq');if(!el)return;const t=today();el.classList.toggle('lvr-mgr',!!canEdit);
+  if(canEdit){const G=lvGroups(Object.values(S.leaves).filter(l=>lvSt(l)==='pending'));
+    if(!G.length){el.hidden=true;el.innerHTML='';return}
+    el.hidden=false;el.innerHTML='<h2>⏳ '+pl(G.length,'request')+' to approve</h2><div class="lvr-list">'+G.map(g=>{const x=S.staff[g.sid]||{nom:'Former member'};
+      const ms=[...new Set(g.items.map(l=>l.date.slice(0,7)))];const bal=ms.map(m=>{const B=leaveBal(g.sid,m),add=g.items.filter(l=>l.date.slice(0,7)===m).length,after=B.taken+add;return B.allow==null?'':(ms.length>1?lvMonthName(m)+': ':'')+(after>B.allow?'<b class="lv-over">'+after+' of '+B.allow+' days off if accepted ('+(after-B.allow)+' over)</b>':after+' of '+B.allow+' days off if accepted')}).filter(Boolean).join(' · ');
+      const by=g.items[0].by,at=g.items[0].requestedAt;
+      return '<div class="lvr-row"><span class="chm-av" aria-hidden="true" style="background:'+chatColor(x.nom)+'">'+esc(chatIni(x.nom))+'</span><div class="lvr-main"><b>'+esc(x.nom)+'</b><span>'+esc(lvRange(g))+' · '+pl(g.ids.length,'day')+'</span><small>'+(at?'Asked '+esc(fmtShort(at.slice(0,10)))+(by&&by!==x.nom?' by '+esc(by):''):'')+(bal?(at?' · ':'')+bal:'')+'</small></div>'+
+        '<div class="lvr-acts"><button type="button" class="btn ghost sm lvr-no" data-act="leaveDecide" data-v="refused" data-ids="'+esc(g.ids.join(','))+'">Refuse</button><button type="button" class="btn sm lvr-yes" data-act="leaveDecide" data-v="approved" data-ids="'+esc(g.ids.join(','))+'">Accept</button></div></div>'}).join('')+'</div>';
+    return}
+  const me=myStaff();if(!me){el.hidden=true;return}
+  const mine=Object.values(S.leaves).filter(l=>l.staffId===me.id&&(lvSt(l)!=='approved'?l.date>=addDays(t,-31):l.date>=t));
+  const G=lvGroups(mine),b=leaveBal(me.id,monthNow());
+  el.hidden=false;el.innerHTML='<h2>My days off</h2>'+(b.allow!=null?'<p class="lvr-bal">'+(b.left>=0?'<b>'+pl(b.left,'day')+' off left</b> in '+esc(lvMonthName(monthNow())):'<b class="lv-over">'+pl(-b.left,'day')+' over</b> in '+esc(lvMonthName(monthNow())))+' · '+b.taken+' of '+b.allow+' used</p>':'')+
+    (G.length?'<div class="lvr-list">'+G.map(g=>'<div class="lvr-row"><div class="lvr-main"><b>'+esc(lvRange(g))+'</b><span>'+pl(g.ids.length,'day')+'</span></div><span class="pill '+(g.st==='approved'?'lv-ok">✓ Accepted':g.st==='pending'?'lv-wait">⏳ Waiting for your manager':'lv-no">✕ Refused')+'</span>'+
+      (g.st!=='approved'?'<button type="button" class="btn ghost sm" data-act="leaveCancel" data-ids="'+esc(g.ids.join(','))+'">'+(g.st==='pending'?'Cancel':'Clear')+'</button>':'')+'</div>').join('')+'</div>':'<p class="hint">No request yet. Tap “+ Ask for days off” or a square in your line.</p>')}
+function openLeaveDecide(id){const l=S.leaves[id];if(!l)return;const x=S.staff[l.staffId]||{nom:'Former member'};MODAL={kind:'lvd',id};
+  openModal('Day off request','<p><b>'+esc(x.nom)+'</b> asked for <b>'+esc(lvD(l.date))+'</b>.</p>'+(()=>{const B=leaveBal(l.staffId,l.date.slice(0,7));return B.allow==null?'':'<p class="hint">'+(B.taken+1>B.allow?'<b class="lv-over">'+(B.taken+1)+' of '+B.allow+' days off in '+esc(lvMonthName(l.date.slice(0,7)))+' if accepted.</b>':(B.taken+1)+' of '+B.allow+' days off in '+esc(lvMonthName(l.date.slice(0,7)))+' if accepted.')+'</p>'})()+
+   '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Later</button><button type="button" class="btn danger" data-act="leaveDecide" data-v="refused" data-ids="'+esc(id)+'">Refuse</button><button type="button" class="btn" data-act="leaveDecide" data-v="approved" data-ids="'+esc(id)+'">Accept</button></div>')}
 function openLeaveAllow(id){const x=S.staff[id];if(!x||!canEdit)return;const c=leaveCfg(),v=x.leaveMonth,own=v!==undefined&&v!==null&&v!=='';MODAL={kind:'lva',id};
   openModal('Days off per month · '+x.nom,'<label class="fld check"><input type="checkbox" id="lva-same"'+(own?'':' checked')+'><span>Same as everyone'+(c.perMonth!=null?' ('+pl(c.perMonth,'day')+')':'')+'</span></label>'+
    '<label class="fld" id="lva-w"'+(own?'':' hidden')+'>Days off per month for '+esc(x.nom)+'<input id="lva-n" type="number" min="0" max="31" step="1" inputmode="numeric" value="'+(own?esc(v):(c.perMonth==null?'':c.perMonth))+'"></label>'+
@@ -3243,16 +3308,18 @@ function openLeaveAllow(id){const x=S.staff[id];if(!x||!canEdit)return;const c=l
   const cb=$('#lva-same');cb.onchange=()=>{$('#lva-w').hidden=cb.checked}}
 function openLeave(){
   if(!canWrite){toast('You have read-only access.','bad');return}
+  const me=myStaff();if(!canEdit&&!me){toast('Ask your manager to add your sign-in email to your profile in Team first.','bad');return}
   MODAL={kind:'leave'};
-  openModal('Add days off',
-   '<div class="gf"><label class="fld full">Who<select id="l-staff">'+leaveStaff().map(x=>opt(x.id,x.nom)).join('')+'</select></label>'+
+  openModal(canEdit?'Add days off':'Ask for days off',
+   (canEdit?'':'<p class="hint">Your manager gets your request and accepts or refuses it.</p>')+
+   '<div class="gf"><label class="fld full">Who<select id="l-staff"'+(canEdit?'':' disabled')+'>'+(canEdit?leaveStaff():[me]).map(x=>opt(x.id,x.nom)).join('')+'</select></label>'+
    '<label class="fld">From<input id="l-from" type="date" value="'+today()+'"></label><label class="fld">To<input id="l-to" type="date" value="'+today()+'"></label></div>'+
    '<p class="hint" id="l-bal"></p><div class="err" id="l-err" role="alert"></div>'+
-   '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="leaveSave" id="l-save">Mark as days off</button></div>');
+   '<div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="leaveSave" id="l-save">'+(canEdit?'Mark as days off':'Send request')+'</button></div>');
   const upd=()=>{const sid=$('#l-staff').value,a=$('#l-from').value,b=$('#l-to').value,el=$('#l-bal');if(!el||!sid||!a||!b)return;const x=a<b?a:b,y=a<b?b:a;
-    const add={};for(let d=x,n=0;d<=y&&n<62;d=addDays(d,1),n++)if(!isAway(sid,d)){const m=d.slice(0,7);add[m]=(add[m]||0)+1}
+    const add={};for(let d=x,n=0;d<=y&&n<62;d=addDays(d,1),n++){const k=lvSt(S.leaves[sid+'_'+d]);if(k!=='approved'&&(canEdit||k!=='pending')){const m=d.slice(0,7);add[m]=(add[m]||0)+1}}
     const ms=Object.keys(add).length?Object.keys(add):[x.slice(0,7)];
-    el.innerHTML=ms.map(m=>{const B=leaveBal(sid,m),after=B.taken+(add[m]||0);return esc(lvMonthName(m))+': '+(B.allow==null?pl(after,'day')+' off after this':after+' of '+B.allow+' days off after this'+(after>B.allow?' <b class="lv-over">('+(after-B.allow)+' over)</b>':' ('+pl(B.allow-after,'day')+' left)'))}).join('<br>')};
+    el.innerHTML=ms.map(m=>{const B=leaveBal(sid,m),after=B.taken+(add[m]||0)+(canEdit?0:leavePend(sid,m));return esc(lvMonthName(m))+': '+(B.allow==null?pl(after,'day')+' off after this':after+' of '+B.allow+' days off after this'+(after>B.allow?' <b class="lv-over">('+(after-B.allow)+' over)</b>':' ('+pl(B.allow-after,'day')+' left)'))}).join('<br>')};
   $('#mBody').oninput=$('#mBody').onchange=upd;upd();
 }
 
@@ -3637,6 +3704,12 @@ const ACT={
   openModal('Change password','<div class="gf"><label class="fld full">New password<input id="pw1" type="password" autocomplete="new-password"></label><label class="fld full">Repeat it<input id="pw2" type="password" autocomplete="new-password"></label></div><div class="err" id="pw-err" role="alert"></div><div class="actions"><button type="button" class="btn ghost" data-act="closeModal">Cancel</button><button type="button" class="btn" data-act="payPwSave">Save</button></div>');
  },
  declNew(){openDecl()},
+ async leaveDecide(t){if(!canEdit)return;const ids=String(t.dataset.ids||'').split(',').filter(id=>S.leaves[id]),v=t.dataset.v==='approved'?'approved':'refused';if(!ids.length)return;
+   t.disabled=true;const sid=S.leaves[ids[0]].staffId,x=S.staff[sid]||{nom:''};
+   const ok=await W(async()=>{for(const id of ids)await col('leaves').doc(id).update({status:v,decidedBy:whoAmI(),decidedAt:nowIso()})},(v==='approved'?'Accepted: ':'Refused: ')+pl(ids.length,'day')+' off for '+x.nom);
+   if(ok){if(MODAL.kind==='lvd')closeModal();if(v==='approved')leaveWarn(sid,[...new Set(ids.map(id=>id.slice(-10,-3)))]);V.leave.fill()}else t.disabled=false},
+ async leaveCancel(t){const me=myStaff();const ids=String(t.dataset.ids||'').split(',').filter(id=>S.leaves[id]&&me&&S.leaves[id].staffId===me.id&&lvSt(S.leaves[id])!=='approved');if(!ids.length)return;
+   await W(async()=>{for(const id of ids)await col('leaves').doc(id).delete()},'Done')},
  leaveNew(){openLeave()},
  leaveAllowEdit(t){openLeaveAllow(t.dataset.id)},
  async leaveCfgSave(){if(!canEdit)return;const raw=$('#lv-pm').value.trim();const leave={perMonth:raw===''?null:Math.min(31,Math.max(0,Math.round(+raw)||0))};
@@ -3647,8 +3720,13 @@ const ACT={
  leaveDay(t){ST.lvDay=t.dataset.d;V.leave.fill()},
  async leaveToggle(t){
   if(!canWrite)return;const sid=t.dataset.s,d=t.dataset.d,id=sid+'_'+d;
-  const adding=!S.leaves[id];const ok=await W(async()=>{ST.lvDay=d;if(S.leaves[id])await col('leaves').doc(id).delete();else await col('leaves').doc(id).set({staffId:sid,date:d,by:whoAmI()})},adding?'Marked as a day off':'Back at work');
-  if(ok&&adding)leaveWarn(sid,[d.slice(0,7)]);
+  const k=lvSt(S.leaves[id]);ST.lvDay=d;
+  if(canEdit){if(k==='pending'){openLeaveDecide(id);return}
+    const adding=k===''||k==='refused';const ok=await W(async()=>{if(adding)await col('leaves').doc(id).set({staffId:sid,date:d,by:whoAmI(),status:'approved',decidedBy:whoAmI(),decidedAt:nowIso()});else await col('leaves').doc(id).delete()},adding?'Marked as a day off':k==='approved'?'Back at work':'Removed');
+    if(ok&&adding)leaveWarn(sid,[d.slice(0,7)]);return}
+  const me=myStaff();if(!me||me.id!==sid)return;
+  if(k==='approved'){toast('This day off is accepted. Ask your manager if you need to change it.');return}
+  await W(async()=>{if(k==='pending'||k==='refused')await col('leaves').doc(id).delete();else await col('leaves').doc(id).set({staffId:sid,date:d,by:whoAmI(),status:'pending',requestedAt:nowIso()})},k==='pending'?'Request cancelled':k==='refused'?'Cleared':'Request sent to your manager');
  },
  async leaveSave(){
   const sid=$('#l-staff').value;let a=$('#l-from').value,b=$('#l-to').value;
@@ -3657,8 +3735,10 @@ const ACT={
   const days=[];for(let d=a;d<=b&&days.length<=366;d=addDays(d,1))days.push(d);
   if(days.length>366){$('#l-err').textContent='Maximum one year at a time.';return}
   $('#l-save').disabled=true;
-  const ok=await W(async()=>{for(const d of days){if(!S.leaves[sid+'_'+d])await col('leaves').doc(sid+'_'+d).set({staffId:sid,date:d,by:whoAmI()})}},pl(days.length,'day')+' marked as days off');
-  if(ok){closeModal();leaveWarn(sid,[...new Set(days.map(d=>d.slice(0,7)))])}else{const x=$('#l-save');if(x)x.disabled=false}
+  const ok=await W(async()=>{for(const d of days){const id=sid+'_'+d,k=lvSt(S.leaves[id]);
+      if(canEdit){if(k!=='approved')await col('leaves').doc(id).set({staffId:sid,date:d,by:(S.leaves[id]&&S.leaves[id].by)||whoAmI(),status:'approved',decidedBy:whoAmI(),decidedAt:nowIso()})}
+      else if(k===''||k==='refused')await col('leaves').doc(id).set({staffId:sid,date:d,by:whoAmI(),status:'pending',requestedAt:nowIso()})}},canEdit?pl(days.length,'day')+' marked as days off':'Request sent to your manager ('+pl(days.length,'day')+')');
+  if(ok){closeModal();if(canEdit)leaveWarn(sid,[...new Set(days.map(d=>d.slice(0,7)))])}else{const x=$('#l-save');if(x)x.disabled=false}
  },
  async declSave(){
   const sid=$('#d-staff').value,tid=$('#d-tarif').value,t=tarifs().list.find(x=>x.id===tid),date=$('#d-date').value,q=Math.max(1,Math.round(+$('#d-qte').value||1));
