@@ -622,6 +622,15 @@ main{gap:20px;padding-block:28px 56px}
 .setpane{display:flex;flex-direction:column;gap:inherit}.setpane[hidden]{display:none}
 @media(max-width:520px){.setnav{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px}.setnav-b{min-height:62px;font-size:.74rem;padding:7px 2px;gap:5px}.setnav-b svg{width:22px;height:22px}}
 @media(prefers-reduced-motion:reduce){.setnav-b{transition:none}}
+.wa-ed{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--soft)}
+.wa-ed textarea{min-height:76px}
+.wa-langf{max-width:320px}
+.wa-keys{display:flex;flex-wrap:wrap;gap:6px}
+.wa-key{all:unset;box-sizing:border-box;cursor:pointer;padding:6px 11px;min-height:34px;display:inline-flex;align-items:center;border-radius:99px;background:var(--surface);color:var(--accent);font-weight:700;font-size:.85rem;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.wa-key:hover{box-shadow:inset 0 0 0 1.5px var(--accent)}.wa-key:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wa-prev{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.wa-pl{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.wa-bub{max-width:100%;padding:9px 12px;border-radius:14px 14px 14px 4px;background:#dcf8c6;color:#10202b;white-space:pre-wrap;word-break:break-word;font-size:.95rem;box-shadow:0 1px 1px rgba(0,0,0,.15)}
 .tphoto{position:relative;aspect-ratio:240/132;overflow:hidden;border-radius:12px;background:#0b2a3d}
 .tphoto>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .tphoto.is-full>img{filter:saturate(.85)}
@@ -951,8 +960,15 @@ const waOk=t=>waNum(t).length>=8;
 const waLink=(tel,msg)=>'https://wa.me/'+waNum(tel)+'?text='+encodeURIComponent(msg);
 const firstName=n=>String(n||'').trim().split(/\s+/)[0]||'';
 const slotTime=x=>String(x||'').replace(/^[A-Za-z]+\s+/,'');
-const helloMsg=c=>'Hi '+firstName(c.nom)+', this is '+BN()+'.';
-const remindMsg=(b,c)=>'Hi '+firstName(c.nom)+', this is '+BN()+'. A reminder for tomorrow, '+fmtLong(b.date)+': '+(b.tarifNom||'your dive')+(slotTime(slotNorm(b.creneau))?' at '+slotTime(slotNorm(b.creneau)):'')+'. See you soon!';
+const WA_DEF={hello:'Hi {name}, this is {center}.',remind:'Hi {name}, this is {center}. A reminder for tomorrow, {date}: {activity} at {time}. See you soon!'};
+const waTpl=k=>{const m=S.config&&S.config.waMsg;return (m&&typeof m[k]==='string'&&m[k].trim())?m[k]:WA_DEF[k]};
+function waFill(t,c,b){const tm=b?slotTime(slotNorm(b.creneau)):'';let x=String(t||'');if(!tm)x=x.replace(/\s+(at|à|a|um|alle|om|pukul|jam)\s+\{time\}/gi,'');const ins=b&&b.instructeurId?firstName(staffName(b.instructeurId)):'';if(!ins)x=x.replace(/\s+(with|avec|con|mit|met|dengan|bersama|com)\s+\{instructor\}/gi,'');
+  const v={name:firstName((c||{}).nom),center:BN(),date:b&&b.date?waDate(b.date):'',time:tm,activity:(b&&b.tarifNom)||'your dive',instructor:ins};return x.replace(/\{(name|center|date|time|activity|instructor)\}/gi,(m,k)=>v[k.toLowerCase()]).replace(/[ \t]{2,}/g,' ').trim()}
+const WA_LANGS=[['en-GB','English'],['fr-FR','Français'],['es-ES','Español'],['de-DE','Deutsch'],['it-IT','Italiano'],['nl-NL','Nederlands'],['pt-PT','Português'],['id-ID','Bahasa Indonesia'],['ru-RU','Русский'],['zh-CN','中文'],['ja-JP','日本語'],['ko-KR','한국어']];
+const waLang=()=>{const el=document.getElementById('wa-lang');if(el&&el.dataset.dirty)return el.value;const m=S.config&&S.config.waMsg;return (m&&WA_LANGS.some(x=>x[0]===m.lang))?m.lang:'en-GB'};
+function waDate(iso){try{return new Date(iso+'T12:00:00').toLocaleDateString(waLang(),{weekday:'long',day:'numeric',month:'long'})}catch(e){return fmtLong(iso)}}
+const helloMsg=c=>waFill(waTpl('hello'),c,null);
+const remindMsg=(b,c)=>waFill(waTpl('remind'),c,b);
 const EXP_CATS=['Fuel & boat','Tank fills & gas','Equipment','Rent','Salaries','Commissions','Agency fees','Marketing','Supplies','Utilities','Taxes & licences','Other'];
 function openExpense(id){
   if(!canWrite){toast('You have read-only access.','bad');return}
@@ -1690,9 +1706,17 @@ const SET_CATS=[
  ['trips','Trips','Dive sites, boats, pool and departure times.','<path d="M3 15h18l-3 4H6zM6 15V9h7l3 6M9 9V5M9 5l4 2-4 2"/>',['fleetCard','slotCard','capCard']],
  ['book','Bookings','Online booking, the check-in form and your customer lists.','<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3"/>',['bkoCard','ciSet','cfgLists']],
  ['money','Money','Park and eco fees, commissions, agency costs and payment protection.','<circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2c-.5-1-1.6-1.6-2.8-1.6-1.6 0-2.8.9-2.8 2.2 0 3 5.6 1.6 5.6 4.5 0 1.3-1.2 2.2-2.8 2.2-1.3 0-2.4-.6-2.9-1.7M12 6v1.6M12 16.4V18"/>',['cfgFees','feeCard']],
- ['mkt','Marketing','How customers hear about you: the list in the check-in form.','<path d="M4 10v4a1 1 0 0 0 1 1h2l5 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',['srcCard']],
+ ['mkt','Marketing','Your WhatsApp messages, and how customers hear about you.','<path d="M4 10v4a1 1 0 0 0 1 1h2l5 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',['waCard','srcCard']],
  ['team','Team','Access code, accounts and what each role can see.','<circle cx="9" cy="8.5" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.5 14.4c3 .1 5.5 2.4 5.5 5.6"/>',['joinCard','teamAcc','roleCard']]];
 let SET_CAT=(()=>{try{return localStorage.getItem('dd-setcat')||'center'}catch(e){return 'center'}})();
+function waSample(){const C=Object.values(S.clients||{}).filter(c=>c&&c.nom).sort((a,b)=>String(b.creeLe||'').localeCompare(String(a.creeLe||'')));
+  const tm=addDays(today(),1),B=Object.values(S.bookings||{}).filter(b=>b&&b.date===tm&&b.statut!=='Cancelled')[0];
+  const c=(B&&S.clients[B.clientId])||C[0]||{nom:'Lucas Martin'};return{c,b:B||{date:addDays(today(),1),creneau:CRENEAUX[0]||'Morning 9:00',tarifNom:'Fun Dive'}}}
+function waPrev(){const sm=waSample();[['hello',null],['remind',sm.b]].forEach(([k,b])=>{const ta=document.getElementById('wa-'+k),p=document.getElementById('wa-'+k+'-p');if(!ta||!p)return;
+  const txt=waFill(ta.value.trim()||WA_DEF[k],sm.c,b);p.innerHTML='<span class="wa-pl">Preview</span><span class="wa-bub"></span>';p.querySelector('.wa-bub').textContent=txt})}
+function waFillCard(){const card=document.getElementById('waCard');if(!card)return;['hello','remind'].forEach(k=>{const ta=document.getElementById('wa-'+k);if(!ta)return;
+  if(document.activeElement!==ta&&!ta.dataset.dirty)ta.value=waTpl(k);ta.disabled=!canEdit;ta.oninput=()=>{ta.dataset.dirty='1';waPrev()};ta.onfocus=()=>{card.dataset.last=k}});
+  {const ls=document.getElementById('wa-lang');if(ls){if(!ls.dataset.dirty)ls.value=waLang();ls.disabled=!canEdit;ls.onchange=()=>{ls.dataset.dirty='1';waPrev()}}}const sv=document.getElementById('waSave');if(sv)sv.hidden=!canEdit;card.querySelectorAll('.wa-key,[data-act=waReset]').forEach(b=>b.hidden=!canEdit);waPrev()}
 function setCatInit(m){
   const head=m.querySelector('.head');m.querySelectorAll('.set-group').forEach(e=>e.remove());
   const nav=document.createElement('div');nav.className='setnav';nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Settings topics');
@@ -1754,6 +1778,7 @@ V.settings={
    '</div>'+
    '<label class="fld check full"><input type="checkbox" id="cLock"><span>Protect payments: a collected payment cannot be deleted, and neither can a paid booking, unless the customer was refunded in full first. Deleting a fully refunded payment removes the payment and its refund together.</span></label>'+
    '<div class="actions"><button type="button" class="btn" data-act="saveCfg" id="cSave">Save fees and commission</button></div></section>'+
+   '<section class="card" id="waCard"><h2>WhatsApp messages</h2><p class="hint">The text that opens in WhatsApp when you press a WhatsApp button. Write it in your own words and language. Tap a word in blue to add it: it is replaced by the customer’s details.</p><div class="wa-ed"><label class="fld">Customer record · WhatsApp button<textarea id="wa-hello" rows="3" maxlength="600"></textarea></label><div class="wa-keys" data-for="wa-hello">'+['name','center'].map(k=>'<button type="button" class="wa-key" data-act="waIns" data-k="'+k+'">{'+k+'}</button>').join('')+'</div><div class="wa-prev" id="wa-hello-p" aria-live="polite"></div></div><div class="wa-ed"><label class="fld">Reminder for tomorrow · Home<textarea id="wa-remind" rows="4" maxlength="600"></textarea></label><div class="wa-keys" data-for="wa-remind">'+['name','center','date','time','activity','instructor'].map(k=>'<button type="button" class="wa-key" data-act="waIns" data-k="'+k+'">{'+k+'}</button>').join('')+'</div><label class="fld wa-langf">Language of the date ({date})<select id="wa-lang">'+WA_LANGS.map(x=>'<option value="'+x[0]+'">'+x[1]+'</option>').join('')+'</select></label><div class="wa-prev" id="wa-remind-p" aria-live="polite"></div></div><div class="actions"><button type="button" class="btn ghost" data-act="waReset">Standard messages</button><button type="button" class="btn" data-act="waSave" id="waSave">Save messages</button></div></section>'+
    '<section class="card" id="srcCard"><h2>How customers hear about you</h2><p class="hint">The choices in the check-in form (“How did you hear about us?”) and on each customer. One per line, in the order you want. Customers pick from this list, they cannot type.</p><label class="fld">Choices (one per line)<textarea id="srcList" rows="10"></textarea></label><div class="actions"><button type="button" class="btn ghost" data-act="srcReset">Use the standard list</button><button type="button" class="btn" data-act="srcSave" id="srcSave">Save the list</button></div></section>'+
    '<section class="card" id="cfgLists"><h2>Agents, hotels and levels</h2><p class="hint">The lists offered when you add a customer or a booking.</p><div class="gf"><label class="fld">Agents and hotels (one per line)<textarea id="cAgents" rows="6"></textarea></label><label class="fld">Certification levels (one per line)<textarea id="cNiv" rows="6"></textarea></label></div><div class="actions"><button type="button" class="btn" data-act="saveCfg" id="cSave2">Save lists</button></div></section>';
   V.settings.cfgLoaded=false;V.settings.accLoaded=false;V.settings.ciLoaded=false;
@@ -1767,7 +1792,7 @@ V.settings={
     $('#cLock').checked=c.lockPay;V.settings.cfgLoaded=true;
     const br=(S.config&&S.config.brand)||{};$('#bName').value=br.name||'';$('#bNavy').value=br.navy||'#0A2540';$('#bAcc').value=br.lime||((br.accent&&!['#0b7285','#2e799e','#8ad9e3'].includes(String(br.accent).toLowerCase()))?br.accent:'#FF7A5C');$('#bPrevImg').src=br.logo||LOGO0;V.settings.pendLogo=undefined;
   }
-  ciFill();subRender();fleetFill();slotFill();capFill();bkoFill();{const sl=document.getElementById('srcList');if(sl&&document.activeElement!==sl&&!sl.dataset.dirty)sl.value=srcList().join('\n');if(sl){sl.disabled=!canEdit;sl.oninput=()=>{sl.dataset.dirty='1'}}const sv=document.getElementById('srcSave');if(sv)sv.hidden=!canEdit}
+  ciFill();subRender();fleetFill();slotFill();capFill();bkoFill();waFillCard();{const sl=document.getElementById('srcList');if(sl&&document.activeElement!==sl&&!sl.dataset.dirty)sl.value=srcList().join('\n');if(sl){sl.disabled=!canEdit;sl.oninput=()=>{sl.dataset.dirty='1'}}const sv=document.getElementById('srcSave');if(sv)sv.hidden=!canEdit}
   $$('#bName,#bNavy,#bAcc,#bFile').forEach(e=>e.disabled=!canEdit);$('#brandCard').hidden=!canEdit;joinRender();{const ta=document.getElementById('teamAcc');if(ta){const ok=!!(window.DD_STANDALONE&&canEdit&&(window.DD_SHIM||window.claude).admin&&!/[?&]demo/.test(location.search));ta.hidden=!ok;if(ok&&!ta.dataset.loaded){ta.dataset.loaded='1';loadAccounts()}}}
   $$('#cCp,#cCf,#cEco,#cPe,#cPl,#cSites,#cAgents,#cNiv,#cLock').forEach(e=>e.disabled=!canEdit);
   $('#cSave').hidden=!canEdit;{const c2=document.getElementById('cSave2');if(c2)c2.hidden=!canEdit}
@@ -2837,6 +2862,13 @@ function openTarif(id){
 const armed=(t,label)=>{if(t.dataset.arm==='1')return true;t.dataset.arm='1';t.dataset.label=t.textContent;t.textContent=label||'Confirm deletion';setTimeout(()=>{if(t.isConnected){t.dataset.arm='';t.textContent=t.dataset.label}},4000);return false};
 const ACT={
  go(t){go(t.dataset.v)},
+ waIns(t){const id=t.closest('.wa-keys').dataset.for,ta=document.getElementById(id);if(!ta||ta.disabled)return;const k='{'+t.dataset.k+'}',a=ta.selectionStart==null?ta.value.length:ta.selectionStart,e=ta.selectionEnd==null?a:ta.selectionEnd;
+   ta.value=ta.value.slice(0,a)+k+ta.value.slice(e);ta.dataset.dirty='1';ta.focus();try{ta.setSelectionRange(a+k.length,a+k.length)}catch(x){}waPrev()},
+ waReset(){['hello','remind'].forEach(k=>{const ta=document.getElementById('wa-'+k);if(ta){ta.value=WA_DEF[k];ta.dataset.dirty='1'}});waPrev();toast('Standard messages filled in. Press Save messages to keep them.')},
+ async waSave(){const v={hello:document.getElementById('wa-hello').value.trim().slice(0,600),remind:document.getElementById('wa-remind').value.trim().slice(0,600),lang:document.getElementById('wa-lang').value};
+   if(!v.hello||!v.remind){toast('Write both messages, or press Standard messages.','bad');return}
+   const ok=await W(()=>S.config?db.doc('config/main').update({waMsg:v}):db.doc('config/main').set({waMsg:v}),'WhatsApp messages saved');
+   if(ok){['hello','remind','lang'].forEach(k=>{const ta=document.getElementById('wa-'+k);if(ta)delete ta.dataset.dirty})}},
  async srcSave(){const sl=document.getElementById('srcList');const L=Array.from(new Set(sl.value.split('\n').map(x=>x.trim().slice(0,60)).filter(Boolean))).slice(0,40);
    if(!L.length){toast('Add at least one choice.','bad');return}
    const ok=await W(()=>S.config?db.doc('config/main').update({sources:L}):db.doc('config/main').set({sources:L}),'List saved. The check-in form shows it now.');if(ok){delete sl.dataset.dirty;sl.value=L.join('\n')}},
