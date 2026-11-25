@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Live status of Scubook: website, app, database and sign-in."><meta name="theme-color" content="#ffffff"><meta name="color-scheme" content="light"><link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="canonical" href="https://scubook.app/status"><title>Service status · Scubook</title><link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:swap;src:url(/fonts/inter-latin.woff2) format("woff2")}@font-face{font-family:Fredoka;font-style:normal;font-weight:300 700;font-display:swap;src:url(/fonts/fredoka-latin.woff2) format("woff2")}
+:root{--navy:#0A2540;--coral:#FF7A5C;--aqua:#8AD9E3;--soft:rgba(10,37,64,.68);--hair:rgba(10,37,64,.1);--ok:#1F7A44;--okbg:#DDF3E4;--warn:#9A5B00;--warnbg:#FFE6BF;--bad:#B42318;--badbg:#FDE2E1}
+*{box-sizing:border-box;margin:0}
+body{background:#F5F7FA;color:var(--navy);font:400 17px/1.5 Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:760px;margin:0 auto;padding:0 20px}
+header{background:var(--navy);color:#fff;padding:22px 0}
+header .w{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.wm{position:relative;display:inline-block;font:600 28px/1 Fredoka,Inter,sans-serif;color:#fff;text-decoration:none;letter-spacing:-.01em}.wm b{font-weight:600;color:var(--coral)}.wm i{font-style:normal;font-weight:700;letter-spacing:-.05em}
+.wm svg{position:absolute;left:2.12em;top:-.46em;width:1.7em;height:.47em;overflow:visible}
+header a.back{color:#fff;font-weight:600;font-size:15px;text-decoration:none;opacity:.85}header a.back:hover{opacity:1}
+main{padding:40px 0 60px}
+h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.03em;line-height:1.1}
+.sum{display:flex;align-items:center;gap:14px;margin:22px 0 26px;padding:18px 20px;border-radius:18px;background:#fff;box-shadow:0 1px 2px rgba(10,37,64,.06),0 10px 30px -18px rgba(10,37,64,.25);font-weight:700;font-size:19px}
+.dot{flex:none;width:14px;height:14px;border-radius:50%;background:#C9D2DC}
+.ok .dot{background:var(--ok);box-shadow:0 0 0 5px var(--okbg)}.warn .dot{background:#E8A33A;box-shadow:0 0 0 5px var(--warnbg)}.bad .dot{background:var(--bad);box-shadow:0 0 0 5px var(--badbg)}
+.list{background:#fff;border-radius:18px;box-shadow:0 1px 2px rgba(10,37,64,.06),0 10px 30px -18px rgba(10,37,64,.25);overflow:hidden}
+.it{display:flex;align-items:center;gap:14px;padding:16px 20px;border-top:1px solid var(--hair)}.it:first-child{border-top:0}
+.it .t{flex:1;min-width:0}.it .t b{display:block;font-weight:600}.it .t small{color:var(--soft);font-size:14px}
+.pill{flex:none;font-size:13px;font-weight:700;padding:5px 12px;border-radius:99px;background:#EEF1F5;color:var(--soft)}
+.ok .pill{background:var(--okbg);color:var(--ok)}.warn .pill{background:var(--warnbg);color:var(--warn)}.bad .pill{background:var(--badbg);color:var(--bad)}
+.fine{margin-top:18px;color:var(--soft);font-size:14px}.fine a{color:var(--navy);font-weight:600}
+button{font:inherit;font-size:14px;font-weight:700;color:var(--navy);background:#fff;border:1px solid var(--hair);border-radius:99px;min-height:40px;padding:0 16px;cursor:pointer}
+button:hover{border-color:var(--navy)}
+@media (prefers-reduced-motion:no-preference){.chk .dot{animation:p 1s ease-in-out infinite alternate}@keyframes p{to{opacity:.35}}}
+</style></head>
+<body>
+<header><div class="w"><a class="wm" href="/" aria-label="Scubook home"><b>Scub</b><i>ook</i><svg viewBox="0 0 60 22" aria-hidden="true"><circle cx="9" cy="14" r="5" fill="none" stroke="#8AD9E3" stroke-width="2.2"/><circle cx="32" cy="9" r="3.4" fill="none" stroke="#8AD9E3" stroke-width="2"/><circle cx="50" cy="13" r="2.2" fill="#8AD9E3"/></svg></a><a class="back" href="/">Back to scubook.app</a></div></header>
+<main><div class="w">
+<h1>Service status</h1>
+<div class="sum chk" id="sum" role="status" aria-live="polite"><span class="dot"></span><span id="sumT">Checking…</span></div>
+<div class="list" id="list"></div>
+<p class="fine">Checked live from your browser. Last check: <span id="at">now</span>. <button type="button" id="again">Check again</button></p>
+<p class="fine">Your data is saved every night and each Dive Center can download its last 14 backups in Settings › Your data. A problem? Write to <a href="mailto:contact@scubook.app">contact@scubook.app</a>.</p>
+</div></main>
+<script>
+(function(){
+var U='https://thslialgczmcspirxray.supabase.co',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoc2xpYWxnY3ptY3NwaXJ4cmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM3MzAxNTgsImV4cCI6MjEwOTMwNjE1OH0.O6cGwxnrzA17VP3ggW3eA4BWbRXL1JVURsN-991Ig7M';
+var C=[
+ {n:'Website',d:'scubook.app pages',f:function(){return fetch('/favicon.svg?x='+Date.now(),{cache:'no-store'})}},
+ {n:'App',d:'The Scubook app for your team',f:function(){return fetch('/app.html?x='+Date.now(),{method:'HEAD',cache:'no-store'})}},
+ {n:'Database',d:'Bookings, customers and payments',f:function(){return fetch(U+'/rest/v1/rpc/centre_exists',{method:'POST',headers:{apikey:K,'Content-Type':'application/json'},body:'{"p":"00000000-0000-0000-0000-000000000000"}',cache:'no-store'})}},
+ {n:'Sign-in',d:'Logins for managers and staff',f:function(){return fetch(U+'/auth/v1/health',{headers:{apikey:K},cache:'no-store'})}}
+];
+function row(c,st,ms){var lab=st==='ok'?'Operational':st==='warn'?'Slow':st==='bad'?'Down':'Checking';return '<div class="it '+(st||'chk')+'"><span class="dot"></span><span class="t"><b>'+c.n+'</b><small>'+c.d+(ms!=null&&st!=='bad'?' · '+ms+' ms':'')+'</small></span><span class="pill">'+lab+'</span></div>'}
+function run(){
+ var L=document.getElementById('list'),S=document.getElementById('sum'),T=document.getElementById('sumT');
+ S.className='sum chk';T.textContent='Checking…';L.innerHTML=C.map(function(c){return row(c)}).join('');
+ Promise.all(C.map(function(c){var t0=performance.now();var to=new Promise(function(_,rj){setTimeout(function(){rj(new Error('timeout'))},10000)});
+  return Promise.race([c.f(),to]).then(function(r){var ms=Math.round(performance.now()-t0);return{st:r.ok?(ms>4000?'warn':'ok'):'bad',ms:ms}}).catch(function(){return{st:'bad'}})}))
+ .then(function(R){
+  L.innerHTML=R.map(function(r,i){return row(C[i],r.st,r.ms)}).join('');
+  var bad=R.filter(function(r){return r.st==='bad'}).length,warn=R.filter(function(r){return r.st==='warn'}).length;
+  S.className='sum '+(bad?'bad':warn?'warn':'ok');T.textContent=bad?(bad===R.length?'We cannot reach Scubook right now. Check your internet connection.':'Some parts of Scubook are not responding.'):warn?'Scubook is working, a little slower than usual.':'All systems operational';
+  document.getElementById('at').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+ });
+}
+document.getElementById('again').onclick=run;run();setInterval(run,60000);
+})();
+</script>
+</body></html>
