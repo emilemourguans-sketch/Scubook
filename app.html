@@ -4928,36 +4928,68 @@ async function ensureSession(){
 
 /* ---- database adapter ---- */
 const CACHE={},SUBS={},ONERR={},STATE={inflight:0,seq:0,started:false,lastJson:{}};
-const colOf=n=>CACHE[n]||(CACHE[n]={});
+const colOf=n=>CACHE[n]||(CACHE[n]=(STATE.all&&STATE.all[n])||{});
 const clone=o=>JSON.parse(JSON.stringify(o));
 function snapOf(n){return{docs:Object.keys(colOf(n)).map(id=>({id:id,data:()=>colOf(n)[id]}))}}
 function fire(n){
   const s=snapOf(n);(SUBS[n]||[]).forEach(cb=>{try{cb(s)}catch(e){console.error(e)}});
 }
 const rid=()=>{const a=new Uint8Array(15);crypto.getRandomValues(a);return Array.from(a,b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('')};
-async function pollAll(){
-  if(STATE.inflight>0||!SESS)return;
+const SYNC_FULL_MS=300000;
+const syncT=t=>{const v=Date.parse(t||'');return isNaN(v)?0:v};
+const syncBack=t=>new Date(Math.max(0,syncT(t)-10000)).toISOString();
+// look 10 s back for a short while after each change (a slow save can land a little later), then only after the cursor
+const syncSince=(t,at)=>Date.now()-(at||0)<20000?'gte.'+encodeURIComponent(syncBack(t)):'gt.'+encodeURIComponent(t);
+async function syncPages(path){let rows=[],from=0;for(;;){const r=await api(path,{headers:{Range:from+'-'+(from+999),'Range-Unit':'items'}});rows=rows.concat(r||[]);if(!r||r.length<1000)break;from+=1000}return rows}
+async function pollAll(force){
+  if(STATE.inflight>0||!SESS||STATE.polling)return;
+  STATE.polling=true;try{await syncRun(force===true)}finally{STATE.polling=false}
+}
+async function syncRun(force){
   const seq=STATE.seq;
-  let rows=[],from=0;
+  const full=force||!STATE.all||!STATE.cur||Date.now()-(STATE.lastFull||0)>SYNC_FULL_MS;
+  let rows=[],dels=[],tomb=null;
   try{
-    for(;;){
-      const r=await api('/rest/v1/docs?select=collection,id,data&order=collection,id',{headers:{Range:from+'-'+(from+999),'Range-Unit':'items'}});
-      rows=rows.concat(r||[]);if(!r||r.length<1000)break;from+=1000;
+    if(full){
+      rows=await syncPages('/rest/v1/docs?select=collection,id,data,updated_at&order=collection,id');
+      try{const t=await api('/rest/v1/docs_deleted?select=deleted_at&order=deleted_at.desc&limit=1');tomb=(t&&t[0]&&t[0].deleted_at)||''}catch(e){tomb=null}
+    }else{
+      rows=await syncPages('/rest/v1/docs?select=collection,id,data,updated_at&updated_at='+syncSince(STATE.cur,STATE.curAt)+'&order=updated_at,collection,id');
+      if(STATE.dcur!==null)dels=(await api('/rest/v1/docs_deleted?select=collection,id,deleted_at&deleted_at='+syncSince(STATE.dcur||STATE.cur,STATE.dcurAt)+'&order=deleted_at'))||[];
     }
   }catch(e){
     if(offLoad())return;
     Object.keys(ONERR).forEach(n=>(ONERR[n]||[]).forEach(cb=>{try{cb(e)}catch(x){}}));return;
   }
   if(STATE.inflight>0||STATE.seq!==seq)return;
-  const next={};rows.forEach(r=>{(next[r.collection]=next[r.collection]||{})[r.id]=r.data});
-  const names=new Set(Object.keys(SUBS).concat(Object.keys(CACHE)));let changed=false;
-  names.forEach(n=>{
-    const nv=next[n]||{},j=JSON.stringify(nv);
-    if(STATE.lastJson[n]!==j||!STATE.first){STATE.lastJson[n]=j;CACHE[n]=nv;fire(n);changed=true}
-  });
-  STATE.first=true;
+  let cur=full?'':STATE.cur;rows.forEach(r=>{if(syncT(r.updated_at)>syncT(cur))cur=r.updated_at});
+  let changed=false;
+  if(full){
+    const next={};rows.forEach(r=>{(next[r.collection]=next[r.collection]||{})[r.id]=r.data});
+    STATE.all=next;STATE.cur=cur||new Date(0).toISOString();STATE.dcur=tomb===null?null:(tomb||STATE.cur);STATE.lastFull=Date.now();STATE.curAt=STATE.dcurAt=Date.now();
+    const names=new Set(Object.keys(SUBS).concat(Object.keys(CACHE)));
+    names.forEach(n=>{
+      const nv=next[n]||(next[n]={}),j=JSON.stringify(nv);
+      if(STATE.lastJson[n]!==j||!STATE.first){STATE.lastJson[n]=j;CACHE[n]=nv;fire(n);changed=true}
+    });
+    STATE.first=true;
+    if(OFFLINE&&!OFFBOOT)offHide();
+    if(changed||!STATE.saved)offSave(next);
+    return;
+  }
   if(OFFLINE&&!OFFBOOT)offHide();
-  if(changed||!STATE.saved)offSave(next);
+  if(!rows.length&&!dels.length)return;
+  if(cur!==STATE.cur){STATE.cur=cur;STATE.curAt=Date.now()}
+  dels.forEach(d=>{if(syncT(d.deleted_at)>syncT(STATE.dcur)){STATE.dcur=d.deleted_at;STATE.dcurAt=Date.now()}});
+  const touched={};
+  const col=n=>touched[n]||(touched[n]=Object.assign({},(CACHE[n]||STATE.all[n])||{}));
+  rows.forEach(r=>{col(r.collection)[r.id]=r.data});
+  dels.forEach(d=>{delete col(d.collection)[d.id]});
+  Object.keys(touched).forEach(n=>{
+    const nv=touched[n];STATE.all[n]=nv;
+    if(n in CACHE||SUBS[n]){const j=JSON.stringify(nv);if(STATE.lastJson[n]!==j){STATE.lastJson[n]=j;CACHE[n]=nv;fire(n);changed=true}}
+  });
+  if(changed||!STATE.saved)offSave(Object.assign({},STATE.all,CACHE));
 }
 function offSave(next){if(DEMO||!CENTRE||window.__viewC||OFFBOOT)return;try{localStorage.setItem(offKey(),JSON.stringify({at:Date.now(),email:((SESS&&SESS.email)||'').toLowerCase(),data:next}));STATE.saved=true}catch(e){}}
 function offLoad(){if(DEMO||!CENTRE)return false;if(STATE.first&&!OFFLINE)return false;let snap=null;try{snap=JSON.parse(localStorage.getItem(offKey())||'null')}catch(e){}
